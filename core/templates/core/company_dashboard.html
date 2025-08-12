@@ -1,0 +1,59 @@
+<!-- core/templates/core/company_dashboard.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 text-primary mb-3">{{ title }}</h1>
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% else %}
+        <p class="lead text-muted">Bienvenido al panel de tu empresa, {{ company.name }}.</p>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total de Reseñas Recibidas</h5>
+                        <h2 class="card-text">{{ total_reviews }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Calificación Promedio</h5>
+                        <h2 class="card-text">{% if avg_overall_rating %}{{ avg_overall_rating|floatformat:1 }}{% else %}N/A{% endif %}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Reseñas de tu Empresa:</h3>
+        {% if reviews %}
+            <div class="list-group">
+                {% for review in reviews %}
+                    <div class="list-group-item list-group-item-action flex-column align-items-start mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ review.job_title }} ({{ review.get_modality_display }})</h5>
+                            <small class="text-muted">{{ review.submission_date|date:"d M Y" }}</small>
+                        </div>
+                        <p class="mb-1">Calificación General: {{ review.overall_rating }} / 5</p>
+                        <p class="mb-1">Pros: {{ review.pros }}</p>
+                        <p class="mb-1">Contras: {{ review.cons }}</p>
+                        {% if review.interview_questions %}
+                            <small class="text-muted">Preguntas de Entrevista: {{ review.interview_questions }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                Aún no hay reseñas para tu empresa.
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

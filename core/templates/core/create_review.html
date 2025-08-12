@@ -1,0 +1,35 @@
+<!-- core/templates/core/create_review.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 text-primary mb-3">{{ title }}</h1>
+    <p class="lead text-muted">Aquí irá el formulario para que los candidatos compartan su experiencia de selección.</p>
+    <div class="alert alert-info" role="alert">
+        Formulario de ejemplo. La lógica de envío de reseñas se implementará más adelante.
+    </div>
+    <form>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="companyName" class="form-label">Nombre de la Empresa</label>
+            <input type="text" class="form-control" id="companyName" placeholder="Ej: Google, EAFIT">
+        </div>
+        <div class="mb-3">
+            <label for="jobTitle" class="form-label">Cargo al que aplicaste</label>
+            <input type="text" class="form-control" id="jobTitle" placeholder="Ej: Desarrollador Junior, Analista de Datos">
+        </div>
+        <div class="mb-3">
+            <label for="pros" class="form-label">Aspectos Positivos (Pros)</label>
+            <textarea class="form-control" id="pros" rows="3" placeholder="Ej: Buena comunicación, proceso rápido."></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="cons" class="form-label">Aspectos Negativos (Contras)</label>
+            <textarea class="form-control" id="cons" rows="3" placeholder="Ej: Entrevista muy larga, poca retroalimentación."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar Reseña</button>
+    </form>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Cancelar</a>
+</div>
+{% endblock %}

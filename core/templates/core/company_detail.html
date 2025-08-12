@@ -1,0 +1,15 @@
+<!-- core/templates/core/company_detail.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 text-primary mb-3">{{ title }}</h1>
+    <p class="lead text-muted">Esta es la página de detalle de una empresa. Aquí se mostrarán sus reseñas y más información.</p>
+    <div class="alert alert-warning" role="alert">
+        Contenido de ejemplo. La lógica real de la empresa y sus reseñas se implementará más adelante.
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+<!-- core/templates/core/my_reviews.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 text-primary mb-3">{{ title }}</h1>
+    <p class="lead text-muted">Aquí verás un listado de todas las reseñas que has enviado.</p>
+    <div class="alert alert-info" role="alert">
+        Contenido de ejemplo. La lógica para mostrar tus reseñas se implementará más adelante.
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">Reseña 1: Empresa X - Desarrollador (Pendiente de aprobación)</li>
+        <li class="list-group-item">Reseña 2: Empresa Y - Analista (Aprobada)</li>
+    </ul>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+</div>
+{% endblock %}

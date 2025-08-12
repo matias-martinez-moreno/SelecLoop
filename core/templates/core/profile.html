@@ -1,0 +1,23 @@
+<!-- core/templates/core/profile.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 text-primary mb-3">{{ title }}</h1>
+    <p class="lead text-muted">Aquí podrás ver y editar la información de tu perfil.</p>
+    <div class="alert alert-info" role="alert">
+        Contenido de ejemplo. La lógica para gestionar tu perfil se implementará más adelante.
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Información del Usuario</h5>
+            <p><strong>Nombre de Usuario:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email|default:"No especificado" }}</p>
+            <button class="btn btn-primary">Editar Perfil</button>
+        </div>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Volver al Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+<!-- core/templates/core/index.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - SelecLoop{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if user.is_authenticated %}
+                <h1 class="display-4 text-primary mb-3">Hola, {{ request.user.get_full_name|default:request.user.username }}</h1>
+            {% else %}
+                <h1 class="display-4 text-primary mb-3">Hola, Visitante</h1>
+            {% endif %}
+            <p class="lead text-muted">Descubre, comparte y prepárate para procesos de selección.</p>
+        </div>
+    </div>
+
+    <!-- Search and Filters Bar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" action="{% url 'dashboard' %}" class="row g-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" name="search"
+                                       placeholder="Buscar empresas..." value="{{ search_query }}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="sector">
+                                <option value="">Todos los Sectores</option>
+                                {% for sector in unique_sectors %}
+                                <option value="{{ sector }}" {% if selected_sector == sector %}selected{% endif %}>
+                                    {{ sector }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="location">
+                                <option value="">Todas las Ciudades</option>
+                                {% for location in unique_locations %}
+                                <option value="{{ location }}" {% if selected_location == location %}selected{% endif %}>
+                                    {{ location }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="modality">
+                                <option value="">Todas las Modalidades</option>
+                                {% for modality in unique_modalities %}
+                                    <option value="{{ modality }}" {% if selected_modality == modality %}selected{% endif %}>
+                                        {{ modality }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-2"></i>Filtrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Empresas Disponibles</h5>
+                    <h2 class="card-text">{{ total_companies }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Acción Rápida</h5>
+                    <a href="{% url 'create_review' %}" class="btn btn-light btn-sm">Añadir Mi Experiencia</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empresas -->
+    <div class="row">
+        <div class="col-12">
+            {% if companies %}
+                <div class="row">
+                    {% for company in companies %}
+                    <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                        <div class="card h-100 shadow-sm company-card">
+                            {# Logo de la empresa #}
+                            {% if company.logo %}
+                                <img src="{{ company.logo.url }}" class="card-img-top" alt="{{ company.name }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fas fa-building fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title text-primary mb-0">{{ company.name }}</h6>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-secondary">{{ company.location }}</span>
+                                        <span class="badge bg-info">{{ company.sector }}</span>
+                                    </div>
+                                </div>
+                                <p class="card-text text-muted small">{{ company.short_description }}</p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{% url 'company_detail' company.id %}" class="btn btn-outline-primary btn-sm w-100">Ver Detalles</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-building-circle-xmark fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No se encontraron empresas</h4>
+                    <a href="{% url 'create_review' %}" class="btn btn-primary">Añadir Experiencia</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

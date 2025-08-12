@@ -1,0 +1,117 @@
+<!-- core/templates/core/base.html -->
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SelecLoop{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+      body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+      .top-bar { background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%); color: white; height: 70px; display: flex; align-items: center; padding: 0 30px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); position: relative; z-index: 1000; }
+      .top-bar .logo-container { display: flex; align-items: center; }
+      .top-bar .site-title { font-size: 1.8rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+      .main-container { display: flex; flex: 1; min-height: calc(100vh - 70px); }
+      nav { width: 280px; background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%); color: white; padding: 30px 20px; box-sizing: border-box; box-shadow: 4px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; z-index: 999; }
+      nav a { color: #ecf0f1; display: flex; /* Usamos flex para alinear icono y texto */ align-items: center; padding: 12px 15px; text-decoration: none; border-radius: 6px; margin-bottom: 8px; transition: all 0.3s ease; font-weight: 500; font-size: 1.1rem; }
+      nav a i { margin-right: 10px; font-size: 1.2rem; }
+      nav a:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+      
+      /* Estilo para el botón de logout dentro del formulario */
+      nav form button {
+          background: none; /* Sin fondo por defecto */
+          border: none; /* Sin borde por defecto */
+          color: #ecf0f1; /* Mismo color que los enlaces */
+          display: flex; /* Para alinear icono y texto */
+          align-items: center;
+          padding: 12px 15px;
+          text-decoration: none;
+          border-radius: 6px;
+          margin-bottom: 8px;
+          transition: all 0.3s ease;
+          font-weight: 500;
+          font-size: 1.1rem;
+          width: 100%; /* Ocupa todo el ancho del nav */
+          text-align: left; /* Alinea el texto a la izquierda */
+          cursor: pointer; /* Indica que es clickeable */
+      }
+      nav form button:hover {
+          background: rgba(255,255,255,0.1);
+          color: white;
+          transform: translateX(5px);
+      }
+      
+      main { flex-grow: 1; padding: 30px; background: #f8f9fa; overflow-y: auto; }
+      .footer { background: #333; color: #ccc; text-align: center; padding: 20px 0; margin-top: auto; }
+    </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="logo-container">
+      <img src="{% static 'logo.png' %}" alt="SelecLoop Logo" height="50" style="vertical-align: middle;">
+    </div>
+  </div>
+
+  <div class="main-container">
+    <nav>
+      {% if user.is_authenticated %}
+        {# Menú para Candidatos y Administradores #}
+        {% if user.profile.role == 'candidate' or user.profile.role == 'admin' %}
+          <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+          <a href="{% url 'create_review' %}"><i class="fas fa-edit"></i> Crear Reseña</a>
+          <a href="{% url 'my_reviews' %}"><i class="fas fa-list-alt"></i> Mis Reseñas</a>
+        {# Menú para Representantes de Empresa #}
+        {% elif user.profile.role == 'company_rep' %}
+          <a href="{% url 'company_dashboard' %}"><i class="fas fa-building"></i> Mi Empresa</a>
+        {% endif %}
+        {# Enlaces comunes para todos los roles autenticados #}
+        <a href="{% url 'my_profile' %}"><i class="fas fa-user"></i> Mi Perfil</a>
+        
+        {# Formulario para el Logout #}
+        <form action="{% url 'logout' %}" method="post" style="display: inline;"> {# display: inline para que no rompa el layout #}
+            {% csrf_token %}
+            <button type="submit">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </form>
+      {% else %}
+        {# Enlace para usuarios no autenticados #}
+        <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a>
+      {% endif %}
+    </nav>
+
+    <main>
+      {% block content %}
+      {% endblock %}
+    </main>
+  </div>
+
+  <footer class="footer">
+      <p>&copy; {% now "Y" %} SelecLoop. Todos los derechos reservados.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+{# --- REFERENCIAS Y DECLARACIÓN DE USO DE IA --- #}
+{# --------------------------------------------------------------------------------------------- #}
+{# Este proyecto fue desarrollado con apoyo de herramientas de IA. Parte del código y contenido 
+   se generó con Gemini, modelo de lenguaje a gran escala de Google. 
+   El autor revisó, editó y adaptó todo el material, asumiendo la responsabilidad final. #}
+
+{# 1. Herramienta utilizada:
+      - Gemini (antes Google Bard), accesible vía interfaz web.
+      - Usos principales:
+        • Asistencia en redacción y explicación de código.
+        • Sugerencias sobre estructura de archivos y lógica de vistas.
+        • Apoyo en resolución de errores y depuración.
+        • Decoración de interfaz con Bootstrap. #}
+{# --------------------------------------------------------------------------------------------- #}
+
+
