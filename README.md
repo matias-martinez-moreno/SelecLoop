@@ -21,7 +21,7 @@ who retains full responsibility for the final implementation.
 1.  **Clone Repository**
     ```bash
     git clone https://github.com/matias-martinez-moreno/SelecLoop.git
-    cd SphereLink
+    cd SelecLoop
     ```
 
 2.  **Create & Activate Virtual Environment**
