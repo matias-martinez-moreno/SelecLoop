@@ -1,0 +1,140 @@
+<!-- ===== TEMPLATE: PERFIL DE USUARIO ===== -->
+<!-- Muestra información personal del usuario y estadísticas -->
+<!-- Diferentes vistas según el rol: candidatos ven estadísticas, otros solo info básica -->
+<!-- core/templates/core/profile.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Mi Perfil - SelecLoop{% endblock %}
+
+{% block content %}
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<div class="container-fluid">
+    <!-- ===== HEADER DEL PERFIL ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Mi Perfil
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- ===== INFORMACIÓN PERSONAL ===== -->
+                        <div class="col-md-8">
+                            <h4>{{ user_profile.user.get_full_name|default:user_profile.user.username }}</h4>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-envelope me-2"></i>
+                                {{ user_profile.user.email }}
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user-tag me-2"></i>
+                                Rol: {{ user_profile.get_role_display }}
+                            </p>
+                            {% if user_profile.phone %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    {{ user_profile.phone }}
+                                </p>
+                            {% endif %}
+                            {% if user_profile.bio %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    {{ user_profile.bio }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <!-- ===== AVATAR Y FECHA ===== -->
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-user fa-2x"></i>
+                                </div>
+                                <p class="text-muted">Miembro desde {{ user_profile.created_at|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- ===== ESTADÍSTICAS (SOLO PARA CANDIDATOS) ===== -->
+    {% if show_stats %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-3"></i>
+                    <h3 class="card-title">{{ total_reviews }}</h3>
+                    <p class="card-text">Total de Reseñas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check fa-2x mb-3"></i>
+                    <h3 class="card-title">{{ approved_reviews }}</h3>
+                    <p class="card-text">Reseñas Aprobadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-3"></i>
+                    <h3 class="card-title">{{ pending_approval }}</h3>
+                    <p class="card-text">Pendientes de Aprobación</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESEÑAS PENDIENTES (SOLO PARA CANDIDATOS) ===== -->
+    {% if pending_reviews %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Reseñas Pendientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for pending in pending_reviews %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-warning">
+                                        <i class="fas fa-building me-2"></i>
+                                        {{ pending.company.name }}
+                                    </h6>
+                                    <p class="card-text small text-muted">
+                                        <i class="fas fa-briefcase me-1"></i>
+                                        <strong>Cargo:</strong> {{ pending.job_title }}
+                                    </p>
+                                    <p class="card-text small text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <strong>Participaste el:</strong> {{ pending.participation_date|date:"d M Y" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+
+</div>
+{% endblock %}

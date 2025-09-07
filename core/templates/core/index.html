@@ -1,0 +1,254 @@
+<!-- ===== TEMPLATE: DASHBOARD PRINCIPAL ===== -->
+<!-- Dashboard para candidatos - muestra empresas disponibles y reseñas pendientes -->
+<!-- core/templates/core/index.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - Candidato{% endblock %}
+
+{% block content %}
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<div class="container mt-4">
+    <!-- ===== HEADER DEL DASHBOARD ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5 text-primary mb-2">
+                        <i class="fas fa-home me-3"></i>
+                        Dashboard Principal
+                    </h1>
+                    <p class="lead text-muted">Bienvenido, {{ user.username }}. Gestiona tus reseñas y explora empresas.</p>
+                </div>
+                <div class="text-end">
+                    <div class="badge bg-primary fs-6 p-2">
+                        <i class="fas fa-user me-2"></i>
+                        Candidato
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ESTADÍSTICAS RÁPIDAS ===== -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-building fa-2x mb-3"></i>
+                    <h3 class="card-title">{{ companies.count }}</h3>
+                    <p class="card-text">Empresas Disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-3"></i>
+                    <h3 class="card-title">{{ pending_reviews.count }}</h3>
+                    <p class="card-text">Reseñas Pendientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-3"></i>
+                    <h3 class="card-title">{{ completed_reviews.count }}</h3>
+                    <p class="card-text">Reseñas Completadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== BÚSQUEDA Y FILTROS ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Buscar y Filtrar Empresas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre de Empresa</label>
+                            <input type="text" class="form-control" name="search" value="{{ request.GET.search }}" placeholder="Buscar empresa...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Ciudad</label>
+                            <select class="form-select" name="city">
+                                <option value="">Todas las ciudades</option>
+                                {% for city in cities %}
+                                    <option value="{{ city }}" {% if request.GET.city == city %}selected{% endif %}>{{ city }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sector</label>
+                            <select class="form-select" name="sector">
+                                <option value="">Todos los sectores</option>
+                                {% for sector in sectors %}
+                                    <option value="{{ sector }}" {% if request.GET.sector == sector %}selected{% endif %}>{{ sector }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESEÑAS PENDIENTES ===== -->
+    {% if pending_reviews %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Reseñas Pendientes
+                        </h5>
+                        <a href="{% url 'create_review' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus me-1"></i>
+                            Crear Reseña
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Importante:</strong> Tienes reseñas pendientes para las siguientes empresas. 
+                        Completa tu reseña para desbloquear el contenido completo de cada empresa.
+                    </p>
+                    <div class="row">
+                        {% for pending in pending_reviews %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title text-warning mb-0">
+                                            <i class="fas fa-building me-2"></i>
+                                            {{ pending.company.name }}
+                                        </h6>
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    </div>
+                                    <p class="card-text small text-muted">
+                                        <i class="fas fa-briefcase me-1"></i>
+                                        <strong>Cargo:</strong> {{ pending.job_title }}
+                                    </p>
+                                    <p class="card-text small text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <strong>Participaste el:</strong> {{ pending.participation_date|date:"d M Y" }}
+                                    </p>
+                                    <div class="mt-3">
+                                        <a href="{% url 'create_review' %}?company={{ pending.company.id }}" class="btn btn-warning btn-sm w-100">
+                                            <i class="fas fa-edit me-1"></i>
+                                            Crear Reseña Ahora
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== LISTA DE EMPRESAS ===== -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Empresas Disponibles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if companies %}
+                        <div class="row">
+                            {% for company in companies %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">{{ company.name }}</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small text-muted mb-2">
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            {{ company.location }}
+                                        </p>
+                                        <p class="card-text small text-muted mb-2">
+                                            <i class="fas fa-industry text-primary me-1"></i>
+                                            {{ company.sector }}
+                                        </p>
+                                        
+                                        <!-- ===== ESTADO DE LA EMPRESA ===== -->
+                                        {% if company.has_pending_review %}
+                                            <div class="alert alert-warning py-2 mb-2">
+                                                <small>
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <strong>Reseña Pendiente</strong><br>
+                                                    Tienes una reseña pendiente para esta empresa
+                                                </small>
+                                            </div>
+                                        {% elif company.has_completed_review %}
+                                            <div class="alert alert-success py-2 mb-2">
+                                                <small>
+                                                    <i class="fas fa-check me-1"></i>
+                                                    <strong>Reseña Completada</strong><br>
+                                                    Ya tienes acceso completo al contenido
+                                                </small>
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-info py-2 mb-2">
+                                                <small>
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    <strong>Disponible para Participar</strong><br>
+                                                    Puedes solicitar participar en esta empresa
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>
+                                                Ver Detalles
+                                            </a>
+                                            {% if company.has_pending_review %}
+                                                <a href="{% url 'create_review' %}?company={{ company.id }}" class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-edit me-1"></i>
+                                                    Crear Reseña
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay empresas disponibles en este momento.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

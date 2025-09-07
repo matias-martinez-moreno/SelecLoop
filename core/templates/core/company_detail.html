@@ -1,0 +1,290 @@
+<!-- ===== TEMPLATE: DETALLE DE EMPRESA ===== -->
+<!-- Muestra información completa de una empresa y sus reseñas -->
+<!-- Control de acceso según rol y estado de reseñas del usuario -->
+<!-- core/templates/core/company_detail.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<div class="container mt-5">
+    <!-- ===== HEADER DE LA EMPRESA ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            {% if company.logo %}
+                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="img-fluid rounded" style="max-height: 150px;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                                    <i class="fas fa-building fa-4x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h1 class="display-4 text-primary mb-2">{{ company.name }}</h1>
+                            <div class="d-flex gap-2 mb-3">
+                                <span class="badge bg-secondary fs-6">{{ company.location }}</span>
+                                <span class="badge bg-info fs-6">{{ company.sector }}</span>
+                            </div>
+                            {% if company.short_description %}
+                                <p class="lead text-muted">{{ company.short_description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== INFORMACIÓN DE LA EMPRESA ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        {{ company.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Sector:</strong> {{ company.sector }}</p>
+                            <p><strong>Ubicación:</strong> {{ company.location }}</p>
+                            <p><strong>Descripción:</strong> {{ company.description|default:"No disponible" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Website:</strong> 
+                                {% if company.website %}
+                                    <a href="{{ company.website }}" target="_blank" class="text-primary">{{ company.website }}</a>
+                                {% else %}
+                                    No disponible
+                                {% endif %}
+                            </p>
+                            <p><strong>Estado:</strong> 
+                                <span class="badge bg-{% if company.is_active %}success{% else %}danger{% endif %}">
+                                    {% if company.is_active %}Activa{% else %}Inactiva{% endif %}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- ===== MENSAJE INFORMATIVO ===== -->
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        <strong>Próximamente:</strong> Aquí se mostrará un resumen detallado de las calificaciones y estadísticas de la empresa basado en las reseñas de los candidatos.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ESTADÍSTICAS DE LA EMPRESA ===== -->
+    {% if company_stats.total_reviews > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="h5 mb-0"><i class="fas fa-chart-bar me-2"></i>Estadísticas de la Empresa</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ company_stats.avg_overall|floatformat:1 }}/5</h4>
+                                <p class="text-muted mb-0">Calificación General</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-success">{{ company_stats.avg_communication|floatformat:1 }}/5</h4>
+                                <p class="text-muted mb-0">Comunicación</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-warning">{{ company_stats.avg_difficulty|floatformat:1 }}/5</h4>
+                                <p class="text-muted mb-0">Dificultad</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">{{ company_stats.avg_response_time|floatformat:1 }}/5</h4>
+                            <p class="text-muted mb-0">Tiempo de Respuesta</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <span class="badge bg-secondary fs-6">Total de Reseñas: {{ company_stats.total_reviews }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Contenido condicional según acceso -->
+    {% if user_can_access %}
+        <!-- Usuario puede acceder - mostrar reseñas -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h3 text-primary">Reseñas de la Empresa</h2>
+                    {% if user_has_contributed and user.profile.role == 'candidate' %}
+                        <a href="{% url 'create_review' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Nueva Reseña
+                        </a>
+                    {% endif %}
+                </div>
+                
+                {% if all_visible_reviews %}
+                    <div class="row">
+                        {% for review in all_visible_reviews %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">{{ review.user_profile.user.username }}</h6>
+                                    <span class="badge bg-{% if review.status == 'approved' %}success{% elif review.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                        {% if review.status == 'approved' %}
+                                            <i class="fas fa-check me-1"></i>Aprobada
+                                        {% elif review.status == 'pending' %}
+                                            <i class="fas fa-clock me-1"></i>En Revisión
+                                        {% else %}
+                                            <i class="fas fa-times me-1"></i>Rechazada
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        <strong>Cargo:</strong> {{ review.job_title }}
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Modalidad:</strong> {{ review.get_modality_display }}
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <strong class="text-success">Pros:</strong>
+                                        <p class="mb-2">{{ review.pros }}</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <strong class="text-danger">Contras:</strong>
+                                        <p class="mb-2">{{ review.cons }}</p>
+                                    </div>
+
+                                    {% if review.interview_questions %}
+                                    <div class="mb-3">
+                                        <strong>Preguntas de la Entrevista:</strong>
+                                        <p class="mb-2">{{ review.interview_questions }}</p>
+                                    </div>
+                                    {% endif %}
+
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ review.submission_date|date:"d/m/Y H:i" }}
+                                    </small>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="badge bg-primary">Calificación: {{ review.overall_rating }}/5</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No hay reseñas aún</h4>
+                        <p class="text-muted">Sé el primero en compartir tu experiencia con esta empresa.</p>
+                        <a href="{% url 'create_review' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Crear Primera Reseña
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <!-- Usuario no puede acceder - mostrar mensaje apropiado -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h3 class="h5 mb-0">
+                            {% if user_has_pending_review %}
+                                <i class="fas fa-clock me-2"></i>Reseña Pendiente
+                            {% elif user_has_contributed %}
+                                <i class="fas fa-clock me-2"></i>Reseña en Revisión
+                            {% else %}
+                                <i class="fas fa-handshake me-2"></i>Participación Requerida
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <div class="card-body text-center py-5">
+                        {% if user_has_pending_review %}
+                            <i class="fas fa-exclamation-triangle fa-4x text-warning mb-3"></i>
+                            <h4 class="text-warning">Tienes reseñas pendientes</h4>
+                            <p class="text-muted">Tienes reseñas pendientes que debes completar antes de poder ver el contenido de cualquier empresa.</p>
+                            <div class="mt-4">
+                                <a href="{% url 'create_review' %}" class="btn btn-warning btn-lg me-2">
+                                    <i class="fas fa-edit me-2"></i>Crear Reseñas Pendientes
+                                </a>
+                                <a href="{% url 'my_reviews' %}" class="btn btn-info">
+                                    <i class="fas fa-list me-2"></i>Ver Mis Reseñas
+                                </a>
+                            </div>
+                        {% elif user_has_contributed %}
+                            <i class="fas fa-hourglass-half fa-4x text-warning mb-3"></i>
+                            <h4 class="text-warning">Tu reseña está siendo revisada</h4>
+                            <p class="text-muted">Una vez aprobada, podrás acceder al contenido completo de esta empresa.</p>
+                            <div class="mt-4">
+                                <a href="{% url 'my_reviews' %}" class="btn btn-info me-2">
+                                    <i class="fas fa-list me-2"></i>Ver Mis Reseñas
+                                </a>
+                                <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                                    <i class="fas fa-home me-2"></i>Explorar Otras Empresas
+                                </a>
+                            </div>
+                        {% else %}
+                            <i class="fas fa-handshake fa-4x text-warning mb-3"></i>
+                            <h4 class="text-warning">Para ver las reseñas de esta empresa, primero debes participar</h4>
+                            <p class="text-muted">Comparte tu experiencia en un proceso de selección para desbloquear el contenido completo.</p>
+                            <p class="text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                El staff te asignará una empresa cuando participes en un proceso de selección.
+                            </p>
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-building me-2"></i>Explorar Otras Empresas
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Botones de navegación -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                {% if user.profile.role == 'company_rep' %}
+                    <a href="{% url 'company_dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver al Panel de Empresa
+                    </a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+                    </a>
+                {% endif %}
+                
+                {% if not user_has_contributed and user.profile.role == 'candidate' %}
+                <a href="{% url 'create_review' %}" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Crear Reseña
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

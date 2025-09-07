@@ -1,0 +1,327 @@
+<!-- ===== TEMPLATE: LOGIN ===== -->
+<!-- Página de inicio de sesión sin sidebar -->
+<!-- Formulario de autenticación con logo y características del sistema -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- ===== METADATOS ===== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - SelecLoop</title>
+
+    <!-- ===== RECURSOS EXTERNOS ===== -->
+    <!-- Bootstrap 5 para diseño responsive -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ===== ESTILOS CSS PERSONALIZADOS ===== -->
+    <style>
+        /* ===== VARIABLES CSS ===== */
+        /* Definición de colores del tema */
+        :root {
+            --blue-50: #E0E7FF;
+            --blue-100: #C7D2FE;
+            --blue-600: #1E3A8A;
+            --blue-700: #1E3A8A;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --white: #FFFFFF;
+            --gray-200: #E5E7EB;
+            --gray-600: #4B5563;
+            --gray-800: #1F2937;
+        }
+
+        /* ===== ESTILOS BASE ===== */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--blue-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ===== CONTENEDOR DE LOGIN ===== */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        /* ===== TARJETA DE LOGIN ===== */
+        .login-card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        /* ===== HEADER DEL LOGIN ===== */
+        .login-header {
+            background: var(--blue-600);
+            color: var(--white);
+            padding: 2.5rem 2rem 2rem;
+            text-align: center;
+        }
+
+        .login-logo-container {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .login-logo {
+            width: 100px;
+            height: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .login-body {
+            padding: 2.5rem 2rem;
+        }
+
+        /* ===== ESTILOS DE FORMULARIOS ===== */
+        .form-control {
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--blue-600);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--blue-600);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-700);
+        }
+
+        /* ===== TARJETAS DE CARACTERÍSTICAS ===== */
+        .feature-cards {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .feature-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--gray-200);
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.8rem;
+            font-size: 1rem;
+            color: var(--white);
+        }
+
+        .feature-icon.primary {
+            background: var(--blue-600);
+        }
+
+        .feature-icon.success {
+            background: var(--success);
+        }
+
+        .feature-icon.warning {
+            background: var(--warning);
+        }
+
+        /* ===== ALERTAS ===== */
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-danger {
+            background: #FEF2F2;
+            color: #991B1B;
+            border-left: 4px solid var(--danger);
+        }
+
+        .text-primary {
+            color: var(--blue-600) !important;
+        }
+
+        .text-muted {
+            color: var(--gray-600) !important;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 1rem;
+            }
+            
+            .login-header {
+                padding: 2rem 1.5rem 1.5rem;
+            }
+            
+            .login-body {
+                padding: 2rem 1.5rem;
+            }
+            
+            .login-logo {
+                width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== CONTENEDOR PRINCIPAL ===== -->
+    <div class="login-container">
+        <div class="row justify-content-center w-100">
+            <div class="col-lg-5 col-xl-4">
+                <!-- ===== TARJETA DE LOGIN ===== -->
+                <div class="login-card">
+                    <div class="login-header">
+                        <div class="login-logo-container">
+                            <img src="{% static 'core/logo.png' %}" alt="SelecLoop Logo" class="login-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <i class="fas fa-search fa-3x text-white" style="display: none; margin-bottom: 1rem;"></i>
+                        </div>
+                        <h2 class="h3 mb-2">Bienvenido a SelecLoop</h2>
+                        <p class="text-white-50 mb-0">Tu plataforma de feedback empresarial</p>
+                    </div>
+                    
+                    <div class="login-body">
+                        <!-- ===== MENSAJES DEL SISTEMA ===== -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- ===== FORMULARIO DE LOGIN ===== -->
+                        <form method="post" class="login-form">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-2 text-primary"></i>Nombre de Usuario
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="username" 
+                                       name="username" 
+                                       required 
+                                       placeholder="Ingresa tu nombre de usuario">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock me-2 text-primary"></i>Contraseña
+                                </label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       required 
+                                       placeholder="Ingresa tu contraseña">
+                            </div>
+
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                                </button>
+                            </div>
+
+                            <div class="text-center">
+                                <p class="text-muted mb-0">
+                                    ¿No tienes cuenta? 
+                                    <a href="#" class="text-primary fw-bold">Contacta al administrador</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ===== INFORMACIÓN ADICIONAL ===== -->
+                <div class="feature-cards">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <div class="feature-card">
+                                <div class="feature-icon primary">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h6 class="fw-bold small">Explora Empresas</h6>
+                                <small class="text-muted">Descubre procesos</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="feature-card">
+                                <div class="feature-icon success">
+                                    <i class="fas fa-share-alt"></i>
+                                </div>
+                                <h6 class="fw-bold small">Comparte Experiencias</h6>
+                                <small class="text-muted">Ayuda a otros</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="feature-card">
+                                <div class="feature-icon warning">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h6 class="fw-bold small">Accede a Estadísticas</h6>
+                                <small class="text-muted">Obtén insights</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RECURSOS JAVASCRIPT ===== -->
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

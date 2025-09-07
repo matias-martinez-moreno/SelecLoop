@@ -1,0 +1,489 @@
+<!-- ===== TEMPLATE BASE ===== -->
+<!-- Template principal que extienden todos los demás templates -->
+<!-- Define la estructura común: sidebar, navegación, estilos y layout -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- ===== METADATOS ===== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SelecLoop{% endblock %}</title>
+
+    <!-- ===== RECURSOS EXTERNOS ===== -->
+    <!-- Bootstrap 5 para diseño responsive -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ===== ESTILOS CSS PERSONALIZADOS ===== -->
+    <style>
+        /* ===== VARIABLES CSS ===== */
+        /* Definición de colores principales del tema */
+        :root {
+            /* Colores principales - Azul más oscuro */
+            --blue-50: #E0E7FF;
+            --blue-100: #C7D2FE;
+            --blue-200: #A5B4FC;
+            --blue-300: #818CF8;
+            --blue-400: #1E40AF;
+            --blue-500: #1E3A8A;
+            --blue-600: #1E3A8A;
+            --blue-700: #1E3A8A;
+            --blue-800: #1E3A8A;
+            --blue-900: #1E1B4B;
+            
+            /* Colores de estado */
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --info: #1E3A8A;
+            
+            /* Colores neutros */
+            --white: #FFFFFF;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-600: #4B5563;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+
+        /* ===== ESTILOS BASE ===== */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--blue-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        /* ===== ESTILOS DEL SIDEBAR ===== */
+        /* Navegación lateral fija */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: #1E3A8A;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            background: #1E3A8A;
+            border-bottom: 1px solid #1E3A8A;
+        }
+
+        .sidebar-brand {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+          align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-brand:hover {
+            color: var(--blue-200);
+          text-decoration: none;
+        }
+
+        .sidebar-brand img {
+            width: 100%;
+            height: auto;
+            max-height: 120px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .sidebar-nav {
+            padding: 1.5rem 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #1E3A8A;
+            text-decoration: none;
+            border-radius: 8px;
+          font-weight: 500;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .nav-link:hover {
+            background: #F3F4F6;
+            color: #1E3A8A;
+            text-decoration: none;
+        }
+
+        .nav-link.active {
+            background: white;
+            color: #1E3A8A;
+        }
+
+        .nav-link i {
+          font-size: 1.1rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+
+        /* Botón de logout */
+        .nav-link.logout-btn {
+            background: white;
+            color: #1E3A8A;
+            border: 1px solid white;
+            margin-top: 1rem;
+        }
+
+        .nav-link.logout-btn:hover {
+            background: #1E1B4B;
+            color: white;
+            border-color: #1E1B4B;
+        }
+
+        /* Contenido principal */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: #1E3A8A;
+            color: var(--white);
+            border: none;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Botones */
+        .btn {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #1E3A8A;
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #1E1B4B;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: var(--white);
+        }
+
+        /* Formularios */
+        .form-control, .form-select {
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Alertas */
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-info {
+            background: var(--blue-100);
+            color: var(--blue-900);
+            border-left: 4px solid var(--info);
+        }
+
+        .alert-warning {
+            background: #FEF3C7;
+            color: #92400E;
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Badges */
+        .badge {
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            font-weight: 500;
+        }
+
+        .bg-primary {
+            background: var(--blue-700) !important;
+        }
+
+        .bg-success {
+            background: var(--success) !important;
+        }
+
+        .bg-warning {
+            background: var(--warning) !important;
+            color: var(--white) !important;
+        }
+
+        .bg-danger {
+            background: var(--danger) !important;
+        }
+
+        .bg-info {
+            background: var(--info) !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--blue-100);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--blue-400);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--blue-500);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'dashboard' %}" class="sidebar-brand">
+                <img src="{% static 'core/logo2.png' %}" alt="SelecLoop Logo">
+            </a>
+  </div>
+
+        <div class="sidebar-nav">
+      {% if user.is_authenticated %}
+                {% if user.profile.role == 'company_rep' %}
+                    <!-- Navegación para Representantes de Empresa (prioridad sobre staff) -->
+                    <div class="nav-item">
+                        <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %}">
+                            <i class="fas fa-building"></i>
+                            Panel de Empresa
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <i class="fas fa-user"></i>
+                            Mi Perfil
+                        </a>
+                    </div>
+                {% elif user.profile.role == 'staff' %}
+                    <!-- Navegación para Staff del Sistema -->
+                    <div class="nav-item">
+                        <a href="{% url 'staff_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}">
+                            <i class="fas fa-user-shield"></i>
+                            Panel del Staff
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'staff_assign_company' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_assign_company' %}active{% endif %}">
+                            <i class="fas fa-link"></i>
+                            Asignar Reseña Pendiente
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <i class="fas fa-user"></i>
+                            Mi Perfil
+                        </a>
+                    </div>
+                {% elif user.profile.role == 'candidate' %}
+                    <!-- Navegación para Candidatos -->
+                    <div class="nav-item">
+                        <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-building"></i>
+                            Empresas
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'my_reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'my_reviews' %}active{% endif %}">
+                            <i class="fas fa-list"></i>
+                            Mis Reseñas
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <i class="fas fa-user"></i>
+                            Mi Perfil
+                        </a>
+                    </div>
+                {% elif user.is_staff %}
+                    <!-- Navegación para el Staff (solo si NO tienen rol específico) -->
+                    <div class="nav-item">
+                        <a href="{% url 'staff_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}">
+                            <i class="fas fa-user-shield"></i>
+                            Panel del Staff
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'staff_assign_company' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_assign_company' %}active{% endif %}">
+                            <i class="fas fa-link"></i>
+                            Asignar Reseña Pendiente
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <i class="fas fa-user"></i>
+                            Mi Perfil
+                        </a>
+                    </div>
+        {% endif %}
+                
+                <!-- Logout para todos -->
+                <div class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Cerrar Sesión
+                    </a>
+                </div>
+      {% else %}
+                <!-- Navegación para usuarios no autenticados -->
+                <div class="nav-item">
+                    <a href="{% url 'login' %}" class="nav-link">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Iniciar Sesión
+                    </a>
+                </div>
+      {% endif %}
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript personalizado -->
+    <script>
+        // Agregar clase active al enlace de navegación actual
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Toggle sidebar en móviles
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>
+
+

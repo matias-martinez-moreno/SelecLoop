@@ -1,0 +1,138 @@
+<!-- ===== TEMPLATE: DASHBOARD DE EMPRESAS ===== -->
+<!-- Panel para representantes de empresa - gestión y análisis -->
+<!-- Muestra todas las empresas del sistema con estadísticas -->
+<!-- core/templates/core/company_dashboard.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard de Empresas{% endblock %}
+
+{% block content %}
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4 text-primary mb-3">
+                <i class="fas fa-building me-3"></i>
+                Dashboard de Empresas
+            </h1>
+            <p class="lead text-muted">Panel de gestión y análisis de todas las empresas del sistema</p>
+        </div>
+    </div>
+
+    <!-- ===== ESTADÍSTICAS GENERALES ===== -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-building fa-2x mb-2"></i>
+                    <h4 class="card-title">{{ total_companies }}</h4>
+                    <p class="card-text mb-0">Total Empresas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-2"></i>
+                    <h4 class="card-title">{{ total_reviews }}</h4>
+                    <p class="card-text mb-0">Total Reseñas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h4 class="card-title">{{ total_candidates }}</h4>
+                    <p class="card-text mb-0">Total Candidatos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== LISTA DE EMPRESAS ===== -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Empresas del Sistema
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- ===== BARRA DE BÚSQUEDA ===== -->
+                    <form method="get" class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Buscar empresas por nombre, sector o ubicación...">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </form>
+                    
+                    {% if companies %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Empresa</th>
+                                        <th>Sector</th>
+                                        <th>Ubicación</th>
+                                        <th>Reseñas</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for company in companies %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ company.name }}</strong>
+                                            {% if company.website %}
+                                                <br><small class="text-muted">{{ company.website }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ company.sector }}</span>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            {{ company.location }}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ company.reviews.count }}</span>
+                                        </td>
+                                        <td>
+                                            {% if company.is_active %}
+                                                <span class="badge bg-success">Activa</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactiva</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>
+                                                Ver
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay empresas registradas en el sistema</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

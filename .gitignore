@@ -1,0 +1,18 @@
+# Entorno Virtual
+venv_selecloop/
+.venv/
+
+# Archivos de Python compilados
+__pycache__/
+*.pyc
+
+# Archivos de configuración local
+*.env
+local_settings.py
+
+# Archivos de medios (subidos por usuarios)
+media/
+
+# Archivos de IDEs (ej. PyCharm, VS Code)
+.idea/
+.vscode/

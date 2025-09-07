@@ -1,0 +1,276 @@
+# ===== FORMULARIOS DE LA APLICACIÓN =====
+# Este archivo define todos los formularios utilizados en la aplicación
+# Cada formulario está conectado a un modelo específico y maneja la validación
+
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from .models import Review, StaffAssignment
+
+# ===== FORMULARIO: CREACIÓN DE USUARIOS =====
+class UserCreationForm(UserCreationForm):
+    """
+    Formulario personalizado para crear nuevos usuarios.
+    Extiende el formulario estándar de Django con campos adicionales.
+    """
+    
+    # ===== CAMPOS ADICIONALES =====
+    first_name = forms.CharField(
+        max_length=30, 
+        required=True,
+        label="Nombre",
+        help_text="Nombre real del usuario"
+    )
+    
+    last_name = forms.CharField(
+        max_length=30, 
+        required=True,
+        label="Apellido",
+        help_text="Apellido real del usuario"
+    )
+    
+    email = forms.EmailField(
+        required=True,
+        label="Correo electrónico",
+        help_text="Correo electrónico válido del usuario"
+    )
+    
+    # ===== CONFIGURACIÓN DEL FORMULARIO =====
+    class Meta:
+        """Configuración del formulario"""
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+    
+    def clean_email(self):
+        """Valida que el email sea único en el sistema"""
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Este correo electrónico ya está registrado.')
+        return email
+    
+    def save(self, commit=True):
+        """Guarda el usuario y crea automáticamente su perfil"""
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+        return user
+
+# ===== FORMULARIO: CREACIÓN DE RESEÑAS =====
+class ReviewForm(forms.ModelForm):
+    """
+    Formulario para crear y editar reseñas de procesos de selección.
+    Permite a los candidatos evaluar su experiencia en empresas.
+    """
+    
+    # ===== CAMPOS PERSONALIZADOS =====
+    company = forms.ModelChoiceField(
+        queryset=None,  # Se establece dinámicamente en la vista
+        label="Empresa",
+        help_text="Selecciona la empresa donde participaste en el proceso de selección"
+    )
+    
+    job_title = forms.CharField(
+        max_length=200,
+        label="Cargo o puesto",
+        help_text="Título del trabajo o puesto al que te postulaste",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ej: Desarrollador Frontend, Analista de Datos...'
+        })
+    )
+    
+    # ===== CAMPOS DE MODALIDAD =====
+    modality = forms.ChoiceField(
+        choices=[
+            ('presencial', 'Presencial'),
+            ('remoto', 'Remoto'),
+            ('híbrido', 'Híbrido'),
+        ],
+        label="Modalidad de trabajo",
+        help_text="Tipo de trabajo ofrecido por la empresa",
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
+    
+    # ===== CAMPOS DE CALIFICACIÓN =====
+    communication_rating = forms.ChoiceField(
+        choices=[
+            ('excellent', 'Excelente'),
+            ('good', 'Buena'),
+            ('regular', 'Regular'),
+            ('poor', 'Mala'),
+        ],
+        label="Calificación de comunicación",
+        help_text="¿Qué tan clara fue la comunicación durante el proceso?",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    difficulty_rating = forms.ChoiceField(
+        choices=[
+            ('very_easy', 'Muy Fácil'),
+            ('easy', 'Fácil'),
+            ('moderate', 'Moderada'),
+            ('difficult', 'Difícil'),
+            ('very_difficult', 'Muy Difícil'),
+        ],
+        label="Calificación de dificultad",
+        help_text="¿Qué tan desafiante fue el proceso de selección?",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    response_time_rating = forms.ChoiceField(
+        choices=[
+            ('immediate', 'Inmediata'),
+            ('same_day', 'Mismo día'),
+            ('next_day', 'Al día siguiente'),
+            ('few_days', 'En pocos días'),
+            ('slow', 'Lenta'),
+        ],
+        label="Calificación de tiempo de respuesta",
+        help_text="¿Qué tan rápido respondieron a tus consultas?",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    overall_rating = forms.IntegerField(
+        min_value=1,
+        max_value=5,
+        label="Calificación general",
+        help_text="Calificación general del 1 al 5",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'min': '1',
+            'max': '5'
+        })
+    )
+    
+    # ===== CAMPOS DE CONTENIDO =====
+    pros = forms.CharField(
+        label="Aspectos positivos",
+        help_text="¿Qué te gustó del proceso? ¿Qué hicieron bien?",
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Describe los aspectos positivos del proceso de selección...'
+        })
+    )
+    
+    cons = forms.CharField(
+        label="Aspectos a mejorar",
+        help_text="¿Qué podrían mejorar? ¿Qué no te gustó?",
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Describe los aspectos que podrían mejorar...'
+        })
+    )
+    
+    interview_questions = forms.CharField(
+        label="Preguntas de entrevista",
+        help_text="¿Qué preguntas te hicieron? Esto ayudará a otros candidatos a prepararse.",
+        required=False,  # Campo opcional
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Comparte las preguntas que te hicieron durante la entrevista...'
+        })
+    )
+    
+    # ===== CONFIGURACIÓN DEL FORMULARIO =====
+    class Meta:
+        """Configuración del formulario"""
+        model = Review
+        fields = [
+            'company', 'job_title', 'modality', 'communication_rating',
+            'difficulty_rating', 'response_time_rating', 'overall_rating',
+            'pros', 'cons', 'interview_questions'
+        ]
+    
+    def __init__(self, *args, **kwargs):
+        """Inicializa el formulario con configuraciones personalizadas"""
+        super().__init__(*args, **kwargs)
+        
+        # Personalizar widgets para mejor presentación
+        for field_name, field in self.fields.items():
+            if field_name not in ['modality']:  # Excluir campos de radio
+                field.widget.attrs.update({'class': 'form-control'})
+    
+    def clean(self):
+        """Validación personalizada del formulario"""
+        cleaned_data = super().clean()
+        
+        # Validar que la calificación general esté en el rango correcto
+        overall_rating = cleaned_data.get('overall_rating')
+        if overall_rating and (overall_rating < 1 or overall_rating > 5):
+            raise forms.ValidationError('La calificación general debe estar entre 1 y 5.')
+        
+        return cleaned_data
+
+# ===== FORMULARIO: ASIGNACIÓN DE EMPRESAS POR STAFF =====
+class StaffAssignmentForm(forms.ModelForm):
+    """
+    Formulario para que el staff asigne empresas a usuarios.
+    Permite crear asignaciones de empresas donde los usuarios participaron.
+    """
+    
+    # ===== CAMPOS DE RELACIÓN =====
+    user_profile = forms.ModelChoiceField(
+        queryset=None,  # Se establece dinámicamente en la vista
+        label="Usuario",
+        help_text="Selecciona el usuario al que se le asignará la empresa",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    company = forms.ModelChoiceField(
+        queryset=None,  # Se establece dinámicamente en la vista
+        label="Empresa",
+        help_text="Selecciona la empresa donde participó el usuario",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    # ===== CAMPOS BÁSICOS =====
+    job_title = forms.CharField(
+        max_length=200,
+        label="Cargo o puesto",
+        help_text="Título del trabajo o puesto al que se postuló el usuario",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ej: Desarrollador Backend, Diseñador UX...'
+        })
+    )
+    
+    participation_date = forms.DateField(
+        label="Fecha de participación",
+        help_text="Fecha en que el usuario participó en el proceso de selección",
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        })
+    )
+    
+    # ===== CONFIGURACIÓN DEL FORMULARIO =====
+    class Meta:
+        """Configuración del formulario"""
+        model = StaffAssignment
+        fields = ['user_profile', 'company', 'job_title', 'participation_date']
+    
+    def __init__(self, *args, **kwargs):
+        """Inicializa el formulario con configuraciones personalizadas"""
+        super().__init__(*args, **kwargs)
+        
+        # Personalizar widgets para mejor presentación
+        for field_name, field in self.fields.items():
+            if field_name not in ['participation_date']:  # Excluir campo de fecha
+                field.widget.attrs.update({'class': 'form-control'})
+    
+    def clean(self):
+        """Validación personalizada del formulario"""
+        cleaned_data = super().clean()
+        
+        # Validar que la fecha de participación no sea futura
+        participation_date = cleaned_data.get('participation_date')
+        if participation_date:
+            from django.utils import timezone
+            if participation_date > timezone.now().date():
+                raise forms.ValidationError('La fecha de participación no puede ser futura.')
+        
+        return cleaned_data

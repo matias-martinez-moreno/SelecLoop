@@ -1,0 +1,687 @@
+# ===== VISTAS DE LA APLICACIÓN CORE =====
+# Maneja las peticiones HTTP y renderiza templates
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.db.models import Q, Count, Avg
+from django.utils import timezone
+from django.contrib.auth.models import User
+from .models import Company, UserProfile, Review, OnboardingStatus, PendingReview, StaffAssignment
+from .forms import ReviewForm, UserCreationForm, StaffAssignmentForm
+
+# ===== FUNCIONES AUXILIARES =====
+
+def is_staff_user(user):
+    """Verifica si el usuario es staff"""
+    return user.is_authenticated and user.is_staff
+
+# ===== VISTAS DE AUTENTICACIÓN =====
+
+def root_redirect_view(request):
+    """Redirige según el rol del usuario"""
+    if request.user.is_authenticated:
+        if hasattr(request.user, 'profile') and request.user.profile.role:
+            if request.user.profile.role == 'candidate':
+                return redirect('dashboard')
+            elif request.user.profile.role == 'company_rep':
+                return redirect('company_dashboard')
+            elif request.user.profile.role == 'staff':
+                return redirect('staff_dashboard')
+            else:
+                return redirect('dashboard')
+        elif request.user.is_staff:
+            return redirect('staff_dashboard')
+        else:
+            return redirect('dashboard')
+    return redirect('login')
+
+
+def login_view(request):
+    """Vista de login - autentica usuarios y redirige según rol"""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            # Asegurar que el usuario tenga perfil y rol correcto
+            try:
+                profile = getattr(user, 'profile', None)
+                if profile is None:
+                    # Determinar rol por defecto
+                    if user.is_staff:
+                        default_role = 'staff'
+                    elif user.username.lower() == 'company':
+                        default_role = 'company_rep'
+                    else:
+                        default_role = 'candidate'
+                    UserProfile.objects.create(user=user, role=default_role)
+                    profile = user.profile
+                else:
+                    # Sincronizar rol con el estado del usuario/datos conocidos
+                    updated_role = None
+                    if user.is_staff and profile.role != 'staff':
+                        updated_role = 'staff'
+                    elif user.username.lower() == 'company' and profile.role != 'company_rep':
+                        updated_role = 'company_rep'
+                    if updated_role:
+                        profile.role = updated_role
+                        profile.save()
+            except Exception as e:
+                # No bloquear el login por fallo en creación de perfil
+                messages.warning(request, f'No se pudo verificar el perfil del usuario: {str(e)}')
+            
+            # Actualizar onboarding para candidatos
+            if hasattr(user, 'profile') and user.profile.role == 'candidate':
+                onboarding_status, created = OnboardingStatus.objects.get_or_create(
+                    user_profile=user.profile,
+                    defaults={
+                        'has_participated_in_selection': False,
+                        'onboarding_completed': False,
+                        'last_onboarding_date': timezone.now(),
+                    },
+                )
+                onboarding_status.detect_participation_status()
+                if not onboarding_status.onboarding_completed:
+                    onboarding_status.onboarding_completed = True
+                    onboarding_status.save()
+            
+            messages.success(request, f'¡Bienvenido, {user.username}!')
+            
+            # Redirigir según rol
+            if hasattr(user, 'profile') and user.profile.role:
+                if user.profile.role == 'candidate':
+                    return redirect('dashboard')
+                elif user.profile.role == 'company_rep':
+                    return redirect('company_dashboard')
+                elif user.profile.role == 'staff':
+                    return redirect('staff_dashboard')
+                else:
+                    return redirect('dashboard')
+            elif user.is_staff:
+                return redirect('staff_dashboard')
+            else:
+                return redirect('dashboard')
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos.')
+    
+    return render(request, 'core/login.html', {'title': 'Iniciar Sesión'})
+
+
+@login_required
+def logout_view(request):
+    """Cierra sesión del usuario"""
+    logout(request)
+    messages.success(request, 'Has cerrado sesión exitosamente.')
+    return redirect('login')
+
+# ===== VISTAS DE DASHBOARD =====
+
+@login_required
+def dashboard_view(request):
+    """Dashboard principal para candidatos"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('login')
+    
+    # Parámetros de búsqueda
+    search_query = request.GET.get('search', '')
+    city_filter = request.GET.get('city', '')
+    sector_filter = request.GET.get('sector', '')
+    
+    # Consulta de empresas
+    companies = Company.objects.filter(is_active=True)
+    
+    if search_query:
+        companies = companies.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(sector__icontains=search_query) |
+            Q(location__icontains=search_query)
+        )
+    
+    if city_filter:
+        companies = companies.filter(location=city_filter)
+    
+    if sector_filter:
+        companies = companies.filter(sector=sector_filter)
+    
+    # Reseñas del usuario
+    pending_reviews = PendingReview.objects.filter(
+        user_profile=request.user.profile,
+        is_reviewed=False
+    ).select_related('company')
+    
+    completed_reviews = Review.objects.filter(
+        user_profile=request.user.profile
+    ).exclude(status='rejected')
+    
+    # Datos para filtros
+    cities = Company.objects.filter(is_active=True).values_list('location', flat=True).distinct().order_by('location')
+    sectors = Company.objects.filter(is_active=True).values_list('sector', flat=True).distinct().order_by('sector')
+    
+    # Agregar estado a cada empresa
+    for company in companies:
+        company.has_pending_review = pending_reviews.filter(company=company).exists()
+        company.has_completed_review = completed_reviews.filter(company=company).exists()
+    
+    context = {
+        'companies': companies,
+        'pending_reviews': pending_reviews,
+        'completed_reviews': completed_reviews,
+        'cities': cities,
+        'sectors': sectors,
+        'search_query': search_query,
+        'city_filter': city_filter,
+        'sector_filter': sector_filter,
+    }
+    
+    return render(request, 'core/index.html', context)
+
+
+@login_required
+def company_detail_view(request, company_id):
+    """Vista detallada de una empresa"""
+    company = get_object_or_404(Company, id=company_id, is_active=True)
+    
+    # Verificar acceso del usuario
+    user_can_access = False
+    user_has_contributed = False
+    user_review_status = None
+    user_has_pending_review = False
+    
+    if request.user.profile.role == 'company_rep':
+        user_can_access = True
+    elif request.user.profile.role == 'candidate':
+        # Verificar si tiene reseñas pendientes
+        any_pending_reviews = PendingReview.objects.filter(
+            user_profile=request.user.profile,
+            is_reviewed=False
+        ).exists()
+        
+        if any_pending_reviews:
+            user_can_access = False
+            user_has_pending_review = True
+        else:
+            user_can_access = True
+            
+            # Verificar reseñas para esta empresa
+            user_reviews = Review.objects.filter(
+                user_profile=request.user.profile,
+                company=company
+            )
+            
+            if user_reviews.exists():
+                user_has_contributed = True
+                latest_review = user_reviews.latest('submission_date')
+                user_review_status = latest_review.status
+    
+    # Obtener reseñas
+    approved_reviews = Review.objects.filter(
+        company=company,
+        status='approved'
+    ).select_related('user_profile__user')
+    
+    pending_reviews = Review.objects.filter(
+        company=company,
+        status='pending'
+    ).select_related('user_profile__user')
+    
+    rejected_reviews = Review.objects.filter(
+        company=company,
+        status='rejected'
+    ).select_related('user_profile__user')
+    
+    # Combinar según rol
+    if request.user.profile.role == 'company_rep' or request.user.is_staff:
+        all_visible_reviews = list(approved_reviews) + list(pending_reviews) + list(rejected_reviews)
+    else:
+        all_visible_reviews = list(approved_reviews) + list(pending_reviews)
+    
+    # Reseña pendiente específica
+    pending_review = None
+    if request.user.profile.role == 'candidate':
+        pending_review = PendingReview.objects.filter(
+            user_profile=request.user.profile,
+            company=company,
+            is_reviewed=False
+        ).first()
+    
+    context = {
+        'company': company,
+        'approved_reviews': approved_reviews,
+        'pending_reviews': pending_reviews,
+        'rejected_reviews': rejected_reviews,
+        'all_visible_reviews': all_visible_reviews,
+        'user_can_access': user_can_access,
+        'user_has_contributed': user_has_contributed,
+        'user_review_status': user_review_status,
+        'user_has_pending_review': user_has_pending_review,
+        'pending_review': pending_review,
+    }
+    
+    return render(request, 'core/company_detail.html', context)
+
+# ===== VISTAS DE RESEÑAS =====
+
+@login_required
+def create_review_view(request):
+    """Vista para crear una nueva reseña"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, 'Solo los candidatos pueden crear reseñas.')
+        return redirect('dashboard')
+    
+    # Obtener empresas con reseñas pendientes
+    pending_companies = PendingReview.objects.filter(
+        user_profile=request.user.profile,
+        is_reviewed=False
+    ).select_related('company')
+    
+    if not pending_companies.exists():
+        messages.warning(request, 'No tienes reseñas pendientes para crear.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            try:
+                # Crear reseña
+                review = form.save(commit=False)
+                review.user_profile = request.user.profile
+                review.status = 'pending'
+                review.is_approved = False
+                review.save()
+                
+                # Marcar pendiente como completada
+                company = form.cleaned_data['company']
+                pending_review = PendingReview.objects.filter(
+                    user_profile=request.user.profile,
+                    company=company,
+                    is_reviewed=False
+                ).first()
+                
+                if pending_review:
+                    pending_review.is_reviewed = True
+                    pending_review.save()
+                
+                # Actualizar onboarding
+                if hasattr(request.user, 'profile'):
+                    onboarding_status, created = OnboardingStatus.objects.get_or_create(
+                        user_profile=request.user.profile,
+                        defaults={
+                            'has_participated_in_selection': True,
+                            'onboarding_completed': True,
+                            'last_onboarding_date': timezone.now(),
+                        },
+                    )
+                    onboarding_status.detect_participation_status()
+                
+                messages.success(request, 'Reseña enviada exitosamente. Está pendiente de aprobación.')
+                return redirect('my_reviews')
+                
+            except Exception as e:
+                messages.error(request, f'Error al guardar la reseña: {str(e)}')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
+    else:
+        # Pre-seleccionar empresa
+        initial_data = {}
+        company_id = request.GET.get('company')
+        if company_id:
+            try:
+                company = Company.objects.get(id=company_id)
+                initial_data['company'] = company
+            except Company.DoesNotExist:
+                pass
+        
+        form = ReviewForm(initial=initial_data)
+        form.fields['company'].queryset = Company.objects.filter(
+            pending_reviews__user_profile=request.user.profile,
+            pending_reviews__is_reviewed=False
+        )
+    
+    context = {
+        'form': form,
+        'pending_companies': pending_companies,
+    }
+    
+    return render(request, 'core/create_review.html', context)
+
+
+@login_required
+def my_reviews_view(request):
+    """Vista para mostrar las reseñas del usuario"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('dashboard')
+    
+    # Obtener reseñas
+    user_reviews = Review.objects.filter(
+        user_profile=request.user.profile
+    ).select_related('company').order_by('-submission_date')
+    
+    pending_reviews = PendingReview.objects.filter(
+        user_profile=request.user.profile,
+        is_reviewed=False
+    ).select_related('company')
+    
+    context = {
+        'user_reviews': user_reviews,
+        'pending_reviews': pending_reviews,
+    }
+    
+    return render(request, 'core/my_reviews.html', context)
+
+# ===== VISTAS DE PERFIL =====
+
+@login_required
+def my_profile_view(request):
+    """Vista para mostrar el perfil del usuario"""
+    user_profile = request.user.profile
+    
+    if user_profile.role == 'candidate':
+        # Estadísticas para candidatos
+        total_reviews = Review.objects.filter(user_profile=user_profile).count()
+        approved_reviews = Review.objects.filter(
+            user_profile=user_profile,
+            status='approved'
+        ).count()
+        pending_approval = Review.objects.filter(
+            user_profile=user_profile,
+            status='pending'
+        ).count()
+        
+        pending_reviews = PendingReview.objects.filter(
+            user_profile=user_profile,
+            is_reviewed=False
+        ).select_related('company')
+        
+        context = {
+            'user_profile': user_profile,
+            'total_reviews': total_reviews,
+            'approved_reviews': approved_reviews,
+            'pending_approval': pending_approval,
+            'pending_reviews': pending_reviews,
+            'show_stats': True,
+        }
+    else:
+        context = {
+            'user_profile': user_profile,
+            'show_stats': False,
+        }
+    
+    return render(request, 'core/profile.html', context)
+
+# ===== VISTAS DE EMPRESA =====
+
+@login_required
+def company_dashboard_view(request):
+    """Dashboard para representantes de empresa"""
+    if request.user.profile.role != 'company_rep':
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('login')
+    
+    # Búsqueda
+    search_query = request.GET.get('search', '')
+    companies = Company.objects.filter(is_active=True).prefetch_related('reviews').order_by('name')
+    
+    if search_query:
+        companies = companies.filter(
+            Q(name__icontains=search_query) |
+            Q(sector__icontains=search_query) |
+            Q(location__icontains=search_query)
+        )
+    
+    # Estadísticas
+    total_companies = companies.count()
+    total_reviews = Review.objects.count()
+    total_candidates = UserProfile.objects.filter(role='candidate').count()
+    
+    # Agregar info a cada empresa
+    for company in companies:
+        company_reviews = company.reviews.all()
+        company.total_reviews = company_reviews.count()
+        
+        company_rated_reviews = company_reviews.filter(overall_rating__isnull=False)
+        if company_rated_reviews.exists():
+            company.avg_rating = company_rated_reviews.aggregate(avg=Avg('overall_rating'))['avg']
+        else:
+            company.avg_rating = 0
+    
+    context = {
+        'companies': companies,
+        'total_companies': total_companies,
+        'total_reviews': total_reviews,
+        'total_candidates': total_candidates,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'core/company_dashboard.html', context)
+
+# ===== VISTAS DEL STAFF =====
+
+@login_required
+@user_passes_test(is_staff_user)
+def staff_dashboard_view(request):
+    """Dashboard para el staff del sistema"""
+    # Búsqueda
+    search_query = request.GET.get('search', '')
+    
+    # Obtener candidatos
+    candidates = UserProfile.objects.filter(role='candidate').annotate(
+        pending_reviews_count=Count('pending_reviews', filter=Q(pending_reviews__is_reviewed=False))
+    ).prefetch_related(
+        'pending_reviews__company'
+    ).order_by('user__username')
+    
+    if search_query:
+        candidates = candidates.filter(
+            Q(user__username__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query)
+        )
+    
+    # Convertir a lista
+    candidates_list = []
+    for candidate in candidates:
+        pending_reviews = PendingReview.objects.filter(
+            user_profile=candidate,
+            is_reviewed=False
+        ).select_related('company')
+        
+        candidate.pending_reviews_list = list(pending_reviews)
+        candidates_list.append(candidate)
+    
+    # Obtener reseñas
+    all_reviews = Review.objects.all().select_related(
+        'user_profile__user', 'company'
+    ).order_by('-submission_date')
+    
+    # Estadísticas
+    total_candidates = len(candidates_list)
+    candidates_with_pending = sum(1 for c in candidates_list if c.pending_reviews_count > 0)
+    candidates_free = total_candidates - candidates_with_pending
+    total_reviews = all_reviews.count()
+    approved_reviews = all_reviews.filter(status='approved').count()
+    pending_reviews = all_reviews.filter(status='pending').count()
+    rejected_reviews = all_reviews.filter(status='rejected').count()
+    
+    context = {
+        'candidates': candidates_list,
+        'all_reviews': all_reviews,
+        'total_candidates': total_candidates,
+        'candidates_with_pending': candidates_with_pending,
+        'candidates_free': candidates_free,
+        'total_reviews': total_reviews,
+        'approved_reviews': approved_reviews,
+        'pending_reviews': pending_reviews,
+        'rejected_reviews': rejected_reviews,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'core/staff_dashboard.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_user)
+def create_user_view(request):
+    """Vista para crear nuevos usuarios"""
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            
+            # Crear perfil
+            UserProfile.objects.create(
+                user=user,
+                role='candidate'
+            )
+            
+            messages.success(request, f'Usuario {user.username} creado exitosamente.')
+            return redirect('staff_dashboard')
+    else:
+        form = UserCreationForm()
+    
+    context = {
+        'form': form,
+        'title': 'Crear Nuevo Usuario'
+    }
+    
+    return render(request, 'core/staff_create_user.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_user)
+def assign_company_view(request):
+    """Vista para asignar empresas a usuarios"""
+    if request.method == 'POST':
+        # Manejar usuario preseleccionado
+        user_id = request.GET.get('user')
+        if user_id:
+            try:
+                user = User.objects.get(id=user_id)
+                if hasattr(user, 'profile') and user.profile.role == 'candidate':
+                    form_data = request.POST.copy()
+                    form_data['user_profile'] = user.profile.id
+                    form = StaffAssignmentForm(form_data)
+                    form.fields['user_profile'].queryset = UserProfile.objects.filter(role='candidate').select_related('user')
+                    form.fields['company'].queryset = Company.objects.filter(is_active=True)
+                else:
+                    form = StaffAssignmentForm(request.POST)
+                    form.fields['user_profile'].queryset = UserProfile.objects.filter(role='candidate').select_related('user')
+                    form.fields['company'].queryset = Company.objects.filter(is_active=True)
+            except User.DoesNotExist:
+                form = StaffAssignmentForm(request.POST)
+                form.fields['user_profile'].queryset = UserProfile.objects.filter(role='candidate').select_related('user')
+                form.fields['company'].queryset = Company.objects.filter(is_active=True)
+        else:
+            form = StaffAssignmentForm(request.POST)
+            form.fields['user_profile'].queryset = UserProfile.objects.filter(role='candidate').select_related('user')
+            form.fields['company'].queryset = Company.objects.filter(is_active=True)
+        
+        if form.is_valid():
+            try:
+                # Guardar asignación
+                assignment = form.save(commit=False)
+                assignment.staff_user = request.user
+                assignment.save()
+                
+                # Crear reseña pendiente
+                assignment.create_pending_review()
+                
+                # Actualizar onboarding
+                onboarding_status, created = OnboardingStatus.objects.get_or_create(
+                    user_profile=assignment.user_profile,
+                    defaults={
+                        'has_participated_in_selection': True,
+                        'onboarding_completed': True,
+                        'last_onboarding_date': timezone.now(),
+                    },
+                )
+                onboarding_status.detect_participation_status()
+                
+                messages.success(request, f'Empresa {assignment.company.name} asignada exitosamente a {assignment.user_profile.user.username}.')
+                return redirect('staff_dashboard')
+            except Exception as e:
+                messages.error(request, f'Error al asignar empresa: {str(e)}')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
+    else:
+        form = StaffAssignmentForm()
+        # Establecer querysets requeridos para evitar None en prefetch
+        form.fields['user_profile'].queryset = UserProfile.objects.filter(role='candidate').select_related('user')
+        form.fields['company'].queryset = Company.objects.filter(is_active=True)
+        
+        # Preseleccionar usuario
+        user_id = request.GET.get('user')
+        if user_id:
+            try:
+                user = User.objects.get(id=user_id)
+                if hasattr(user, 'profile') and user.profile.role == 'candidate':
+                    form.initial['user_profile'] = user.profile
+            except User.DoesNotExist:
+                pass
+    
+    context = {
+        'form': form,
+        'title': 'Asignar Empresa a Usuario'
+    }
+    
+    return render(request, 'core/staff_assign_company.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_user)
+def delete_review_view(request, review_id):
+    """Vista para eliminar reseñas"""
+    review = get_object_or_404(Review, id=review_id)
+    
+    if request.method == 'POST':
+        company_name = review.company.name
+        user_name = review.user_profile.user.username
+        review.delete()
+        messages.success(request, f'Reseña de {user_name} para {company_name} eliminada exitosamente.')
+        return redirect('staff_dashboard')
+    
+    context = {
+        'review': review,
+        'title': 'Confirmar Eliminación de Reseña'
+    }
+    
+    return render(request, 'core/staff_delete_review.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_user)
+def approve_review_view(request, review_id):
+    """Vista para aprobar o rechazar reseñas"""
+    review = get_object_or_404(Review, id=review_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'approve':
+            review.status = 'approved'
+            review.is_approved = True
+            messages.success(request, f'Reseña de {review.user_profile.user.username} para {review.company.name} aprobada exitosamente.')
+        elif action == 'reject':
+            review.status = 'rejected'
+            review.is_approved = False
+            messages.success(request, f'Reseña de {review.user_profile.user.username} para {review.company.name} rechazada.')
+        
+        review.save()
+        return redirect('staff_dashboard')
+    
+    context = {
+        'review': review,
+        'title': 'Gestionar Reseña'
+    }
+    
+    return render(request, 'core/staff_manage_review.html', context)
