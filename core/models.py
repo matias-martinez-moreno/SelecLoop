@@ -45,7 +45,8 @@ class Company(models.Model):
     website = models.URLField(
         verbose_name="Sitio web",
         help_text="URL del sitio web oficial de la empresa",
-        blank=True
+        blank=True,
+        null=True
     )
     
     # ===== CAMPOS DE ESTADO =====
@@ -120,13 +121,31 @@ class UserProfile(models.Model):
     phone = models.CharField(
         max_length=20, 
         verbose_name="Teléfono",
-        blank=True
+        blank=True,
+        null=True
     )
     
     bio = models.TextField(
         verbose_name="Biografía",
         help_text="Información personal del usuario",
+        blank=True,
+        null=True
+    )
+
+    # ===== CAMPOS DE PERFIL PÚBLICO =====
+    display_name = models.CharField(
+        max_length=100,
+        verbose_name="Nombre visible",
+        help_text="Nombre mostrado públicamente en tu perfil",
         blank=True
+    )
+
+    avatar = models.ImageField(
+        upload_to='avatars/',
+        null=True,
+        blank=True,
+        verbose_name="Foto de perfil",
+        help_text="Imagen opcional para tu perfil"
     )
     
     # ===== CAMPOS DE FECHA =====
@@ -253,7 +272,8 @@ class Review(models.Model):
     interview_questions = models.TextField(
         verbose_name="Preguntas de entrevista",
         help_text="Preguntas que te hicieron durante la entrevista",
-        blank=True
+        blank=True,
+        null=True
     )
     
     # ===== CAMPOS DE ESTADO =====
@@ -286,7 +306,17 @@ class Review(models.Model):
     moderator_notes = models.TextField(
         verbose_name="Notas del moderador",
         help_text="Comentarios del staff sobre la reseña",
-        blank=True
+        blank=True,
+        null=True
+    )
+
+    # ===== CONTENIDO MULTIMEDIA OPCIONAL =====
+    image = models.ImageField(
+        upload_to='review_images/',
+        null=True,
+        blank=True,
+        verbose_name="Imagen adjunta",
+        help_text="Adjunta una imagen relacionada con tu experiencia (opcional)"
     )
     
     # ===== CAMPOS DE FECHA =====

@@ -72,11 +72,11 @@
                 </div>
                 <div class="card-body">
                     <form method="get" class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">Nombre de Empresa</label>
                             <input type="text" class="form-control" name="search" value="{{ request.GET.search }}" placeholder="Buscar empresa...">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Ciudad</label>
                             <select class="form-select" name="city">
                                 <option value="">Todas las ciudades</option>
@@ -85,7 +85,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Sector</label>
                             <select class="form-select" name="sector">
                                 <option value="">Todos los sectores</option>
@@ -95,11 +95,26 @@
                             </select>
                         </div>
                         <div class="col-md-2">
+                            <label class="form-label">Modalidad</label>
+                            <select class="form-select" name="modality">
+                                <option value="">Todas las modalidades</option>
+                                {% for value, label in modality_choices %}
+                                    <option value="{{ value }}" {% if request.GET.modality == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
                             <label class="form-label">&nbsp;</label>
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-search me-1"></i>
                                 Buscar
                             </button>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">&nbsp;</label>
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary w-100" title="Limpiar filtros">
+                                <i class="fas fa-times"></i>
+                            </a>
                         </div>
                     </form>
                 </div>

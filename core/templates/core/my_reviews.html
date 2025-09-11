@@ -102,6 +102,11 @@
                             <strong>Modalidad:</strong> 
                             <span class="badge bg-info">{{ review.get_modality_display }}</span>
                         </p>
+                        {% if review.image %}
+                        <div class="mb-3">
+                            <img src="{{ review.image.url }}" alt="Imagen reseña" class="img-fluid rounded" style="max-height: 140px; object-fit: cover;">
+                        </div>
+                        {% endif %}
                         
                         <!-- ===== CALIFICACIONES ===== -->
                         <div class="row mb-3">

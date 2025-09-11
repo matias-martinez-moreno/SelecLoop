@@ -28,7 +28,7 @@
             <!-- ===== FORMULARIO MULTI-PASO ===== -->
             <div class="card shadow-lg">
                 <div class="card-body p-5">
-                    <form method="post" id="reviewForm">
+                    <form method="post" id="reviewForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         <!-- ===== PASO 1: INFORMACIÓN BÁSICA ===== -->
@@ -238,6 +238,19 @@
                                 <small class="text-muted">¿Qué preguntas te hicieron? Esto ayudará a otros candidatos a prepararse.</small>
                                 {% if form.interview_questions.errors %}
                                     <div class="text-danger small mt-1">{{ form.interview_questions.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Imagen opcional junto a Preguntas de Entrevista -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-image me-2"></i>
+                                    Imagen (opcional)
+                                </label>
+                                {{ form.image }}
+                                <small class="text-muted d-block">Formatos permitidos: JPG, PNG. Tamaño razonable.</small>
+                                {% if form.image.errors %}
+                                    <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>

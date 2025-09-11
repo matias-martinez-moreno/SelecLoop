@@ -42,6 +42,7 @@ urlpatterns = [
     # ===== GESTIÓN DE PERFIL =====
     # Ver y editar el perfil del usuario
     path('profile/', views.my_profile_view, name='my_profile'),
+    path('profile/update/', views.update_profile_view, name='update_profile'),
     
     # ===== VISTAS DEL STAFF =====
     # Crear nuevos usuarios (solo staff)

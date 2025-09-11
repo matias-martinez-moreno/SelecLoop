@@ -84,7 +84,7 @@
     </div>
 
     <!-- ===== ESTADÍSTICAS DE LA EMPRESA ===== -->
-    {% if company_stats.total_reviews > 0 %}
+    {% if user_can_access and company_stats.total_reviews > 0 %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
@@ -92,6 +92,77 @@
                     <h3 class="h5 mb-0"><i class="fas fa-chart-bar me-2"></i>Estadísticas de la Empresa</h3>
                 </div>
                 <div class="card-body">
+                    {% if user.profile.role == 'candidate' %}
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h4 mb-0">{{ role_kpis.avg_overall|floatformat:1 }}</div>
+                                    <small class="text-muted">Rating Promedio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h4 mb-0">{{ role_kpis.last90_reviews }}</div>
+                                    <small class="text-muted">Reseñas 90 días</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h4 mb-0">{{ role_kpis.fast_response_rate|floatformat:2 }}</div>
+                                    <small class="text-muted">% Respuesta Rápida</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h6 mb-0">{{ role_kpis.top_modality|default:'-'|title }}</div>
+                                    <small class="text-muted">Modalidad más común</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif user.profile.role == 'company_rep' %}
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h4 mb-0">{{ role_kpis.avg_overall|floatformat:1 }}</div>
+                                    <small class="text-muted">Rating Promedio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h4 mb-0">{{ role_kpis.sla_fast_rate|floatformat:2 }}</div>
+                                    <small class="text-muted">SLA Respuesta Rápida</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h4 mb-0">{{ role_kpis.approval_ratio|floatformat:2 }}</div>
+                                    <small class="text-muted">Ratio Aprobación</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="h6 mb-0">{{ role_kpis.month_delta }}</div>
+                                    <small class="text-muted">Δ reseñas mes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                     <div class="row text-center">
                         <div class="col-md-3">
                             <div class="border-end">
@@ -118,6 +189,51 @@
                     </div>
                     <div class="text-center mt-3">
                         <span class="badge bg-secondary fs-6">Total de Reseñas: {{ company_stats.total_reviews }}</span>
+                    </div>
+
+                    <!-- Gráficos -->
+                    <div class="row mt-4">
+                        {% if user.profile.role == 'candidate' %}
+                            <div class="col-md-6 mb-4">
+                                <h6>Distribución de Calificaciones</h6>
+                                {% if ratings_img %}
+                                <img src="{{ ratings_img }}" alt="Distribución de Calificaciones" class="img-fluid"/>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <h6>Modalidad de Reseñas</h6>
+                                {% if modality_img %}
+                                <img src="{{ modality_img }}" alt="Modalidad de Reseñas" class="img-fluid"/>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-4">
+                                <h6>Evolución de Reseñas</h6>
+                                {% if timeline_img %}
+                                <img src="{{ timeline_img }}" alt="Reseñas por Mes" class="img-fluid"/>
+                                {% endif %}
+                            </div>
+                        {% elif user.profile.role == 'company_rep' %}
+                            <div class="col-md-6 mb-4">
+                                <h6>Distribución de Calificaciones</h6>
+                                <canvas id="ratingsChart"></canvas>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <h6>Modalidad de Reseñas</h6>
+                                <canvas id="modalityChart"></canvas>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <h6>Estado de Reseñas</h6>
+                                {% if status_img %}
+                                <img src="{{ status_img }}" alt="Estado de Reseñas" class="img-fluid"/>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <h6>Reseñas por Mes</h6>
+                                {% if timeline_img %}
+                                <img src="{{ timeline_img }}" alt="Reseñas por Mes" class="img-fluid"/>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -163,6 +279,14 @@
                                     <p class="card-text">
                                         <strong>Modalidad:</strong> {{ review.get_modality_display }}
                                     </p>
+                                    {% if review.image %}
+                                    <div class="mb-3">
+                                        <strong>Imagen:</strong>
+                                        <div>
+                                            <img src="{{ review.image.url }}" alt="Imagen reseña" class="img-fluid rounded" style="max-height: 160px; object-fit: cover;">
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                     
                                     <div class="mb-3">
                                         <strong class="text-success">Pros:</strong>

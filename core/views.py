@@ -9,7 +9,15 @@ from django.db.models import Q, Count, Avg
 from django.utils import timezone
 from django.contrib.auth.models import User
 from .models import Company, UserProfile, Review, OnboardingStatus, PendingReview, StaffAssignment
-from .forms import ReviewForm, UserCreationForm, StaffAssignmentForm
+from .forms import ReviewForm, UserCreationForm, StaffAssignmentForm, ProfileUpdateForm
+from django.db.models.functions import TruncMonth
+import json
+import io
+import base64
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from datetime import timedelta
 
 # ===== FUNCIONES AUXILIARES =====
 
@@ -131,6 +139,7 @@ def dashboard_view(request):
     search_query = request.GET.get('search', '')
     city_filter = request.GET.get('city', '')
     sector_filter = request.GET.get('sector', '')
+    modality_filter = request.GET.get('modality', '')
     
     # Consulta de empresas
     companies = Company.objects.filter(is_active=True)
@@ -149,6 +158,10 @@ def dashboard_view(request):
     if sector_filter:
         companies = companies.filter(sector=sector_filter)
     
+    if modality_filter:
+        # Filtrar empresas que tengan reseñas con la modalidad seleccionada
+        companies = companies.filter(reviews__modality=modality_filter).distinct()
+    
     # Reseñas del usuario
     pending_reviews = PendingReview.objects.filter(
         user_profile=request.user.profile,
@@ -163,6 +176,14 @@ def dashboard_view(request):
     cities = Company.objects.filter(is_active=True).values_list('location', flat=True).distinct().order_by('location')
     sectors = Company.objects.filter(is_active=True).values_list('sector', flat=True).distinct().order_by('sector')
     
+    # Modalidades disponibles (basadas en las reseñas existentes)
+    modalities = Review.objects.values_list('modality', flat=True).distinct().order_by('modality')
+    modality_choices = [
+        ('presencial', 'Presencial'),
+        ('remoto', 'Remoto'),
+        ('híbrido', 'Híbrido'),
+    ]
+    
     # Agregar estado a cada empresa
     for company in companies:
         company.has_pending_review = pending_reviews.filter(company=company).exists()
@@ -174,9 +195,12 @@ def dashboard_view(request):
         'completed_reviews': completed_reviews,
         'cities': cities,
         'sectors': sectors,
+        'modalities': modalities,
+        'modality_choices': modality_choices,
         'search_query': search_query,
         'city_filter': city_filter,
         'sector_filter': sector_filter,
+        'modality_filter': modality_filter,
     }
     
     return render(request, 'core/index.html', context)
@@ -250,6 +274,177 @@ def company_detail_view(request, company_id):
             is_reviewed=False
         ).first()
     
+    # ===== Estadísticas y datos para gráficos =====
+    # Para reputación usamos reseñas aprobadas
+    reviews_for_stats = approved_reviews
+
+    # Promedios numéricos
+    from django.db.models import Avg as DJAvg, Count as DJCount
+
+    avg_overall = reviews_for_stats.aggregate(v=DJAvg('overall_rating'))['v'] or 0
+
+    # Mapear categorías a valores para promediar
+    COMM_SCORES = {
+        'excellent': 5,
+        'good': 4,
+        'regular': 3,
+        'poor': 2,
+    }
+    DIFF_SCORES = {
+        'very_easy': 1,
+        'easy': 2,
+        'moderate': 3,
+        'difficult': 4,
+        'very_difficult': 5,
+    }
+    RESP_SCORES = {
+        'immediate': 5,
+        'same_day': 4,
+        'next_day': 3,
+        'few_days': 2,
+        'slow': 1,
+    }
+
+    def avg_from_choices(qs, field, scores):
+        total = 0
+        count = 0
+        for val, c in qs.values_list(field).annotate(cnt=DJCount('pk')):
+            if val in scores:
+                total += scores[val] * qs.filter(**{field: val}).count()
+                count += qs.filter(**{field: val}).count()
+        return (total / count) if count else 0
+
+    avg_communication = avg_from_choices(reviews_for_stats, 'communication_rating', COMM_SCORES)
+    avg_difficulty = avg_from_choices(reviews_for_stats, 'difficulty_rating', DIFF_SCORES)
+    avg_response_time = avg_from_choices(reviews_for_stats, 'response_time_rating', RESP_SCORES)
+
+    total_reviews_stats = reviews_for_stats.count()
+    company_stats = {
+        'avg_overall': avg_overall,
+        'avg_communication': avg_communication,
+        'avg_difficulty': avg_difficulty,
+        'avg_response_time': avg_response_time,
+        'total_reviews': total_reviews_stats,
+    }
+
+    # Distribución de calificaciones (1-5)
+    rating_counts = [
+        reviews_for_stats.filter(overall_rating=i).count() for i in range(1, 6)
+    ]
+
+    # Distribución por modalidad
+    MOD_LABELS = [('presencial', 'Presencial'), ('remoto', 'Remoto'), ('híbrido', 'Híbrido')]
+    modality_counts = [reviews_for_stats.filter(modality=key).count() for key, _ in MOD_LABELS]
+
+    # Estado (sobre todas las reseñas de la empresa para el representante)
+    status_counts = [
+        approved_reviews.count(),
+        pending_reviews.count(),
+        rejected_reviews.count(),
+    ]
+
+    # Timeline por mes (últimos 12 meses si aplica)
+    monthly = (
+        reviews_for_stats.annotate(m=TruncMonth('submission_date'))
+        .values('m')
+        .annotate(c=DJCount('id'))
+        .order_by('m')
+    )
+    timeline_labels = [
+        (item['m'].strftime('%b %Y') if item['m'] else '') for item in monthly
+    ]
+    timeline_counts = [item['c'] for item in monthly]
+
+    # ===== Render de gráficos en Python (matplotlib) =====
+    def fig_to_datauri():
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png', dpi=140)
+        plt.close()
+        buf.seek(0)
+        b64 = base64.b64encode(buf.getvalue()).decode('ascii')
+        return f"data:image/png;base64,{b64}"
+
+    ratings_img = None
+    if any(rating_counts):
+        plt.figure(figsize=(4, 2.4))
+        plt.bar([1, 2, 3, 4, 5], rating_counts, color='#1E3A8A')
+        plt.title('Distribución de Calificaciones')
+        plt.xlabel('Calificación')
+        plt.ylabel('Cantidad')
+        ratings_img = fig_to_datauri()
+
+    modality_img = None
+    if any(modality_counts):
+        plt.figure(figsize=(4, 2.4))
+        labels = [lbl for _, lbl in MOD_LABELS]
+        plt.pie(modality_counts, labels=labels, autopct='%1.0f%%')
+        plt.title('Modalidad de Reseñas')
+        modality_img = fig_to_datauri()
+
+    status_img = None
+    if approved_reviews.exists() or pending_reviews.exists() or rejected_reviews.exists():
+        plt.figure(figsize=(4, 2.4))
+        plt.pie(status_counts, labels=['Aprobadas', 'Pendientes', 'Rechazadas'], autopct='%1.0f%%')
+        plt.title('Estado de Reseñas')
+        status_img = fig_to_datauri()
+
+    timeline_img = None
+    if timeline_counts:
+        plt.figure(figsize=(5.5, 2.4))
+        plt.plot(range(len(timeline_labels)), timeline_counts, marker='o', color='#1E3A8A')
+        plt.title('Reseñas por Mes')
+        plt.xticks(range(len(timeline_labels)), timeline_labels, rotation=45, ha='right', fontsize=7)
+        plt.ylabel('Cantidad')
+        timeline_img = fig_to_datauri()
+
+    # ===== Resúmenes por rol =====
+    role_kpis = {}
+    try:
+        user_role = request.user.profile.role
+    except Exception:
+        user_role = None
+
+    if user_role == 'candidate':
+        # Últimos 90 días
+        from django.utils import timezone
+        since_90 = timezone.now() - timedelta(days=90)
+        last90 = reviews_for_stats.filter(submission_date__gte=since_90)
+        last90_count = last90.count()
+        fast_count = last90.filter(response_time_rating__in=['immediate', 'same_day']).count()
+        fast_rate = (fast_count / last90_count) if last90_count else 0
+        # Modalidad más común
+        top_mod = (
+            reviews_for_stats.values('modality')
+            .annotate(c=DJCount('id')).order_by('-c').first()
+        )
+        role_kpis = {
+            'role': 'candidate',
+            'avg_overall': avg_overall,
+            'last90_reviews': last90_count,
+            'fast_response_rate': fast_rate,
+            'top_modality': top_mod['modality'] if top_mod else None,
+        }
+    elif user_role == 'company_rep':
+        total_all = approved_reviews.count() + pending_reviews.count() + rejected_reviews.count()
+        sla_fast = approved_reviews.filter(response_time_rating__in=['immediate', 'same_day']).count()
+        sla_rate = (sla_fast / approved_reviews.count()) if approved_reviews.count() else 0
+        # Delta mensual (último vs anterior)
+        last_two = (
+            reviews_for_stats.annotate(m=TruncMonth('submission_date'))
+            .values('m').annotate(c=DJCount('id')).order_by('-m')[:2]
+        )
+        month_delta = 0
+        if len(last_two) == 2:
+            month_delta = (last_two[0]['c'] - last_two[1]['c'])
+        role_kpis = {
+            'role': 'company_rep',
+            'avg_overall': avg_overall,
+            'sla_fast_rate': sla_rate,
+            'approval_ratio': (approved_reviews.count() / total_all) if total_all else 0,
+            'month_delta': month_delta,
+        }
+
     context = {
         'company': company,
         'approved_reviews': approved_reviews,
@@ -261,6 +456,12 @@ def company_detail_view(request, company_id):
         'user_review_status': user_review_status,
         'user_has_pending_review': user_has_pending_review,
         'pending_review': pending_review,
+        'company_stats': company_stats,
+        'ratings_img': ratings_img,
+        'modality_img': modality_img,
+        'status_img': status_img,
+        'timeline_img': timeline_img,
+        'role_kpis': role_kpis,
     }
     
     return render(request, 'core/company_detail.html', context)
@@ -285,7 +486,7 @@ def create_review_view(request):
         return redirect('dashboard')
     
     if request.method == 'POST':
-        form = ReviewForm(request.POST)
+        form = ReviewForm(request.POST, request.FILES)
         if form.is_valid():
             try:
                 # Crear reseña
@@ -416,6 +617,33 @@ def my_profile_view(request):
         }
     
     return render(request, 'core/profile.html', context)
+
+
+# ===== ACTUALIZACIÓN DE PERFIL =====
+@login_required
+def update_profile_view(request):
+    """Permite al usuario actualizar su nombre visible y foto."""
+    user = request.user
+    initial = {
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'display_name': getattr(user.profile, 'display_name', '')
+    }
+
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, user=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+            return redirect('my_profile')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
+    else:
+        form = ProfileUpdateForm(initial=initial, user=user)
+
+    return render(request, 'core/profile_update.html', {'form': form})
 
 # ===== VISTAS DE EMPRESA =====
 
