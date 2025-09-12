@@ -56,4 +56,6 @@ urlpatterns = [
     
     # Aprobar o rechazar reseñas (solo staff)
     path('staff/manage-review/<int:review_id>/', views.approve_review_view, name='staff_manage_review'),
+    # Export CSV de reseñas por empresa (solo company_rep/staff)
+    path('company/<int:company_id>/export-reviews.csv', views.export_company_reviews_csv, name='export_company_reviews_csv'),
 ]

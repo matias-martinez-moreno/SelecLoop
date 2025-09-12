@@ -14,6 +14,13 @@
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-body">
+                    {% if user.profile.role == 'company_rep' or user.is_staff %}
+                    <div class="d-flex justify-content-end mb-3">
+                        <a href="{% url 'export_company_reviews_csv' company.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-download me-1"></i> Descargar CSV
+                        </a>
+                    </div>
+                    {% endif %}
                     <div class="row align-items-center">
                         <div class="col-md-3 text-center">
                             {% if company.logo %}
@@ -84,7 +91,7 @@
     </div>
 
     <!-- ===== ESTADÍSTICAS DE LA EMPRESA ===== -->
-    {% if user_can_access and company_stats.total_reviews > 0 %}
+    {% if user_can_access and company_stats and company_stats.total_reviews > 0 %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
@@ -156,13 +163,14 @@
                         <div class="col-md-3">
                             <div class="card">
                                 <div class="card-body text-center">
-                                    <div class="h6 mb-0">{{ role_kpis.month_delta }}</div>
-                                    <small class="text-muted">Δ reseñas mes</small>
+                                    <div class="h4 mb-0">{{ company_stats.total_reviews }}</div>
+                                    <small class="text-muted">Total Reseñas</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                     {% endif %}
+                    {% if user.profile.role == 'candidate' %}
                     <div class="row text-center">
                         <div class="col-md-3">
                             <div class="border-end">
@@ -190,6 +198,7 @@
                     <div class="text-center mt-3">
                         <span class="badge bg-secondary fs-6">Total de Reseñas: {{ company_stats.total_reviews }}</span>
                     </div>
+                    {% endif %}
 
                     <!-- Gráficos -->
                     <div class="row mt-4">
@@ -197,40 +206,44 @@
                             <div class="col-md-6 mb-4">
                                 <h6>Distribución de Calificaciones</h6>
                                 {% if ratings_img %}
-                                <img src="{{ ratings_img }}" alt="Distribución de Calificaciones" class="img-fluid"/>
+                                <img src="{{ ratings_img|safe }}" alt="Distribución de Calificaciones" class="img-fluid"/>
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-4">
                                 <h6>Modalidad de Reseñas</h6>
                                 {% if modality_img %}
-                                <img src="{{ modality_img }}" alt="Modalidad de Reseñas" class="img-fluid"/>
+                                <img src="{{ modality_img|safe }}" alt="Modalidad de Reseñas" class="img-fluid"/>
                                 {% endif %}
                             </div>
                             <div class="col-md-12 mb-4">
                                 <h6>Evolución de Reseñas</h6>
                                 {% if timeline_img %}
-                                <img src="{{ timeline_img }}" alt="Reseñas por Mes" class="img-fluid"/>
+                                <img src="{{ timeline_img|safe }}" alt="Reseñas por Mes" class="img-fluid"/>
                                 {% endif %}
                             </div>
                         {% elif user.profile.role == 'company_rep' %}
                             <div class="col-md-6 mb-4">
                                 <h6>Distribución de Calificaciones</h6>
-                                <canvas id="ratingsChart"></canvas>
+                                {% if ratings_img %}
+                                <img src="{{ ratings_img|safe }}" alt="Distribución de Calificaciones" class="img-fluid"/>
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-4">
                                 <h6>Modalidad de Reseñas</h6>
-                                <canvas id="modalityChart"></canvas>
+                                {% if modality_img %}
+                                <img src="{{ modality_img|safe }}" alt="Modalidad de Reseñas" class="img-fluid"/>
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-4">
                                 <h6>Estado de Reseñas</h6>
                                 {% if status_img %}
-                                <img src="{{ status_img }}" alt="Estado de Reseñas" class="img-fluid"/>
+                                <img src="{{ status_img|safe }}" alt="Estado de Reseñas" class="img-fluid"/>
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-4">
                                 <h6>Reseñas por Mes</h6>
                                 {% if timeline_img %}
-                                <img src="{{ timeline_img }}" alt="Reseñas por Mes" class="img-fluid"/>
+                                <img src="{{ timeline_img|safe }}" alt="Reseñas por Mes" class="img-fluid"/>
                                 {% endif %}
                             </div>
                         {% endif %}

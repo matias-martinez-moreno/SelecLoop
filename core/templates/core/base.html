@@ -276,6 +276,116 @@
             border-left: 4px solid var(--danger);
         }
 
+        /* ===== SISTEMA DE MENSAJES MEJORADO ===== */
+        .messages-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .message-alert {
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .message-icon {
+            flex-shrink: 0;
+        }
+
+        .message-icon i {
+            opacity: 0.9;
+        }
+
+        .message-content {
+            min-width: 0;
+        }
+
+        .message-title {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .message-text {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            opacity: 0.9;
+        }
+
+        .alert-success .message-icon i {
+            color: var(--success);
+        }
+
+        .alert-danger .message-icon i,
+        .alert-error .message-icon i {
+            color: var(--danger);
+        }
+
+        .alert-warning .message-icon i {
+            color: var(--warning);
+        }
+
+        .alert-info .message-icon i {
+            color: var(--info);
+        }
+
+        /* Animaciones */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .message-alert.fade-out {
+            animation: slideOutRight 0.3s ease-in forwards;
+        }
+
+        /* Responsive para mensajes */
+        @media (max-width: 768px) {
+            .messages-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+            
+            .message-alert {
+                padding: 0.75rem 1rem;
+            }
+            
+            .message-title {
+                font-size: 0.85rem;
+            }
+            
+            .message-text {
+                font-size: 0.8rem;
+            }
+        }
+
         /* Badges */
         .badge {
             border-radius: 6px;
@@ -354,7 +464,7 @@
                 {% if user.profile.role == 'company_rep' %}
                     <!-- Navegación para Representantes de Empresa (prioridad sobre staff) -->
                     <div class="nav-item">
-                        <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %}">
+                        <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %} {% if request.path == '/' %}{% endif %}">
                             <i class="fas fa-building"></i>
                             Panel de Empresa
                         </a>
@@ -448,13 +558,48 @@
 
     <!-- Contenido Principal -->
     <main class="main-content">
+        <!-- ===== SISTEMA DE MENSAJES MEJORADO ===== -->
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-            {% endfor %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show message-alert" 
+                         role="alert" 
+                         data-auto-dismiss="true">
+                        <div class="d-flex align-items-center">
+                            <div class="message-icon me-3">
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                    <i class="fas fa-exclamation-triangle fa-lg"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-circle fa-lg"></i>
+                                {% elif message.tags == 'info' %}
+                                    <i class="fas fa-info-circle fa-lg"></i>
+                                {% else %}
+                                    <i class="fas fa-bell fa-lg"></i>
+                                {% endif %}
+                            </div>
+                            <div class="message-content flex-grow-1">
+                                <strong class="message-title">
+                                    {% if message.tags == 'success' %}
+                                        ¡Éxito!
+                                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                        Error
+                                    {% elif message.tags == 'warning' %}
+                                        Advertencia
+                                    {% elif message.tags == 'info' %}
+                                        Información
+                                    {% else %}
+                                        Notificación
+                                    {% endif %}
+                                </strong>
+                                <div class="message-text">{{ message }}</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
 
         {% block content %}{% endblock %}
@@ -465,23 +610,51 @@
     
     <!-- JavaScript personalizado -->
     <script>
-        // Agregar clase active al enlace de navegación actual
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.nav-link');
-            
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-
-        // Toggle sidebar en móviles
+        // Toggle sidebar en móviles (sin lógica de activación por JS; las clases active se resuelven en servidor)
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('show');
+            if (sidebar) sidebar.classList.toggle('show');
         }
+
+        // ===== SISTEMA DE MENSAJES AUTO-DISMISS =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.message-alert[data-auto-dismiss="true"]');
+            
+            messages.forEach(function(message, index) {
+                // Delay escalonado para múltiples mensajes
+                const delay = 5000 + (index * 500); // 5 segundos base + 0.5s por mensaje adicional
+                
+                setTimeout(function() {
+                    if (message && message.parentNode) {
+                        // Agregar clase de animación de salida
+                        message.classList.add('fade-out');
+                        
+                        // Remover del DOM después de la animación
+                        setTimeout(function() {
+                            if (message.parentNode) {
+                                message.parentNode.removeChild(message);
+                            }
+                        }, 300); // Duración de la animación
+                    }
+                }, delay);
+            });
+
+            // Manejar clicks en botones de cerrar
+            const closeButtons = document.querySelectorAll('.message-alert .btn-close');
+            closeButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const message = button.closest('.message-alert');
+                    if (message) {
+                        message.classList.add('fade-out');
+                        setTimeout(function() {
+                            if (message.parentNode) {
+                                message.parentNode.removeChild(message);
+                            }
+                        }, 300);
+                    }
+                });
+            });
+        });
     </script>
     
 </body>

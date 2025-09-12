@@ -17,6 +17,7 @@ import base64
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from django.http import HttpResponse
 from datetime import timedelta
 
 # ===== FUNCIONES AUXILIARES =====
@@ -97,7 +98,7 @@ def login_view(request):
                     onboarding_status.onboarding_completed = True
                     onboarding_status.save()
             
-            messages.success(request, f'¡Bienvenido, {user.username}!')
+            messages.success(request, f'🎉 ¡Bienvenido de nuevo, {user.username}! Has iniciado sesión correctamente.')
             
             # Redirigir según rol
             if hasattr(user, 'profile') and user.profile.role:
@@ -114,7 +115,7 @@ def login_view(request):
             else:
                 return redirect('dashboard')
         else:
-            messages.error(request, 'Usuario o contraseña incorrectos.')
+            messages.error(request, '❌ Usuario o contraseña incorrectos. Verifica tus credenciales e intenta nuevamente.')
     
     return render(request, 'core/login.html', {'title': 'Iniciar Sesión'})
 
@@ -123,7 +124,7 @@ def login_view(request):
 def logout_view(request):
     """Cierra sesión del usuario"""
     logout(request)
-    messages.success(request, 'Has cerrado sesión exitosamente.')
+    messages.success(request, '👋 Has cerrado sesión exitosamente. ¡Hasta pronto!')
     return redirect('login')
 
 # ===== VISTAS DE DASHBOARD =====
@@ -275,8 +276,15 @@ def company_detail_view(request, company_id):
         ).first()
     
     # ===== Estadísticas y datos para gráficos =====
-    # Para reputación usamos reseñas aprobadas
-    reviews_for_stats = approved_reviews
+    # Para reputación base, por defecto usamos reseñas aprobadas.
+    # Para candidatos, incluimos también 'pending' para evitar vacíos visuales
+    # (el template ya controla acceso y no muestra a quienes tienen pendientes propias).
+    if hasattr(request.user, 'profile') and request.user.profile.role == 'candidate':
+        reviews_for_stats = Review.objects.filter(company=company, status__in=['approved', 'pending'])
+    elif request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role == 'company_rep'):
+        reviews_for_stats = Review.objects.filter(company=company)
+    else:
+        reviews_for_stats = approved_reviews
 
     # Promedios numéricos
     from django.db.models import Avg as DJAvg, Count as DJCount
@@ -355,48 +363,57 @@ def company_detail_view(request, company_id):
     ]
     timeline_counts = [item['c'] for item in monthly]
 
-    # ===== Render de gráficos en Python (matplotlib) =====
-    def fig_to_datauri():
+    # ===== Render de gráficos en Python (matplotlib) - robusto y desde cero =====
+    def fig_to_datauri(fig):
         buf = io.BytesIO()
-        plt.tight_layout()
-        plt.savefig(buf, format='png', dpi=140)
-        plt.close()
+        fig.tight_layout()
+        fig.savefig(buf, format='png', dpi=140)
+        plt.close(fig)
         buf.seek(0)
         b64 = base64.b64encode(buf.getvalue()).decode('ascii')
         return f"data:image/png;base64,{b64}"
 
-    ratings_img = None
-    if any(rating_counts):
-        plt.figure(figsize=(4, 2.4))
-        plt.bar([1, 2, 3, 4, 5], rating_counts, color='#1E3A8A')
-        plt.title('Distribución de Calificaciones')
-        plt.xlabel('Calificación')
-        plt.ylabel('Cantidad')
-        ratings_img = fig_to_datauri()
+    def make_bar(labels, counts, title, xlabel, ylabel):
+        fig, ax = plt.subplots(figsize=(4.5, 2.6))
+        x = list(range(len(labels)))
+        ax.bar(x, counts, color='#1E3A8A')
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, fontsize=8)
+        ax.set_ylim(bottom=0)
+        return fig_to_datauri(fig)
 
-    modality_img = None
-    if any(modality_counts):
-        plt.figure(figsize=(4, 2.4))
-        labels = [lbl for _, lbl in MOD_LABELS]
-        plt.pie(modality_counts, labels=labels, autopct='%1.0f%%')
-        plt.title('Modalidad de Reseñas')
-        modality_img = fig_to_datauri()
+    def make_pie(labels, counts, title):
+        total = sum(counts)
+        fig, ax = plt.subplots(figsize=(4.2, 2.6))
+        if total > 0:
+            ax.pie(counts, labels=labels, autopct='%1.0f%%', textprops={'fontsize': 8})
+        else:
+            ax.text(0.5, 0.5, 'Sin datos', ha='center', va='center')
+            ax.axis('off')
+        ax.set_title(title)
+        return fig_to_datauri(fig)
 
-    status_img = None
-    if approved_reviews.exists() or pending_reviews.exists() or rejected_reviews.exists():
-        plt.figure(figsize=(4, 2.4))
-        plt.pie(status_counts, labels=['Aprobadas', 'Pendientes', 'Rechazadas'], autopct='%1.0f%%')
-        plt.title('Estado de Reseñas')
-        status_img = fig_to_datauri()
+    def make_line(labels, counts, title):
+        fig, ax = plt.subplots(figsize=(6.0, 2.6))
+        if counts:
+            x = list(range(len(labels)))
+            ax.plot(x, counts, marker='o', color='#1E3A8A')
+            ax.set_xticks(x)
+            ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=7)
+        else:
+            ax.text(0.5, 0.5, 'Sin datos', ha='center', va='center')
+            ax.axis('off')
+        ax.set_title(title)
+        ax.set_ylabel('Cantidad')
+        return fig_to_datauri(fig)
 
-    timeline_img = None
-    if timeline_counts:
-        plt.figure(figsize=(5.5, 2.4))
-        plt.plot(range(len(timeline_labels)), timeline_counts, marker='o', color='#1E3A8A')
-        plt.title('Reseñas por Mes')
-        plt.xticks(range(len(timeline_labels)), timeline_labels, rotation=45, ha='right', fontsize=7)
-        plt.ylabel('Cantidad')
-        timeline_img = fig_to_datauri()
+    ratings_img = make_bar(['1', '2', '3', '4', '5'], rating_counts, 'Distribución de Calificaciones', 'Calificación', 'Cantidad')
+    modality_img = make_pie([lbl for _, lbl in MOD_LABELS], modality_counts, 'Modalidad de Reseñas')
+    status_img = make_pie(['Aprobadas', 'Pendientes', 'Rechazadas'], status_counts, 'Estado de Reseñas')
+    timeline_img = make_line(timeline_labels, timeline_counts, 'Reseñas por Mes')
 
     # ===== Resúmenes por rol =====
     role_kpis = {}
@@ -457,10 +474,10 @@ def company_detail_view(request, company_id):
         'user_has_pending_review': user_has_pending_review,
         'pending_review': pending_review,
         'company_stats': company_stats,
-        'ratings_img': ratings_img,
-        'modality_img': modality_img,
-        'status_img': status_img,
-        'timeline_img': timeline_img,
+        'ratings_img': ratings_img or '',
+        'modality_img': modality_img or '',
+        'status_img': status_img or '',
+        'timeline_img': timeline_img or '',
         'role_kpis': role_kpis,
     }
     
@@ -472,7 +489,7 @@ def company_detail_view(request, company_id):
 def create_review_view(request):
     """Vista para crear una nueva reseña"""
     if request.user.profile.role != 'candidate':
-        messages.error(request, 'Solo los candidatos pueden crear reseñas.')
+        messages.error(request, '❌ Solo los candidatos pueden crear reseñas. Si eres empresa o staff, usa las funciones correspondientes.')
         return redirect('dashboard')
     
     # Obtener empresas con reseñas pendientes
@@ -482,7 +499,7 @@ def create_review_view(request):
     ).select_related('company')
     
     if not pending_companies.exists():
-        messages.warning(request, 'No tienes reseñas pendientes para crear.')
+        messages.warning(request, '⚠️ No tienes reseñas pendientes para crear. Contacta al staff para que te asignen una empresa.')
         return redirect('dashboard')
     
     if request.method == 'POST':
@@ -520,15 +537,34 @@ def create_review_view(request):
                     )
                     onboarding_status.detect_participation_status()
                 
-                messages.success(request, 'Reseña enviada exitosamente. Está pendiente de aprobación.')
+                # Mensaje especial si era una reseña pendiente
+                if pending_review:
+                    messages.success(request, f'🎉 ¡Reseña completada exitosamente! Has completado tu reseña para {company.name}. Ahora puedes acceder a todas las empresas del sistema.')
+                else:
+                    messages.success(request, '¡Reseña enviada exitosamente! 🎉 Tu reseña está pendiente de aprobación y será revisada por nuestro equipo.')
                 return redirect('my_reviews')
                 
             except Exception as e:
-                messages.error(request, f'Error al guardar la reseña: {str(e)}')
+                messages.error(request, f'❌ Error al guardar la reseña: {str(e)}. Por favor, intenta nuevamente o contacta al administrador si el problema persiste.')
         else:
+            # Mensajes de error más específicos y útiles
+            error_messages = {
+                'company': 'Debes seleccionar una empresa válida.',
+                'job_title': 'El cargo es obligatorio. Ejemplo: "Desarrollador Frontend", "Analista de Datos".',
+                'modality': 'Debes seleccionar la modalidad de trabajo (Presencial, Remoto o Híbrido).',
+                'communication_rating': 'Debes calificar la comunicación durante el proceso.',
+                'difficulty_rating': 'Debes calificar la dificultad del proceso de selección.',
+                'response_time_rating': 'Debes calificar el tiempo de respuesta de la empresa.',
+                'overall_rating': 'Debes dar una calificación general del 1 al 5.',
+                'pros': 'Los aspectos positivos son obligatorios. Describe qué te gustó del proceso.',
+                'cons': 'Los aspectos a mejorar son obligatorios. Describe qué podría mejorar.',
+                'image': 'El archivo de imagen debe ser válido (JPG, PNG). Tamaño máximo recomendado: 5MB.'
+            }
+            
             for field, errors in form.errors.items():
+                field_name = error_messages.get(field, field.replace('_', ' ').title())
                 for error in errors:
-                    messages.error(request, f'Error en {field}: {error}')
+                    messages.error(request, f'❌ {field_name}: {error}')
     else:
         # Pre-seleccionar empresa
         initial_data = {}
@@ -634,12 +670,21 @@ def update_profile_view(request):
         form = ProfileUpdateForm(request.POST, request.FILES, user=user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Perfil actualizado correctamente.')
+            messages.success(request, '✅ ¡Perfil actualizado correctamente! Los cambios se han guardado exitosamente.')
             return redirect('my_profile')
         else:
+            # Mensajes de error específicos para perfil
+            error_messages = {
+                'first_name': 'El nombre debe tener entre 1 y 30 caracteres.',
+                'last_name': 'El apellido debe tener entre 1 y 30 caracteres.',
+                'display_name': 'El nombre visible debe tener máximo 100 caracteres.',
+                'avatar': 'La imagen debe ser válida (JPG, PNG). Tamaño máximo recomendado: 2MB.'
+            }
+            
             for field, errors in form.errors.items():
+                field_name = error_messages.get(field, field.replace('_', ' ').title())
                 for error in errors:
-                    messages.error(request, f'Error en {field}: {error}')
+                    messages.error(request, f'❌ {field_name}: {error}')
     else:
         form = ProfileUpdateForm(initial=initial, user=user)
 
@@ -770,7 +815,7 @@ def create_user_view(request):
                 role='candidate'
             )
             
-            messages.success(request, f'Usuario {user.username} creado exitosamente.')
+            messages.success(request, f'✅ Usuario {user.username} creado exitosamente. Se ha asignado el rol de candidato por defecto.')
             return redirect('staff_dashboard')
     else:
         form = UserCreationForm()
@@ -833,14 +878,23 @@ def assign_company_view(request):
                 )
                 onboarding_status.detect_participation_status()
                 
-                messages.success(request, f'Empresa {assignment.company.name} asignada exitosamente a {assignment.user_profile.user.username}.')
+                messages.success(request, f'✅ Empresa {assignment.company.name} asignada exitosamente a {assignment.user_profile.user.username}. Se ha creado una reseña pendiente.')
                 return redirect('staff_dashboard')
             except Exception as e:
-                messages.error(request, f'Error al asignar empresa: {str(e)}')
+                messages.error(request, f'❌ Error al asignar empresa: {str(e)}. Verifica que todos los datos sean correctos e intenta nuevamente.')
         else:
+            # Mensajes de error específicos para asignación
+            error_messages = {
+                'user_profile': 'Debes seleccionar un usuario candidato válido.',
+                'company': 'Debes seleccionar una empresa activa.',
+                'job_title': 'El cargo es obligatorio. Ejemplo: "Desarrollador Backend", "Diseñador UX".',
+                'participation_date': 'La fecha de participación es obligatoria y debe ser válida.'
+            }
+            
             for field, errors in form.errors.items():
+                field_name = error_messages.get(field, field.replace('_', ' ').title())
                 for error in errors:
-                    messages.error(request, f'Error en {field}: {error}')
+                    messages.error(request, f'❌ {field_name}: {error}')
     else:
         form = StaffAssignmentForm()
         # Establecer querysets requeridos para evitar None en prefetch
@@ -875,7 +929,7 @@ def delete_review_view(request, review_id):
         company_name = review.company.name
         user_name = review.user_profile.user.username
         review.delete()
-        messages.success(request, f'Reseña de {user_name} para {company_name} eliminada exitosamente.')
+        messages.success(request, f'✅ Reseña de {user_name} para {company_name} eliminada exitosamente.')
         return redirect('staff_dashboard')
     
     context = {
@@ -898,11 +952,11 @@ def approve_review_view(request, review_id):
         if action == 'approve':
             review.status = 'approved'
             review.is_approved = True
-            messages.success(request, f'Reseña de {review.user_profile.user.username} para {review.company.name} aprobada exitosamente.')
+            messages.success(request, f'✅ Reseña de {review.user_profile.user.username} para {review.company.name} aprobada exitosamente. Ya es visible para otros usuarios.')
         elif action == 'reject':
             review.status = 'rejected'
             review.is_approved = False
-            messages.success(request, f'Reseña de {review.user_profile.user.username} para {review.company.name} rechazada.')
+            messages.success(request, f'⚠️ Reseña de {review.user_profile.user.username} para {review.company.name} rechazada. No será visible para otros usuarios.')
         
         review.save()
         return redirect('staff_dashboard')
@@ -913,3 +967,51 @@ def approve_review_view(request, review_id):
     }
     
     return render(request, 'core/staff_manage_review.html', context)
+
+
+@login_required
+def export_company_reviews_csv(request, company_id):
+    """Exporta reseñas de una empresa en CSV. company_rep/staff únicamente."""
+    company = get_object_or_404(Company, id=company_id, is_active=True)
+
+    # Permisos: staff o company_rep
+    if not (request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role == 'company_rep')):
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('login')
+
+    qs = Review.objects.filter(company=company).select_related('user_profile__user').order_by('-submission_date')
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="{company.name}_reviews.csv"'
+
+    # Escribir CSV manualmente (sin depender de csv para controlar UTF-8 con BOM)
+    response.write('\ufeff')  # BOM para Excel
+    headers = [
+        'username', 'job_title', 'modality', 'communication_rating', 'difficulty_rating',
+        'response_time_rating', 'overall_rating', 'status', 'submission_date'
+    ]
+    response.write(','.join(headers) + '\n')
+
+    def esc(val):
+        if val is None:
+            return ''
+        s = str(val).replace('"', '""')
+        if ',' in s or '"' in s or '\n' in s:
+            s = '"' + s + '"'
+        return s
+
+    for r in qs:
+        row = [
+            r.user_profile.user.username,
+            r.job_title,
+            r.modality,
+            r.communication_rating,
+            r.difficulty_rating,
+            r.response_time_rating,
+            r.overall_rating,
+            r.status,
+            r.submission_date.strftime('%Y-%m-%d %H:%M'),
+        ]
+        response.write(','.join(esc(v) for v in row) + '\n')
+
+    return response
