@@ -1,6 +1,24 @@
-# ===== FORMULARIOS DE LA APLICACIÓN =====
-# Este archivo define todos los formularios utilizados en la aplicación
-# Cada formulario está conectado a un modelo específico y maneja la validación
+# =============================================================================
+# FORMULARIOS DE LA APLICACIÓN - SelecLoop
+# =============================================================================
+# Este archivo define todos los formularios utilizados en SelecLoop
+# Cada formulario está conectado a un modelo específico y maneja validación
+#
+# Arquitectura: Formularios basados en ModelForm de Django
+# Patrón: Form-Object Pattern con validación automática
+#
+# Formularios principales:
+# - ReviewForm: Creación y edición de reseñas con calificaciones
+# - UserCreationForm: Registro de nuevos usuarios
+# - ProfileUpdateForm: Actualización de perfil de usuario
+# - StaffAssignmentForm: Asignación de empresas por staff
+#
+# Características:
+# - Validación frontend y backend
+# - Protección CSRF automática
+# - Integración con Bootstrap para estilos
+# - Manejo de archivos (imágenes en reseñas)
+# =============================================================================
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -56,11 +74,28 @@ class UserCreationForm(UserCreationForm):
             user.save()
         return user
 
-# ===== FORMULARIO: CREACIÓN DE RESEÑAS =====
+# =============================================================================
+# FORMULARIO: CREACIÓN DE RESEÑAS
+# =============================================================================
+# Formulario principal para crear y editar reseñas de procesos de selección
+# Permite a los candidatos evaluar su experiencia en empresas con calificaciones
+#
+# Características principales:
+# - Sistema de calificaciones múltiple (comunicación, dificultad, tiempo de respuesta)
+# - Campos opcionales (preguntas de entrevista, imagen)
+# - Validación automática de rangos de calificación
+# - Integración con Bootstrap para UI responsive
+# - Protección contra spam y validación de datos
+#
+# Funcionalidades SEO/Geo:
+# - Campos de empresa incluyen información geo-localizada
+# - Validación de datos para structured data
+# =============================================================================
 class ReviewForm(forms.ModelForm):
     """
     Formulario para crear y editar reseñas de procesos de selección.
-    Permite a los candidatos evaluar su experiencia en empresas.
+    Permite a los candidatos evaluar su experiencia en empresas con
+    sistema de calificaciones múltiple y campos opcionales.
     """
     
     # ===== CAMPOS PERSONALIZADOS =====

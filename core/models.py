@@ -1,6 +1,18 @@
-# ===== MODELOS DE LA BASE DE DATOS =====
-# Este archivo define la estructura de la base de datos
-# Cada modelo representa una tabla con sus campos y relaciones
+# =============================================================================
+# MODELOS DE LA BASE DE DATOS - SelecLoop
+# =============================================================================
+# Este archivo define la estructura completa de la base de datos para SelecLoop
+# Cada modelo representa una tabla relacional con sus campos y relaciones
+#
+# Arquitectura: Modelo-Vista-Template (MVT) de Django
+# Patrón: Object-Oriented Design con ORM (Object-Relational Mapping)
+#
+# Modelos principales:
+# - Company: Empresas con información geo-localizada
+# - Review: Reseñas de procesos de selección
+# - UserProfile: Perfiles de usuario con roles específicos
+# - StaffAssignment: Asignaciones de empresas a candidatos
+# =============================================================================
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -10,42 +22,60 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-# ===== MODELO: EMPRESA =====
+# =============================================================================
+# MODELO: EMPRESA
+# =============================================================================
+# Modelo principal que representa una empresa en el sistema SelecLoop
+# Almacena información completa de empresas incluyendo datos geo-localizados
+# para funcionalidades de búsqueda por ubicación y optimización SEO local
+#
+# Relaciones:
+# - One-to-Many con Review (una empresa puede tener muchas reseñas)
+# - One-to-Many con StaffAssignment (asignaciones de staff)
+# - One-to-One opcional con UserProfile (representante de empresa)
+#
+# Funcionalidades SEO/Geo:
+# - Campos de ubicación estructurados (ciudad, región, país)
+# - Información para meta tags dinámicos
+# - Datos para structured data (JSON-LD)
+# =============================================================================
 class Company(models.Model):
     """
-    Modelo que representa una empresa en el sistema.
-    Almacena información básica como nombre, sector, ubicación, etc.
+    Modelo que representa una empresa en el sistema SelecLoop.
+    Almacena información completa incluyendo datos geo-localizados para
+    funcionalidades de búsqueda por ubicación y optimización SEO.
     """
     
     # ===== CAMPOS BÁSICOS =====
     name = models.CharField(
-        max_length=200, 
+        max_length=200,
         verbose_name="Nombre de la empresa",
-        help_text="Nombre completo de la empresa"
+        help_text="Nombre completo de la empresa - usado en SEO y títulos"
     )
-    
+
     description = models.TextField(
         verbose_name="Descripción",
-        help_text="Descripción detallada de la empresa y su actividad",
+        help_text="Descripción detallada de la empresa y su actividad - usado en meta descriptions",
         blank=True
     )
-    
+
     sector = models.CharField(
-        max_length=100, 
+        max_length=100,
         verbose_name="Sector",
-        help_text="Sector o industria de la empresa (ej: Tecnología, Salud, etc.)"
+        help_text="Sector o industria de la empresa (ej: Tecnología, Salud, etc.) - usado para filtros"
     )
-    
+
+    # ===== CAMPOS GEO-LOCALIZACIÓN (SEO LOCAL) =====
     location = models.CharField(
         max_length=100,
         verbose_name="Ciudad",
-        help_text="Ciudad principal de la empresa"
+        help_text="Ciudad principal de la empresa - usado para búsquedas geo y SEO local"
     )
 
     region = models.CharField(
         max_length=100,
         verbose_name="Región/Estado",
-        help_text="Región, estado o departamento donde está ubicada la empresa",
+        help_text="Región, estado o departamento donde está ubicada la empresa - usado para filtros avanzados",
         blank=True,
         null=True
     )
@@ -53,7 +83,7 @@ class Company(models.Model):
     country = models.CharField(
         max_length=100,
         verbose_name="País",
-        help_text="País donde está ubicada la empresa",
+        help_text="País donde está ubicada la empresa - usado en structured data y SEO internacional",
         default="Colombia"
     )
     
