@@ -1,6 +1,6 @@
 <!-- ===== TEMPLATE: CREAR RESEÑA ===== -->
-<!-- Formulario multi-paso para crear reseñas de procesos de selección -->
-<!-- Sistema de calificaciones con botones y estrellas interactivas -->
+<!-- Formulario simplificado para crear reseñas de procesos de selección -->
+<!-- Sistema de calificaciones básico sin JavaScript complejo -->
 <!-- core/templates/core/create_review.html -->
 {% extends 'core/base.html' %}
 {% load static %}
@@ -15,290 +15,196 @@
             <!-- ===== HEADER ===== -->
             <div class="text-center mb-5">
                 <h1 class="display-4 text-primary mb-3">
-                    <i class="fas fa-star fa-bounce me-3"></i>
+                    <i class="fas fa-star me-3"></i>
                     Crear Reseña
                 </h1>
                 <p class="lead text-muted">Comparte tu experiencia y ayuda a otros candidatos</p>
-                <div class="progress mb-3" style="height: 8px;">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" id="progressBar"></div>
-                </div>
-                <small class="text-muted">Paso <span id="currentStep">1</span> de <span id="totalSteps">5</span></small>
             </div>
 
-            <!-- ===== FORMULARIO MULTI-PASO ===== -->
+            <!-- ===== FORMULARIO SIMPLIFICADO ===== -->
             <div class="card shadow-lg">
                 <div class="card-body p-5">
-                    <form method="post" id="reviewForm" enctype="multipart/form-data">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        
-                        <!-- ===== PASO 1: INFORMACIÓN BÁSICA ===== -->
-                        <div class="step" id="step1">
-                            <h3 class="text-primary mb-4">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Información Básica
-                            </h3>
+
+                        <!-- ===== INFORMACIÓN BÁSICA ===== -->
+                        <h3 class="text-primary mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Información Básica
+                        </h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-building me-2"></i>
+                                        Empresa
+                                    </label>
+                                    {{ form.company }}
+                                    {% if form.company.errors %}
+                                        <div class="text-danger small mt-1">{{ form.company.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-briefcase me-2"></i>
+                                        Cargo o Puesto
+                                    </label>
+                                    {{ form.job_title }}
+                                    {% if form.job_title.errors %}
+                                        <div class="text-danger small mt-1">{{ form.job_title.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-laptop me-2"></i>
+                                Modalidad de Trabajo
+                            </label>
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-4">
-                                        <label class="form-label fw-bold">
-                                            <i class="fas fa-building me-2"></i>
-                                            Empresa
+                                {% for choice in form.modality %}
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        {{ choice.tag }}
+                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                            {{ choice.choice_label }}
                                         </label>
-                                        {{ form.company }}
-                                        {% if form.company.errors %}
-                                            <div class="text-danger small mt-1">{{ form.company.errors.0 }}</div>
-                                        {% endif %}
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-4">
-                                        <label class="form-label fw-bold">
-                                            <i class="fas fa-briefcase me-2"></i>
-                                            Cargo o Puesto
-                                        </label>
-                                        {{ form.job_title }}
-                                        {% if form.job_title.errors %}
-                                            <div class="text-danger small mt-1">{{ form.job_title.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">
-                                    <i class="fas fa-laptop me-2"></i>
-                                    Modalidad de Trabajo
-                                </label>
-                                <div class="row">
-                                    {% for choice in form.modality %}
-                                    <div class="col-md-4">
-                                        <div class="form-check">
-                                            {{ choice.tag }}
-                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                                {{ choice.choice_label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                {% if form.modality.errors %}
-                                    <div class="text-danger small mt-1">{{ form.modality.errors.0 }}</div>
-                                {% endif %}
-                            </div>
+                            {% if form.modality.errors %}
+                                <div class="text-danger small mt-1">{{ form.modality.errors.0 }}</div>
+                            {% endif %}
                         </div>
 
-                        <!-- ===== PASO 2: CALIFICACIONES ===== -->
-                        <div class="step" id="step2" style="display: none;">
-                            <h3 class="text-primary mb-4">
-                                <i class="fas fa-star me-2"></i>
-                                Calificaciones
-                            </h3>
-                            
-                            <!-- ===== COMUNICACIÓN Y DIFICULTAD ===== -->
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">
-                                        <i class="fas fa-comments me-2"></i>
-                                        Comunicación
-                                    </label>
-                                    <p class="text-muted small mb-2">¿Qué tan clara fue la comunicación durante el proceso?</p>
-                                    <div class="rating-options" data-field="communication_rating">
-                                        <input type="hidden" name="communication_rating" value="">
-                                        <div class="rating-buttons">
-                                            <button type="button" class="rating-btn" data-value="excellent">Excelente</button>
-                                            <button type="button" class="rating-btn" data-value="good">Buena</button>
-                                            <button type="button" class="rating-btn" data-value="regular">Regular</button>
-                                            <button type="button" class="rating-btn" data-value="poor">Mala</button>
-                                        </div>
-                                        <div class="rating-text text-muted small mt-1">Selecciona una opción</div>
-                                    </div>
-                                    {% if form.communication_rating.errors %}
-                                        <div class="text-danger small mt-1">{{ form.communication_rating.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">
-                                        <i class="fas fa-brain me-2"></i>
-                                        Dificultad
-                                    </label>
-                                    <p class="text-muted small mb-2">¿Qué tan desafiante fue el proceso de selección?</p>
-                                    <div class="rating-options" data-field="difficulty_rating">
-                                        <input type="hidden" name="difficulty_rating" value="">
-                                        <div class="rating-buttons">
-                                            <button type="button" class="rating-btn" data-value="very_easy">Muy Fácil</button>
-                                            <button type="button" class="rating-btn" data-value="easy">Fácil</button>
-                                            <button type="button" class="rating-btn" data-value="moderate">Moderada</button>
-                                            <button type="button" class="rating-btn" data-value="difficult">Difícil</button>
-                                            <button type="button" class="rating-btn" data-value="very_difficult">Muy Difícil</button>
-                                        </div>
-                                        <div class="rating-text text-muted small mt-1">Selecciona una opción</div>
-                                    </div>
-                                    {% if form.difficulty_rating.errors %}
-                                        <div class="text-danger small mt-1">{{ form.difficulty_rating.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <!-- ===== TIEMPO DE RESPUESTA Y CALIFICACIÓN GENERAL ===== -->
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">
-                                        <i class="fas fa-clock me-2"></i>
-                                        Tiempo de Respuesta
-                                    </label>
-                                    <p class="text-muted small mb-2">¿Qué tan rápido respondieron a tus consultas?</p>
-                                    <div class="rating-options" data-field="response_time_rating">
-                                        <input type="hidden" name="response_time_rating" value="">
-                                        <div class="rating-buttons">
-                                            <button type="button" class="rating-btn" data-value="immediate">Inmediata</button>
-                                            <button type="button" class="rating-btn" data-value="same_day">Mismo día</button>
-                                            <button type="button" class="rating-btn" data-value="next_day">Al día siguiente</button>
-                                            <button type="button" class="rating-btn" data-value="few_days">En pocos días</button>
-                                            <button type="button" class="rating-btn" data-value="slow">Lenta</button>
-                                        </div>
-                                        <div class="rating-text text-muted small mt-1">Selecciona una opción</div>
-                                    </div>
-                                    {% if form.response_time_rating.errors %}
-                                        <div class="text-danger small mt-1">{{ form.response_time_rating.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">
-                                        <i class="fas fa-heart me-2"></i>
-                                        Calificación General
-                                    </label>
-                                    <p class="text-muted small mb-2">¿Cuál es tu evaluación general de la experiencia?</p>
-                                    <div class="star-rating" data-field="overall_rating">
-                                        <input type="hidden" name="overall_rating" value="">
-                                        <div class="stars">
-                                            <span class="star" data-value="1">★</span>
-                                            <span class="star" data-value="2">★</span>
-                                            <span class="star" data-value="3">★</span>
-                                            <span class="star" data-value="4">★</span>
-                                            <span class="star" data-value="5">★</span>
-                                        </div>
-                                        <div class="rating-text text-muted small mt-1">Selecciona una calificación</div>
-                                    </div>
-                                    {% if form.overall_rating.errors %}
-                                        <div class="text-danger small mt-1">{{ form.overall_rating.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <!-- ===== INDICADOR DE PROGRESO ===== -->
-                            <div class="progress mb-3" style="height: 8px;">
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: 0%" id="step2Progress"></div>
-                            </div>
-                            <small class="text-muted">Progreso del paso 2: <span id="step2ProgressText">0/4</span> calificaciones completadas</small>
-                        </div>
+                        <!-- ===== CALIFICACIONES ===== -->
+                        <h3 class="text-primary mb-4 mt-5">
+                            <i class="fas fa-star me-2"></i>
+                            Calificaciones
+                        </h3>
 
-                        <!-- ===== PASO 3: EXPERIENCIA ===== -->
-                        <div class="step" id="step3" style="display: none;">
-                            <h3 class="text-primary mb-4">
-                                <i class="fas fa-lightbulb me-2"></i>
-                                Tu Experiencia
-                            </h3>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">
-                                    <i class="fas fa-thumbs-up me-2 text-success"></i>
-                                    Aspectos Positivos
-                                </label>
-                                {{ form.pros }}
-                                <small class="text-muted">¿Qué te gustó del proceso? ¿Qué hicieron bien?</small>
-                                {% if form.pros.errors %}
-                                    <div class="text-danger small mt-1">{{ form.pros.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">
-                                    <i class="fas fa-thumbs-down me-2 text-danger"></i>
-                                    Aspectos a Mejorar
-                                </label>
-                                {{ form.cons }}
-                                <small class="text-muted">¿Qué podrían mejorar? ¿Qué no te gustó?</small>
-                                {% if form.cons.errors %}
-                                    <div class="text-danger small mt-1">{{ form.cons.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- ===== PASO 4: PREGUNTAS DE ENTREVISTA ===== -->
-                        <div class="step" id="step4" style="display: none;">
-                            <h3 class="text-primary mb-4">
-                                <i class="fas fa-question-circle me-2"></i>
-                                Preguntas de Entrevista
-                            </h3>
-                            <div class="mb-4">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">
                                     <i class="fas fa-comments me-2"></i>
-                                    Comparte las Preguntas
+                                    Comunicación
                                 </label>
-                                {{ form.interview_questions }}
-                                <small class="text-muted">¿Qué preguntas te hicieron? Esto ayudará a otros candidatos a prepararse.</small>
-                                {% if form.interview_questions.errors %}
-                                    <div class="text-danger small mt-1">{{ form.interview_questions.errors.0 }}</div>
+                                <p class="text-muted small mb-2">¿Qué tan clara fue la comunicación durante el proceso?</p>
+                                {{ form.communication_rating }}
+                                {% if form.communication_rating.errors %}
+                                    <div class="text-danger small mt-1">{{ form.communication_rating.errors.0 }}</div>
                                 {% endif %}
                             </div>
 
-                            <!-- Imagen opcional junto a Preguntas de Entrevista -->
-                            <div class="mb-4">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">
-                                    <i class="fas fa-image me-2"></i>
-                                    Imagen (opcional)
+                                    <i class="fas fa-brain me-2"></i>
+                                    Dificultad
                                 </label>
-                                {{ form.image }}
-                                <small class="text-muted d-block">Formatos permitidos: JPG, PNG. Tamaño razonable.</small>
-                                {% if form.image.errors %}
-                                    <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
+                                <p class="text-muted small mb-2">¿Qué tan desafiante fue el proceso de selección?</p>
+                                {{ form.difficulty_rating }}
+                                {% if form.difficulty_rating.errors %}
+                                    <div class="text-danger small mt-1">{{ form.difficulty_rating.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
 
-                        <!-- ===== PASO 5: RESUMEN Y ENVÍO ===== -->
-                        <div class="step" id="step5" style="display: none;">
-                            <h3 class="text-primary mb-4">
-                                <i class="fas fa-check-circle me-2"></i>
-                                Resumen y Envío
-                            </h3>
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h5 class="card-title">Resumen de tu Reseña</h5>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <p><strong>Empresa:</strong> <span id="summaryCompany">-</span></p>
-                                            <p><strong>Cargo:</strong> <span id="summaryJob">-</span></p>
-                                            <p><strong>Modalidad:</strong> <span id="summaryModality">-</span></p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <p><strong>Comunicación:</strong> <span id="summaryComm">-</span></p>
-                                            <p><strong>Dificultad:</strong> <span id="summaryDiff">-</span></p>
-                                            <p><strong>Calificación General:</strong> <span id="summaryOverall">-</span></p>
-                                        </div>
-                                    </div>
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Importante:</strong> Una vez enviada, tu reseña será revisada por nuestro equipo antes de ser publicada.
-                                    </div>
-                                </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-clock me-2"></i>
+                                    Tiempo de Respuesta
+                                </label>
+                                <p class="text-muted small mb-2">¿Qué tan rápido respondieron a tus consultas?</p>
+                                {{ form.response_time_rating }}
+                                {% if form.response_time_rating.errors %}
+                                    <div class="text-danger small mt-1">{{ form.response_time_rating.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-heart me-2"></i>
+                                    Calificación General
+                                </label>
+                                <p class="text-muted small mb-2">¿Cuál es tu evaluación general de la experiencia?</p>
+                                {{ form.overall_rating }}
+                                {% if form.overall_rating.errors %}
+                                    <div class="text-danger small mt-1">{{ form.overall_rating.errors.0 }}</div>
+                                {% endif %}
                             </div>
                         </div>
 
-                        <!-- ===== NAVEGACIÓN ===== -->
-                        <div class="d-flex justify-content-between mt-5">
-                            <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                Anterior
+                        <!-- ===== EXPERIENCIA ===== -->
+                        <h3 class="text-primary mb-4 mt-5">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Tu Experiencia
+                        </h3>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-thumbs-up me-2 text-success"></i>
+                                Aspectos Positivos
+                            </label>
+                            {{ form.pros }}
+                            <small class="text-muted">¿Qué te gustó del proceso? ¿Qué hicieron bien?</small>
+                            {% if form.pros.errors %}
+                                <div class="text-danger small mt-1">{{ form.pros.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-thumbs-down me-2 text-danger"></i>
+                                Aspectos a Mejorar
+                            </label>
+                            {{ form.cons }}
+                            <small class="text-muted">¿Qué podrían mejorar? ¿Qué no te gustó?</small>
+                            {% if form.cons.errors %}
+                                <div class="text-danger small mt-1">{{ form.cons.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ===== PREGUNTAS DE ENTREVISTA ===== -->
+                        <h3 class="text-primary mb-4 mt-5">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Preguntas de Entrevista
+                        </h3>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-comments me-2"></i>
+                                Comparte las Preguntas
+                            </label>
+                            {{ form.interview_questions }}
+                            <small class="text-muted">¿Qué preguntas te hicieron? Esto ayudará a otros candidatos a prepararse.</small>
+                            {% if form.interview_questions.errors %}
+                                <div class="text-danger small mt-1">{{ form.interview_questions.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ===== IMAGEN OPCIONAL ===== -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-image me-2"></i>
+                                Imagen (opcional)
+                            </label>
+                            {{ form.image }}
+                            <small class="text-muted d-block">Formatos permitidos: JPG, PNG. Tamaño razonable.</small>
+                            {% if form.image.errors %}
+                                <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ===== BOTÓN DE ENVÍO ===== -->
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Enviar Reseña
                             </button>
-                            <div class="ms-auto">
-                                <button type="button" class="btn btn-primary" id="nextBtn">
-                                    Siguiente
-                                    <i class="fas fa-arrow-right ms-2"></i>
-                                </button>
-                                <button type="submit" class="btn btn-success btn-lg" id="submitBtn" style="display: none;">
-                                    <i class="fas fa-paper-plane me-2"></i>
-                                    Enviar Reseña
-                                </button>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Importante:</strong> Una vez enviada, tu reseña será revisada por nuestro equipo antes de ser publicada.
                             </div>
                         </div>
                     </form>
@@ -309,72 +215,7 @@
 </div>
 
 <style>
-.custom-radio .radio-card {
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: white;
-}
-
-.custom-radio .radio-card:hover {
-    border-color: var(--blue-400);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.custom-radio input[type="radio"]:checked + label .radio-card {
-    border-color: var(--blue-600);
-    background: var(--blue-50);
-    color: var(--blue-700);
-}
-
-.custom-radio input[type="radio"] {
-    display: none;
-}
-
-.rating-stars {
-    display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0;
-}
-
-.rating-stars input[type="radio"] {
-    display: none;
-}
-
-.rating-stars label {
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: #d1d5db;
-    transition: color 0.2s ease;
-}
-
-.rating-stars label:hover,
-.rating-stars label:hover ~ label {
-    color: #fbbf24;
-}
-
-.rating-stars input[type="radio"]:checked ~ label {
-    color: #fbbf24;
-}
-
-.step {
-    animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.progress-bar {
-    transition: width 0.3s ease;
-}
-
-/* Estilos para los campos de radio del formulario */
+/* Estilos simplificados para el formulario */
 .form-check {
     margin-bottom: 1rem;
     padding: 1rem;
@@ -399,183 +240,6 @@
     margin-left: 0.5rem;
 }
 
-/* Estilos para validación */
-.is-invalid {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
-}
-
-.is-invalid:focus {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
-}
-
-/* Marcar campos de radio como inválidos */
-.form-check.is-invalid {
-    border-color: #dc3545 !important;
-    background-color: #fef2f2;
-}
-
-.form-check.is-invalid .form-check-label {
-    color: #dc3545 !important;
-}
-
-/* Mejorar la apariencia de los campos de radio */
-.form-check-input:checked {
-    background-color: var(--blue-600);
-    border-color: var(--blue-600);
-}
-
-.form-check-input:focus {
-    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
-}
-
-/* Estilos para el botón de envío */
-#submitBtn {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-#submitBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-}
-
-/* Estilos para el sistema de botones de rating */
-.rating-options {
-    margin-bottom: 1rem;
-}
-
-.rating-options .rating-buttons {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.rating-options .rating-btn {
-    padding: 0.5rem 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    background: white;
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
-    font-weight: 500;
-    min-width: 80px;
-    text-align: center;
-}
-
-.rating-options .rating-btn:hover {
-    border-color: var(--blue-400);
-    background-color: #f8fafc;
-    color: var(--blue-700);
-    transform: translateY(-1px);
-}
-
-.rating-options .rating-btn.selected {
-    border-color: var(--blue-600);
-    background-color: var(--blue-600);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
-}
-
-.rating-options .rating-btn:active {
-    transform: translateY(0);
-}
-
-.rating-text {
-    font-style: italic;
-    min-height: 1.2rem;
-}
-
-/* Estilos para el progreso del paso 2 */
-#step2Progress {
-    transition: width 0.5s ease;
-}
-
-/* Estilos para validación de calificaciones */
-.rating-options.is-invalid {
-    border: 2px solid #dc3545;
-    border-radius: 8px;
-    padding: 1rem;
-    background-color: #fef2f2;
-}
-
-.rating-options.is-invalid .rating-text {
-    color: #dc3545;
-    font-weight: 500;
-}
-
-.rating-options.is-invalid .rating-buttons {
-    opacity: 0.7;
-}
-
-/* Estilos para el sistema de estrellas de calificación general */
-.star-rating {
-    margin-bottom: 1rem;
-}
-
-.star-rating .stars {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.star-rating .star {
-    font-size: 2rem;
-    cursor: pointer;
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
-    user-select: none;
-}
-
-.star-rating .star:hover {
-    color: #fbbf24;
-    transform: scale(1.1);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-
-.star-rating .star.active {
-    color: #fbbf24;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-
-.star-rating .star.selected {
-    color: #f59e0b;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    animation: starPop 0.3s ease;
-}
-
-@keyframes starPop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-
-/* Validación para estrellas */
-.star-rating.is-invalid {
-    border: 2px solid #dc3545;
-    border-radius: 8px;
-    padding: 1rem;
-    background-color: #fef2f2;
-}
-
-.star-rating.is-invalid .rating-text {
-    color: #dc3545;
-    font-weight: 500;
-}
-
-.star-rating.is-invalid .stars {
-    opacity: 0.7;
-}
-
 /* Mejorar la apariencia de los campos de calificación */
 .form-select {
     padding: 0.75rem 1rem;
@@ -597,25 +261,6 @@
     border-color: var(--blue-400);
 }
 
-.rating-container {
-    margin-bottom: 0.5rem;
-}
-
-.rating-container .form-select {
-    min-width: 200px;
-    font-weight: 500;
-}
-
-/* Estilos para las opciones del select */
-.form-select option {
-    padding: 0.5rem;
-    font-size: 0.95rem;
-}
-
-.form-select option:hover {
-    background-color: var(--blue-50);
-}
-
 /* Estilos para el resumen */
 .card.bg-light {
     background-color: #f8fafc !important;
@@ -631,281 +276,37 @@
 </style>
 
 <script>
-let currentStep = 1;
-const totalSteps = 5;
-
-function showStep(step) {
-    // Ocultar todos los pasos
-    document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
-    
-    // Mostrar el paso actual
-    document.getElementById(`step${step}`).style.display = 'block';
-    
-    // Actualizar botones
-    document.getElementById('prevBtn').style.display = step > 1 ? 'inline-block' : 'none';
-    document.getElementById('nextBtn').style.display = step < totalSteps ? 'inline-block' : 'none';
-    document.getElementById('submitBtn').style.display = step === totalSteps ? 'inline-block' : 'none';
-    
-    // Actualizar progreso
-    const progress = ((step - 1) / (totalSteps - 1)) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
-    document.getElementById('currentStep').textContent = step;
-    
-    // Actualizar texto del botón siguiente
-    if (step === totalSteps - 1) {
-        document.getElementById('nextBtn').innerHTML = 'Revisar <i class="fas fa-eye ms-2"></i>';
-    } else {
-        document.getElementById('nextBtn').innerHTML = 'Siguiente <i class="fas fa-arrow-right ms-2"></i>';
-    }
-}
-
-function nextStep() {
-    if (currentStep < totalSteps) {
-        currentStep++;
-        showStep(currentStep);
-        updateSummary();
-    }
-}
-
-function prevStep() {
-    if (currentStep > 1) {
-        currentStep--;
-        showStep(currentStep);
-    }
-}
-
-function updateSummary() {
-    // Actualizar resumen
-    const company = document.querySelector('select[name="company"] option:checked');
-    document.getElementById('summaryCompany').textContent = company ? company.text : '-';
-    
-    const jobTitle = document.querySelector('input[name="job_title"]');
-    document.getElementById('summaryJob').textContent = jobTitle ? jobTitle.value : '-';
-    
-    const modality = document.querySelector('input[name="modality"]:checked');
-    document.getElementById('summaryModality').textContent = modality ? modality.nextElementSibling.textContent : '-';
-    
-    // Obtener calificaciones del sistema de botones
-    const commRating = document.querySelector('input[name="communication_rating"]');
-    const commButton = document.querySelector('input[name="communication_rating"]').closest('.rating-options').querySelector('.rating-btn.selected');
-    document.getElementById('summaryComm').textContent = commButton ? commButton.textContent : '-';
-    
-    const diffRating = document.querySelector('input[name="difficulty_rating"]');
-    const diffButton = document.querySelector('input[name="difficulty_rating"]').closest('.rating-options').querySelector('.rating-btn.selected');
-    document.getElementById('summaryDiff').textContent = diffButton ? diffButton.textContent : '-';
-    
-    const overallRating = document.querySelector('input[name="overall_rating"]');
-    const overallStar = document.querySelector('input[name="overall_rating"]').closest('.star-rating').querySelector('.star.selected');
-    document.getElementById('summaryOverall').textContent = overallStar ? `${overallStar.dataset.value} ⭐` : '-';
-}
-
-// Event listeners
-document.getElementById('nextBtn').addEventListener('click', nextStep);
-document.getElementById('prevBtn').addEventListener('click', prevStep);
-
-// Inicializar
-showStep(1);
-
-// Sistema de botones de rating y estrellas
+// JavaScript simplificado - Solo validación básica
 document.addEventListener('DOMContentLoaded', function() {
-    initializeRatingOptions();
-    initializeStarRatings();
-});
+    // Validación básica antes de enviar
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Verificar campos requeridos
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
 
-function initializeRatingOptions() {
-    const ratingOptions = document.querySelectorAll('.rating-options');
-    
-    ratingOptions.forEach(rating => {
-        const buttons = rating.querySelectorAll('.rating-btn');
-        const hiddenInput = rating.querySelector('input[type="hidden"]');
-        const ratingText = rating.querySelector('.rating-text');
-        const fieldName = rating.dataset.field;
-        
-        buttons.forEach(button => {
-            const value = button.dataset.value;
-            const text = button.textContent;
-            
-            // Click para seleccionar
-            button.addEventListener('click', function() {
-                // Remover selección de todos los botones en este grupo
-                buttons.forEach(btn => btn.classList.remove('selected'));
-                
-                // Seleccionar el botón actual
-                button.classList.add('selected');
-                
-                // Actualizar input hidden
-                hiddenInput.value = value;
-                
-                // Actualizar texto descriptivo
-                ratingText.textContent = `Seleccionado: ${text}`;
-                
-                // Actualizar progreso del paso 2
-                updateStep2Progress();
-                
-                // Actualizar resumen
-                updateSummary();
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
             });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Por favor, completa todos los campos requeridos.');
+                return false;
+            }
+
+            // Confirmación antes de enviar
+            if (!confirm('¿Estás seguro de que quieres enviar esta reseña?')) {
+                e.preventDefault();
+                return false;
+            }
         });
-    });
-}
-
-function initializeStarRatings() {
-    const starRatings = document.querySelectorAll('.star-rating');
-    
-    starRatings.forEach(rating => {
-        const stars = rating.querySelectorAll('.star');
-        const hiddenInput = rating.querySelector('input[type="hidden"]');
-        const ratingText = rating.querySelector('.rating-text');
-        const fieldName = rating.dataset.field;
-        
-        stars.forEach((star, index) => {
-            const value = index + 1;
-            
-            // Hover effects
-            star.addEventListener('mouseenter', function() {
-                // Activar estrellas hasta la actual
-                stars.forEach((s, i) => {
-                    if (i <= index) {
-                        s.classList.add('active');
-                    } else {
-                        s.classList.remove('active');
-                    }
-                });
-            });
-            
-            star.addEventListener('mouseleave', function() {
-                // Remover hover effects
-                stars.forEach(s => s.classList.remove('active'));
-            });
-            
-            // Click para seleccionar
-            star.addEventListener('click', function() {
-                // Seleccionar estrellas hasta la actual
-                stars.forEach((s, i) => {
-                    if (i <= index) {
-                        s.classList.add('selected');
-                        s.classList.remove('active');
-                    } else {
-                        s.classList.remove('selected', 'active');
-                    }
-                });
-                
-                // Actualizar input hidden
-                hiddenInput.value = value;
-                
-                // Actualizar texto descriptivo
-                const descriptions = {
-                    1: 'Muy Malo',
-                    2: 'Malo', 
-                    3: 'Regular',
-                    4: 'Bueno',
-                    5: 'Excelente'
-                };
-                ratingText.textContent = `${value} ⭐ - ${descriptions[value]}`;
-                
-                // Actualizar progreso del paso 2
-                updateStep2Progress();
-                
-                // Actualizar resumen
-                updateSummary();
-            });
-        });
-    });
-}
-
-function updateStep2Progress() {
-    const buttonRatings = document.querySelectorAll('.rating-options input[type="hidden"]');
-    const starRatings = document.querySelectorAll('.star-rating input[type="hidden"]');
-    let completedCount = 0;
-    
-    // Contar botones completados
-    buttonRatings.forEach(rating => {
-        if (rating.value && rating.value.trim() !== '') {
-            completedCount++;
-        }
-    });
-    
-    // Contar estrellas completadas
-    starRatings.forEach(rating => {
-        if (rating.value && rating.value.trim() !== '') {
-            completedCount++;
-        }
-    });
-    
-    const progress = (completedCount / 4) * 100;
-    const progressBar = document.getElementById('step2Progress');
-    const progressText = document.getElementById('step2ProgressText');
-    
-    if (progressBar && progressText) {
-        progressBar.style.width = progress + '%';
-        progressText.textContent = `${completedCount}/4`;
-        
-        // Cambiar color según progreso
-        if (progress === 100) {
-            progressBar.className = 'progress-bar bg-success';
-        } else if (progress >= 50) {
-            progressBar.className = 'progress-bar bg-warning';
-        } else {
-            progressBar.className = 'progress-bar bg-danger';
-        }
-    }
-}
-
-// Actualizar resumen cuando cambien los campos
-document.querySelectorAll('input, select, textarea').forEach(input => {
-    input.addEventListener('change', updateSummary);
-});
-
-// Validar antes de enviar
-document.getElementById('reviewForm').addEventListener('submit', function(e) {
-    // Verificar que todos los campos requeridos estén llenos
-    const requiredFields = this.querySelectorAll('[required]');
-    let isValid = true;
-    
-    requiredFields.forEach(field => {
-        if (!field.value.trim()) {
-            field.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            field.classList.remove('is-invalid');
-        }
-    });
-    
-    // Verificar que las calificaciones estén completas
-    const buttonRatings = document.querySelectorAll('.rating-options input[type="hidden"]');
-    const starRatings = document.querySelectorAll('.star-rating input[type="hidden"]');
-    
-    buttonRatings.forEach(rating => {
-        if (!rating.value || rating.value.trim() === '') {
-            rating.closest('.rating-options').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            rating.closest('.rating-options').classList.remove('is-invalid');
-        }
-    });
-    
-    starRatings.forEach(rating => {
-        if (!rating.value || rating.value.trim() === '') {
-            rating.closest('.star-rating').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            rating.closest('.star-rating').classList.remove('is-invalid');
-        }
-    });
-    
-    if (!isValid) {
-        e.preventDefault();
-        alert('Por favor, completa todos los campos requeridos antes de enviar la reseña.');
-        return false;
-    }
-    
-    // Mostrar mensaje de confirmación
-    if (confirm('¿Estás seguro de que quieres enviar esta reseña? No podrás editarla después.')) {
-        // El formulario se enviará normalmente
-        return true;
-    } else {
-        e.preventDefault();
-        return false;
     }
 });
 </script>

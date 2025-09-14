@@ -631,44 +631,32 @@
     <!-- Bootstrap 5 JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- JavaScript personalizado -->
+    <!-- JavaScript simplificado -->
     <script>
-        // Toggle sidebar en móviles (sin lógica de activación por JS; las clases active se resuelven en servidor)
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar) sidebar.classList.toggle('show');
-        }
-
-        // ===== SISTEMA DE MENSAJES AUTO-DISMISS =====
+        // Sistema básico de mensajes
         document.addEventListener('DOMContentLoaded', function() {
-            const messages = document.querySelectorAll('.message-alert[data-auto-dismiss="true"]');
-            
+            // Auto-ocultar mensajes después de 5 segundos
+            const messages = document.querySelectorAll('.alert');
             messages.forEach(function(message, index) {
-                // Delay escalonado para múltiples mensajes
-                const delay = 5000 + (index * 500); // 5 segundos base + 0.5s por mensaje adicional
-                
                 setTimeout(function() {
-                    if (message && message.parentNode) {
-                        // Agregar clase de animación de salida
-                        message.classList.add('fade-out');
-                        
-                        // Remover del DOM después de la animación
+                    if (message) {
+                        message.style.opacity = '0';
                         setTimeout(function() {
                             if (message.parentNode) {
                                 message.parentNode.removeChild(message);
                             }
-                        }, 300); // Duración de la animación
+                        }, 300);
                     }
-                }, delay);
+                }, 5000 + (index * 500));
             });
 
-            // Manejar clicks en botones de cerrar
-            const closeButtons = document.querySelectorAll('.message-alert .btn-close');
+            // Cerrar mensajes manualmente
+            const closeButtons = document.querySelectorAll('.btn-close');
             closeButtons.forEach(function(button) {
                 button.addEventListener('click', function() {
-                    const message = button.closest('.message-alert');
+                    const message = button.closest('.alert');
                     if (message) {
-                        message.classList.add('fade-out');
+                        message.style.opacity = '0';
                         setTimeout(function() {
                             if (message.parentNode) {
                                 message.parentNode.removeChild(message);
