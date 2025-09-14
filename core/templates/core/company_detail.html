@@ -4,7 +4,59 @@
 <!-- core/templates/core/company_detail.html -->
 {% extends 'core/base.html' %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ company.name }} - Reseñas y Opiniones | SelecLoop{% endblock %}
+
+{% block meta_description %}Lee reseñas y opiniones sobre {{ company.name }} en {{ company.location }}{% if company.region %}, {{ company.region }}{% endif %}. Información sobre procesos de selección, entrevistas y cultura laboral.{% endblock %}
+
+{% block meta_keywords %}reseñas {{ company.name }}, opiniones {{ company.name }}, proceso selección {{ company.name }}, entrevistas {{ company.name }}, trabajo {{ company.location }}{% endblock %}
+
+{% block og_type %}article{% endblock %}
+
+{% block og_title %}{{ company.name }} - Reseñas de Empresa{% endblock %}
+
+{% block og_description %}Descubre reseñas reales sobre {{ company.name }}. Información sobre procesos de selección, entrevistas y experiencias de candidatos.{% endblock %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "{{ company.name }}",
+  "description": "{{ company.description|default:'Empresa evaluada por candidatos' }}",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "{{ company.location }}",
+    {% if company.region %}"addressRegion": "{{ company.region }}",{% endif %}
+    "addressCountry": "{{ company.country }}"
+  },
+  {% if company.website %}"url": "{{ company.website }}",{% endif %}
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ company_stats.avg_overall|default:0 }}",
+    "reviewCount": "{{ company_stats.total_reviews|default:0 }}",
+    "bestRating": "5",
+    "worstRating": "1"
+  },
+  "review": [
+    {% for review in all_visible_reviews %}
+    {
+      "@type": "Review",
+      "author": {
+        "@type": "Person",
+        "name": "{{ review.user_profile.user.username }}"
+      },
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "{{ review.overall_rating }}",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "reviewBody": "{{ review.pros }} {{ review.cons }}",
+      "datePublished": "{{ review.submission_date|date:'Y-m-d' }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
 
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
@@ -61,7 +113,9 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Sector:</strong> {{ company.sector }}</p>
-                            <p><strong>Ubicación:</strong> {{ company.location }}</p>
+                            <p><strong>Ciudad:</strong> {{ company.location }}</p>
+                            {% if company.region %}<p><strong>Región:</strong> {{ company.region }}</p>{% endif %}
+                            <p><strong>País:</strong> {{ company.country }}</p>
                             <p><strong>Descripción:</strong> {{ company.description|default:"No disponible" }}</p>
                         </div>
                         <div class="col-md-6">

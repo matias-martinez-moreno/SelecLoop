@@ -1,0 +1,75 @@
+<!-- ===== PASO 3: EXPERIENCIA ===== -->
+<!-- Tercer paso del asistente: Aspectos positivos y negativos -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Crear Reseña - Paso 3{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- ===== HEADER ===== -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 text-primary mb-3">
+                    <i class="fas fa-star fa-bounce me-3"></i>
+                    Crear Reseña
+                </h1>
+                <p class="lead text-muted">{{ step_title }}</p>
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-muted">Paso {{ current_step }} de {{ total_steps }}</small>
+            </div>
+
+            <!-- ===== FORMULARIO ===== -->
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ wizard.management_form }}
+
+                        <!-- ===== ASPECTOS POSITIVOS ===== -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-thumbs-up me-2 text-success"></i>
+                                Aspectos Positivos
+                            </label>
+                            {{ form.pros }}
+                            <small class="text-muted">¿Qué te gustó del proceso? ¿Qué hicieron bien?</small>
+                            {% if form.pros.errors %}
+                                <div class="text-danger small mt-1">{{ form.pros.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ===== ASPECTOS A MEJORAR ===== -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-thumbs-down me-2 text-danger"></i>
+                                Aspectos a Mejorar
+                            </label>
+                            {{ form.cons }}
+                            <small class="text-muted">¿Qué podrían mejorar? ¿Qué no te gustó?</small>
+                            {% if form.cons.errors %}
+                                <div class="text-danger small mt-1">{{ form.cons.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ===== NAVEGACIÓN ===== -->
+                        <div class="d-flex justify-content-between mt-5">
+                            <button name="wizard_goto_step" type="submit" value="step2" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Anterior
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Siguiente
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

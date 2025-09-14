@@ -58,4 +58,11 @@ urlpatterns = [
     path('staff/manage-review/<int:review_id>/', views.approve_review_view, name='staff_manage_review'),
     # Export CSV de reseñas por empresa (solo company_rep/staff)
     path('company/<int:company_id>/export-reviews.csv', views.export_company_reviews_csv, name='export_company_reviews_csv'),
+
+    # ===== VISTAS SEO =====
+    # Robots.txt para motores de búsqueda
+    path('robots.txt', views.robots_txt_view, name='robots_txt'),
+
+    # Sitemap.xml para motores de búsqueda
+    path('sitemap.xml', views.sitemap_xml_view, name='sitemap'),
 ]

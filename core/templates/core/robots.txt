@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Allow access to main pages
+Allow: /login/
+Allow: /dashboard/
+Allow: /company/
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /staff/
+Disallow: /create-review/
+Disallow: /my-reviews/
+Disallow: /profile/
+
+# Sitemap
+Sitemap: {{ protocol }}://{{ domain }}{% url 'sitemap' %}

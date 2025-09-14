@@ -1,0 +1,89 @@
+<!-- ===== PASO 4: PREGUNTAS DE ENTREVISTA ===== -->
+<!-- Último paso del asistente: Preguntas de entrevista e imagen opcional -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Crear Reseña - Paso 4{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- ===== HEADER ===== -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 text-primary mb-3">
+                    <i class="fas fa-star fa-bounce me-3"></i>
+                    Crear Reseña
+                </h1>
+                <p class="lead text-muted">{{ step_title }}</p>
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-muted">Paso {{ current_step }} de {{ total_steps }}</small>
+            </div>
+
+            <!-- ===== FORMULARIO ===== -->
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ wizard.management_form }}
+
+                        <!-- ===== PREGUNTAS DE ENTREVISTA ===== -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Preguntas de Entrevista
+                            </label>
+                            {{ form.interview_questions }}
+                            <small class="text-muted">¿Qué preguntas te hicieron? Esto ayudará a otros candidatos a prepararse.</small>
+                            {% if form.interview_questions.errors %}
+                                <div class="text-danger small mt-1">{{ form.interview_questions.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ===== IMAGEN OPCIONAL ===== -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-image me-2"></i>
+                                Imagen (opcional)
+                            </label>
+                            {{ form.image }}
+                            <small class="text-muted d-block">Formatos permitidos: JPG, PNG. Tamaño recomendado: máximo 5MB.</small>
+                            {% if form.image.errors %}
+                                <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ===== RESUMEN ===== -->
+                        <div class="card bg-light mt-5">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-check-circle me-2 text-success"></i>
+                                    ¡Listo para enviar!
+                                </h5>
+                                <p class="card-text">
+                                    Una vez enviada, tu reseña será revisada por nuestro equipo antes de ser publicada.
+                                    Recibirás una notificación cuando sea aprobada.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ===== NAVEGACIÓN ===== -->
+                        <div class="d-flex justify-content-between mt-5">
+                            <button name="wizard_goto_step" type="submit" value="step3" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Anterior
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Enviar Reseña
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

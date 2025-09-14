@@ -150,7 +150,9 @@ def dashboard_view(request):
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query) |
             Q(sector__icontains=search_query) |
-            Q(location__icontains=search_query)
+            Q(location__icontains=search_query) |
+            Q(region__icontains=search_query) |
+            Q(country__icontains=search_query)
         )
     
     if city_filter:
@@ -1015,3 +1017,42 @@ def export_company_reviews_csv(request, company_id):
         response.write(','.join(esc(v) for v in row) + '\n')
 
     return response
+
+# ===== VISTAS SEO =====
+
+def robots_txt_view(request):
+    """Vista para servir el archivo robots.txt"""
+    from django.template.loader import render_to_string
+
+    # Obtener el protocolo y dominio
+    protocol = 'https' if request.is_secure() else 'http'
+    domain = request.get_host()
+
+    context = {
+        'protocol': protocol,
+        'domain': domain,
+    }
+
+    robots_content = render_to_string('core/robots.txt', context)
+    return HttpResponse(robots_content, content_type='text/plain')
+
+
+def sitemap_xml_view(request):
+    """Vista para servir el archivo sitemap.xml"""
+    from django.template.loader import render_to_string
+
+    # Obtener todas las empresas activas
+    companies = Company.objects.filter(is_active=True).order_by('name')
+
+    # Obtener el protocolo y dominio
+    protocol = 'https' if request.is_secure() else 'http'
+    domain = request.get_host()
+
+    context = {
+        'companies': companies,
+        'protocol': protocol,
+        'domain': domain,
+    }
+
+    sitemap_content = render_to_string('core/sitemap.xml', context)
+    return HttpResponse(sitemap_content, content_type='application/xml')

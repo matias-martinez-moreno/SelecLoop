@@ -37,9 +37,24 @@ class Company(models.Model):
     )
     
     location = models.CharField(
-        max_length=100, 
-        verbose_name="Ubicación",
-        help_text="Ciudad o ubicación principal de la empresa"
+        max_length=100,
+        verbose_name="Ciudad",
+        help_text="Ciudad principal de la empresa"
+    )
+
+    region = models.CharField(
+        max_length=100,
+        verbose_name="Región/Estado",
+        help_text="Región, estado o departamento donde está ubicada la empresa",
+        blank=True,
+        null=True
+    )
+
+    country = models.CharField(
+        max_length=100,
+        verbose_name="País",
+        help_text="País donde está ubicada la empresa",
+        default="Colombia"
     )
     
     website = models.URLField(

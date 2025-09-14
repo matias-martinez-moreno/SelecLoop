@@ -8,7 +8,30 @@
     <!-- ===== METADATOS ===== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SelecLoop{% endblock %}</title>
+
+    <!-- SEO Meta Tags -->
+    <title>{% block title %}SelecLoop - Reseñas de Empresas{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Plataforma para compartir reseñas de procesos de selección de empresas. Encuentra información sobre empresas en tu ciudad y región.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}reseñas empresas, procesos selección, entrevistas trabajo, opiniones empresas{% endblock %}">
+    <meta name="author" content="SelecLoop">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}{{ block.super }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ block.super }}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta property="og:site_name" content="SelecLoop">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ block.super }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ block.super }}{% endblock %}">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'core/logo.png' %}">
 
     <!-- ===== RECURSOS EXTERNOS ===== -->
     <!-- Bootstrap 5 para diseño responsive -->

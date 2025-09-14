@@ -3,7 +3,15 @@
 <!-- core/templates/core/index.html -->
 {% extends 'core/base.html' %}
 
-{% block title %}Dashboard - Candidato{% endblock %}
+{% block title %}SelecLoop - Encuentra Reseñas de Empresas por Ubicación{% endblock %}
+
+{% block meta_description %}Busca y encuentra reseñas de empresas en tu ciudad. Información sobre procesos de selección, entrevistas y experiencias laborales. Comparte tu experiencia y ayuda a otros candidatos.{% endblock %}
+
+{% block meta_keywords %}reseñas empresas, procesos selección, entrevistas trabajo, opiniones empresas, búsqueda por ubicación, candidatos trabajo{% endblock %}
+
+{% block og_title %}SelecLoop - Reseñas de Empresas por Ubicación{% endblock %}
+
+{% block og_description %}Plataforma para compartir reseñas de procesos de selección. Encuentra información sobre empresas en tu ciudad y región.{% endblock %}
 
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
@@ -204,7 +212,7 @@
                                     <div class="card-body">
                                         <p class="card-text small text-muted mb-2">
                                             <i class="fas fa-map-marker-alt text-danger me-1"></i>
-                                            {{ company.location }}
+                                            {{ company.location }}{% if company.region %}, {{ company.region }}{% endif %} - {{ company.country }}
                                         </p>
                                         <p class="card-text small text-muted mb-2">
                                             <i class="fas fa-industry text-primary me-1"></i>
