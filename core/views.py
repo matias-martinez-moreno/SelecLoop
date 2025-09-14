@@ -417,7 +417,7 @@ def company_detail_view(request, company_id):
     status_img = make_pie(['Aprobadas', 'Pendientes', 'Rechazadas'], status_counts, 'Estado de Reseñas')
     timeline_img = make_line(timeline_labels, timeline_counts, 'Reseñas por Mes')
 
-    # ===== Resúmenes por rol =====
+    # ===== Estadísticas específicas por rol =====
     role_kpis = {}
     try:
         user_role = request.user.profile.role
@@ -425,43 +425,90 @@ def company_detail_view(request, company_id):
         user_role = None
 
     if user_role == 'candidate':
-        # Últimos 90 días
+        # Estadísticas útiles para candidatos
         from django.utils import timezone
         since_90 = timezone.now() - timedelta(days=90)
-        last90 = reviews_for_stats.filter(submission_date__gte=since_90)
-        last90_count = last90.count()
-        fast_count = last90.filter(response_time_rating__in=['immediate', 'same_day']).count()
-        fast_rate = (fast_count / last90_count) if last90_count else 0
-        # Modalidad más común
-        top_mod = (
-            reviews_for_stats.values('modality')
-            .annotate(c=DJCount('id')).order_by('-c').first()
-        )
+        last90_reviews = reviews_for_stats.filter(submission_date__gte=since_90)
+
+        # Tasa de respuesta rápida (últimos 90 días)
+        fast_responses = last90_reviews.filter(response_time_rating__in=['immediate', 'same_day']).count()
+        fast_response_rate = (fast_responses / last90_reviews.count()) * 100 if last90_reviews.count() > 0 else 0
+
+        # Modalidad más recomendada
+        top_modality = reviews_for_stats.values('modality').annotate(
+            count=DJCount('id'),
+            avg_rating=Avg('overall_rating')
+        ).order_by('-avg_rating', '-count').first()
+
+        # Nivel de dificultad promedio
+        difficulty_distribution = reviews_for_stats.values('difficulty_rating').annotate(
+            count=DJCount('id')
+        ).order_by('difficulty_rating')
+
+        # Calidad de comunicación
+        comm_distribution = reviews_for_stats.values('communication_rating').annotate(
+            count=DJCount('id')
+        ).order_by('communication_rating')
+
         role_kpis = {
             'role': 'candidate',
             'avg_overall': avg_overall,
-            'last90_reviews': last90_count,
-            'fast_response_rate': fast_rate,
-            'top_modality': top_mod['modality'] if top_mod else None,
+            'last90_reviews_count': last90_reviews.count(),
+            'fast_response_rate': round(fast_response_rate, 1),
+            'top_modality': top_modality['modality'] if top_modality else None,
+            'top_modality_rating': round(top_modality['avg_rating'], 1) if top_modality else 0,
+            'difficulty_distribution': list(difficulty_distribution),
+            'communication_distribution': list(comm_distribution),
+            'total_reviews': reviews_for_stats.count(),
         }
     elif user_role == 'company_rep':
-        total_all = approved_reviews.count() + pending_reviews.count() + rejected_reviews.count()
-        sla_fast = approved_reviews.filter(response_time_rating__in=['immediate', 'same_day']).count()
-        sla_rate = (sla_fast / approved_reviews.count()) if approved_reviews.count() else 0
-        # Delta mensual (último vs anterior)
-        last_two = (
-            reviews_for_stats.annotate(m=TruncMonth('submission_date'))
-            .values('m').annotate(c=DJCount('id')).order_by('-m')[:2]
-        )
-        month_delta = 0
-        if len(last_two) == 2:
-            month_delta = (last_two[0]['c'] - last_two[1]['c'])
+        # Estadísticas útiles para representantes de empresa
+        all_company_reviews = Review.objects.filter(company=company)
+
+        # Ratios de aprobación
+        total_reviews = all_company_reviews.count()
+        approved_count = all_company_reviews.filter(status='approved').count()
+        pending_count = all_company_reviews.filter(status='pending').count()
+        rejected_count = all_company_reviews.filter(status='rejected').count()
+
+        approval_rate = (approved_count / total_reviews) * 100 if total_reviews > 0 else 0
+        rejection_rate = (rejected_count / total_reviews) * 100 if total_reviews > 0 else 0
+
+        # Compromiso de tiempo de respuesta (aprobadas con respuesta rápida)
+        compromiso_compliant = all_company_reviews.filter(
+            status='approved',
+            response_time_rating__in=['immediate', 'same_day']
+        ).count()
+        compromiso_rate = (compromiso_compliant / approved_count) * 100 if approved_count > 0 else 0
+
+        # Tendencia mensual (últimos 6 meses)
+        from django.utils import timezone
+        six_months_ago = timezone.now() - timedelta(days=180)
+        monthly_trend = all_company_reviews.filter(submission_date__gte=six_months_ago).annotate(
+            month=TruncMonth('submission_date')
+        ).values('month').annotate(
+            count=DJCount('id'),
+            approved=DJCount('id', filter=Q(status='approved')),
+            avg_rating=Avg('overall_rating')
+        ).order_by('month')
+
+        # Calificaciones por mes
+        monthly_ratings = list(monthly_trend)
+
         role_kpis = {
             'role': 'company_rep',
             'avg_overall': avg_overall,
-            'sla_fast_rate': sla_rate,
-            'approval_ratio': (approved_reviews.count() / total_all) if total_all else 0,
-            'month_delta': month_delta,
+            'total_reviews': total_reviews,
+            'approved_count': approved_count,
+            'pending_count': pending_count,
+            'rejected_count': rejected_count,
+            'approval_rate': round(approval_rate, 1),
+            'rejection_rate': round(rejection_rate, 1),
+            'compromiso_rate': round(compromiso_rate, 1),
+            'monthly_trend': monthly_ratings,
+            'avg_communication': avg_communication,
+            'avg_difficulty': avg_difficulty,
+            'avg_response_time': avg_response_time,
         }
 
     context = {
