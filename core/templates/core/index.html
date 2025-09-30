@@ -5,42 +5,26 @@
 
 {% block title %}SelecLoop - Encuentra Reseñas de Empresas por Ubicación{% endblock %}
 
-{% block meta_description %}Busca y encuentra reseñas de empresas en tu ciudad. Información sobre procesos de selección, entrevistas y experiencias laborales. Comparte tu experiencia y ayuda a otros candidatos.{% endblock %}
+{% block meta_description %}SelecLoop es la plataforma líder en recolección de feedback empresarial en Colombia. Comparte reseñas anónimas de procesos de selección, encuentra información detallada sobre empresas, modalidades de trabajo y experiencias de otros candidatos. Filtra por ciudad, sector y tipo de empleo.{% endblock %}
 
-{% block meta_keywords %}reseñas empresas, procesos selección, entrevistas trabajo, opiniones empresas, búsqueda por ubicación, candidatos trabajo{% endblock %}
+{% block meta_keywords %}reseñas empresas Colombia, procesos selección, feedback empresarial, evaluaciones trabajo, experiencias laborales, calificaciones empresas, reviews empresas, candidatos Colombia, recursos humanos, empleo Colombia, trabajo remoto, trabajo presencial, trabajo híbrido, entrevistas trabajo, selección personal, empresas Medellín, empresas Bogotá, empresas Cali{% endblock %}
 
-{% block og_title %}SelecLoop - Reseñas de Empresas por Ubicación{% endblock %}
+{% block og_title %}SelecLoop - Plataforma de Feedback Empresarial{% endblock %}
 
-{% block og_description %}Plataforma para compartir reseñas de procesos de selección. Encuentra información sobre empresas en tu ciudad y región.{% endblock %}
+{% block og_description %}Descubre experiencias reales de candidatos en procesos de selección. SelecLoop te ayuda a tomar decisiones informadas sobre empresas y oportunidades laborales en Colombia.{% endblock %}
 
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
-<div class="container mt-4">
-    <!-- ===== HEADER DEL DASHBOARD ===== -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="display-5 text-primary mb-2">
-                        <i class="fas fa-home me-3"></i>
-                        Dashboard Principal
-                    </h1>
-                    <p class="lead text-muted">Bienvenido, {{ user.username }}. Gestiona tus reseñas y explora empresas.</p>
-                </div>
-                <div class="text-end">
-                    <div class="badge bg-primary fs-6 p-2">
-                        <i class="fas fa-user me-2"></i>
-                        Candidato
-                    </div>
+<div class="container-fluid">
                 </div>
             </div>
         </div>
     </div>
 
     <!-- ===== ESTADÍSTICAS RÁPIDAS ===== -->
-    <div class="row mb-4">
+    <div class="row mb-3">
         <div class="col-md-4">
-            <div class="card bg-primary text-white h-100">
+            <div class="card stats-card-blue h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-building fa-2x mb-3"></i>
                     <h3 class="card-title">{{ companies.count }}</h3>
@@ -49,7 +33,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-warning text-white h-100">
+            <div class="card stats-card-orange h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-clock fa-2x mb-3"></i>
                     <h3 class="card-title">{{ pending_reviews.count }}</h3>
@@ -58,7 +42,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-success text-white h-100">
+            <div class="card stats-card-green h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-star fa-2x mb-3"></i>
                     <h3 class="card-title">{{ completed_reviews.count }}</h3>
@@ -69,7 +53,7 @@
     </div>
 
     <!-- ===== BÚSQUEDA Y FILTROS ===== -->
-    <div class="row mb-4">
+    <div class="row mb-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
@@ -191,7 +175,7 @@
     {% endif %}
 
     <!-- ===== LISTA DE EMPRESAS ===== -->
-    <div class="row">
+    <div class="row mb-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
@@ -236,14 +220,6 @@
                                                     Ya tienes acceso completo al contenido
                                                 </small>
                                             </div>
-                                        {% else %}
-                                            <div class="alert alert-info py-2 mb-2">
-                                                <small>
-                                                    <i class="fas fa-info-circle me-1"></i>
-                                                    <strong>Disponible para Participar</strong><br>
-                                                    Puedes solicitar participar en esta empresa
-                                                </small>
-                                            </div>
                                         {% endif %}
                                         
                                         <div class="d-flex justify-content-between align-items-center">
@@ -273,5 +249,230 @@
             </div>
         </div>
     </div>
+
+    <!-- ===== GRÁFICOS DEL USUARIO ===== -->
+    {% if chart_data.ratings or chart_data.modality or chart_data.status or chart_data.timeline %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="text-primary mb-4">
+                <i class="fas fa-chart-bar me-2"></i>
+                Mis Estadísticas
+            </h4>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">Mis Calificaciones</h6>
+                </div>
+                <div class="card-body">
+                    {% if chart_data.ratings %}
+                    <canvas id="userRatingsChart" width="400" height="200"></canvas>
+                    {% else %}
+                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">Modalidades de Trabajo</h6>
+                </div>
+                <div class="card-body">
+                    {% if chart_data.modality %}
+                    <canvas id="userModalityChart" width="400" height="200"></canvas>
+                    {% else %}
+                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">Estado de Mis Reseñas</h6>
+                </div>
+                <div class="card-body">
+                    {% if chart_data.status %}
+                    <canvas id="userStatusChart" width="400" height="200"></canvas>
+                    {% else %}
+                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">Mis Reseñas por Mes</h6>
+                </div>
+                <div class="card-body">
+                    {% if chart_data.timeline %}
+                    <canvas id="userTimelineChart" width="400" height="200"></canvas>
+                    {% else %}
+                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== SECCIÓN FAQ PARA AEO ===== -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-question-circle me-2"></i>Preguntas Frecuentes</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>¿Qué es SelecLoop?</h5>
+                            <p class="text-muted">SelecLoop es una plataforma de feedback empresarial que permite a candidatos compartir reseñas sobre sus experiencias en procesos de selección y trabajo en diferentes empresas de Colombia.</p>
+                            
+                            <h5>¿Cómo puedo crear una reseña?</h5>
+                            <p class="text-muted">Para crear una reseña, primero debes registrarte como candidato, luego puedes agregar tu historial laboral o crear reseñas directamente desde el perfil de cualquier empresa activa.</p>
+                            
+                            <h5>¿Las reseñas son anónimas?</h5>
+                            <p class="text-muted">Sí, las reseñas en SelecLoop son completamente anónimas para proteger la privacidad de los candidatos y fomentar la honestidad en las evaluaciones.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>¿Qué información puedo encontrar?</h5>
+                            <p class="text-muted">En SelecLoop puedes encontrar calificaciones generales, reseñas detalladas sobre procesos de selección, modalidades de trabajo (presencial, remoto, híbrido), estadísticas de satisfacción y experiencias de otros candidatos.</p>
+                            
+                            <h5>¿Puedo filtrar empresas por ubicación?</h5>
+                            <p class="text-muted">Sí, SelecLoop incluye filtros avanzados que te permiten buscar empresas por ciudad, sector económico y modalidad de trabajo para encontrar oportunidades relevantes en tu área.</p>
+                            
+                            <h5>¿Es gratuito usar SelecLoop?</h5>
+                            <p class="text-muted">Sí, SelecLoop es completamente gratuito para todos los candidatos. Puedes crear reseñas, buscar empresas y acceder a toda la información sin costo alguno.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ chart_data|json_script:"user-chart-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Datos de los gráficos del usuario
+    const userChartData = JSON.parse(document.getElementById('user-chart-data').textContent);
+    
+    // Colores para los gráficos
+    const colors = {
+        primary: '#1E3A8A',
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger: '#EF4444',
+        info: '#3B82F6',
+        secondary: '#6B7280'
+    };
+    
+    // Gráfico de calificaciones del usuario
+    if (userChartData.ratings && Object.keys(userChartData.ratings).length > 0) {
+        const ratingsCtx = document.getElementById('userRatingsChart');
+        if (ratingsCtx) {
+            new Chart(ratingsCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(userChartData.ratings),
+                    datasets: [{
+                        label: 'Mis Calificaciones',
+                        data: Object.values(userChartData.ratings),
+                        backgroundColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
+                        borderColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Gráfico de modalidad del usuario
+    if (userChartData.modality && Object.keys(userChartData.modality).length > 0) {
+        const modalityCtx = document.getElementById('userModalityChart');
+        if (modalityCtx) {
+            new Chart(modalityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(userChartData.modality),
+                    datasets: [{
+                        data: Object.values(userChartData.modality),
+                        backgroundColor: [colors.primary, colors.success, colors.info],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+    
+    // Gráfico de estado de reseñas del usuario
+    if (userChartData.status && Object.keys(userChartData.status).length > 0) {
+        const statusCtx = document.getElementById('userStatusChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(userChartData.status),
+                    datasets: [{
+                        data: Object.values(userChartData.status),
+                        backgroundColor: [colors.success, colors.warning, colors.danger],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+    
+    // Gráfico de timeline del usuario
+    if (userChartData.timeline && Object.keys(userChartData.timeline).length > 0) {
+        const timelineCtx = document.getElementById('userTimelineChart');
+        if (timelineCtx) {
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(userChartData.timeline),
+                    datasets: [{
+                        label: 'Mis Reseñas por Mes',
+                        data: Object.values(userChartData.timeline),
+                        borderColor: colors.primary,
+                        backgroundColor: colors.primary + '20',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+
 {% endblock %}

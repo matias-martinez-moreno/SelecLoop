@@ -134,11 +134,6 @@
                         </div>
                     </div>
                     
-                    <!-- ===== MENSAJE INFORMATIVO ===== -->
-                    <div class="alert alert-info mt-3">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        <strong>Próximamente:</strong> Aquí se mostrará un resumen detallado de las calificaciones y estadísticas de la empresa basado en las reseñas de los candidatos.
-                    </div>
                 </div>
             </div>
         </div>
@@ -421,21 +416,32 @@
                         </div>
                     </div>
 
-                    <!-- Gráficos de análisis para candidatos y representantes de empresa -->
-                    {% if user.profile.role == 'candidate' or user.profile.role == 'company_rep' %}
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h6 class="text-muted mb-3">
-                                <i class="fas fa-chart-bar me-2"></i>
-                                Análisis Visual de Datos
-                            </h6>
-                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== GRÁFICOS DE ANÁLISIS (SOLO PARA USUARIOS SIN RESEÑAS PENDIENTES) ===== -->
+    {% if user_can_access and chart_data.ratings or chart_data.modality or chart_data.status or chart_data.timeline %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Análisis Visual de Datos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
                         <div class="col-md-6 mb-4">
                             <div class="card">
                                 <div class="card-body">
                                     <h6 class="card-title">Distribución de Calificaciones</h6>
-                                    {% if ratings_img %}
-                                    <img src="{{ ratings_img|safe }}" alt="Distribución de Calificaciones" class="img-fluid"/>
+                                    {% if chart_data.ratings %}
+                                    <canvas id="ratingsChart" width="400" height="200"></canvas>
                                     {% else %}
                                     <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     {% endif %}
@@ -446,8 +452,8 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h6 class="card-title">Modalidad de Trabajo</h6>
-                                    {% if modality_img %}
-                                    <img src="{{ modality_img|safe }}" alt="Modalidad de Reseñas" class="img-fluid"/>
+                                    {% if chart_data.modality %}
+                                    <canvas id="modalityChart" width="400" height="200"></canvas>
                                     {% else %}
                                     <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     {% endif %}
@@ -458,8 +464,8 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h6 class="card-title">Estado de Reseñas</h6>
-                                    {% if status_img %}
-                                    <img src="{{ status_img|safe }}" alt="Estado de Reseñas" class="img-fluid"/>
+                                    {% if chart_data.status %}
+                                    <canvas id="statusChart" width="400" height="200"></canvas>
                                     {% else %}
                                     <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     {% endif %}
@@ -470,8 +476,8 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h6 class="card-title">Reseñas por Mes</h6>
-                                    {% if timeline_img %}
-                                    <img src="{{ timeline_img|safe }}" alt="Reseñas por Mes" class="img-fluid"/>
+                                    {% if chart_data.timeline %}
+                                    <canvas id="timelineChart" width="400" height="200"></canvas>
                                     {% else %}
                                     <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     {% endif %}
@@ -479,8 +485,6 @@
                             </div>
                         </div>
                     </div>
-                    {% endif %}
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -657,4 +661,126 @@
         </div>
     </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ chart_data|json_script:"chart-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Datos de los gráficos
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    
+    // Colores para los gráficos
+    const colors = {
+        primary: '#1E3A8A',
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger: '#EF4444',
+        info: '#3B82F6',
+        secondary: '#6B7280'
+    };
+    
+    // Gráfico de distribución de calificaciones
+    if (chartData.ratings && Object.keys(chartData.ratings).length > 0) {
+        const ratingsCtx = document.getElementById('ratingsChart');
+        if (ratingsCtx) {
+            new Chart(ratingsCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(chartData.ratings),
+                    datasets: [{
+                        label: 'Número de Reseñas',
+                        data: Object.values(chartData.ratings),
+                        backgroundColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
+                        borderColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Gráfico de modalidad de trabajo
+    if (chartData.modality && Object.keys(chartData.modality).length > 0) {
+        const modalityCtx = document.getElementById('modalityChart');
+        if (modalityCtx) {
+            new Chart(modalityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(chartData.modality),
+                    datasets: [{
+                        data: Object.values(chartData.modality),
+                        backgroundColor: [colors.primary, colors.success, colors.info],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+    
+    // Gráfico de estado de reseñas
+    if (chartData.status && Object.keys(chartData.status).length > 0) {
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(chartData.status),
+                    datasets: [{
+                        data: Object.values(chartData.status),
+                        backgroundColor: [colors.success, colors.warning, colors.danger],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+    
+    // Gráfico de timeline
+    if (chartData.timeline && Object.keys(chartData.timeline).length > 0) {
+        const timelineCtx = document.getElementById('timelineChart');
+        if (timelineCtx) {
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(chartData.timeline),
+                    datasets: [{
+                        label: 'Reseñas por Mes',
+                        data: Object.values(chartData.timeline),
+                        borderColor: colors.primary,
+                        backgroundColor: colors.primary + '20',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+
 {% endblock %}

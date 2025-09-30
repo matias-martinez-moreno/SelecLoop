@@ -292,7 +292,55 @@ def dashboard_view(request):
         'city_filter': city_filter,
         'sector_filter': sector_filter,
         'modality_filter': modality_filter,
+        'total_companies': companies.count(),
+        'total_reviews': Review.objects.count(),
+        'total_candidates': UserProfile.objects.filter(role='candidate').count(),
+        'chart_data': {
+            'ratings': {},
+            'modality': {},
+            'status': {},
+            'timeline': {}
+        }
     }
+    
+    # Generar datos para gráficos del usuario
+    user_reviews = Review.objects.filter(user_profile=request.user.profile)
+    if user_reviews.exists():
+        # Distribución de calificaciones del usuario
+        rating_counts = {}
+        for i in range(1, 6):
+            count = user_reviews.filter(overall_rating=i).count()
+            rating_counts[f'{i} estrella{"s" if i > 1 else ""}'] = count
+        context['chart_data']['ratings'] = rating_counts
+        
+        # Modalidades del usuario
+        modality_counts = {}
+        for modality, _ in Review.MODALITY_CHOICES:
+            count = user_reviews.filter(modality=modality).count()
+            if count > 0:
+                modality_counts[modality.title()] = count
+        context['chart_data']['modality'] = modality_counts
+        
+        # Estados de reseñas del usuario
+        status_counts = {}
+        for status, _ in Review.STATUS_CHOICES:
+            count = user_reviews.filter(status=status).count()
+            if count > 0:
+                status_counts[status.title()] = count
+        context['chart_data']['status'] = status_counts
+        
+        # Timeline de reseñas del usuario (últimos 6 meses)
+        timeline_data = {}
+        for i in range(6):
+            month_start = timezone.now() - timedelta(days=30*i)
+            month_end = month_start + timedelta(days=30)
+            count = user_reviews.filter(
+                submission_date__gte=month_start,
+                submission_date__lt=month_end
+            ).count()
+            month_name = month_start.strftime('%b %Y')
+            timeline_data[month_name] = count
+        context['chart_data']['timeline'] = timeline_data
     
     return render(request, 'core/index.html', context)
 
@@ -458,11 +506,50 @@ def company_detail_view(request, company_id):
 
     # ===== Gráficos removidos - ya no se usan =====
 
-    # Gráficos removidos - ya no se usan
-    ratings_img = None
-    modality_img = None
-    status_img = None
-    timeline_img = None
+    # Datos para gráficos (se generarán con Chart.js en el frontend)
+    chart_data = {
+        'ratings': [],
+        'modality': [],
+        'status': [],
+        'timeline': []
+    }
+    
+    if reviews_for_stats.exists():
+        # Datos de distribución de calificaciones
+        rating_counts = {}
+        for i in range(1, 6):
+            count = reviews_for_stats.filter(overall_rating=i).count()
+            rating_counts[f'{i} estrella{"s" if i > 1 else ""}'] = count
+        chart_data['ratings'] = rating_counts
+        
+        # Datos de modalidad
+        modality_counts = {}
+        for modality, _ in Review.MODALITY_CHOICES:
+            count = reviews_for_stats.filter(modality=modality).count()
+            if count > 0:
+                modality_counts[modality.title()] = count
+        chart_data['modality'] = modality_counts
+        
+        # Datos de estado
+        status_counts = {}
+        for status, _ in Review.STATUS_CHOICES:
+            count = reviews_for_stats.filter(status=status).count()
+            if count > 0:
+                status_counts[status.title()] = count
+        chart_data['status'] = status_counts
+        
+        # Datos de timeline (últimos 6 meses)
+        timeline_data = {}
+        for i in range(6):
+            month_start = timezone.now() - timedelta(days=30*i)
+            month_end = month_start + timedelta(days=30)
+            count = reviews_for_stats.filter(
+                submission_date__gte=month_start,
+                submission_date__lt=month_end
+            ).count()
+            month_name = month_start.strftime('%b %Y')
+            timeline_data[month_name] = count
+        chart_data['timeline'] = timeline_data
 
     # ===== Estadísticas específicas por rol =====
     role_kpis = {}
@@ -473,7 +560,6 @@ def company_detail_view(request, company_id):
 
     if user_role == 'candidate':
         # Estadísticas útiles para candidatos
-        from django.utils import timezone
         since_90 = timezone.now() - timedelta(days=90)
         last90_reviews = reviews_for_stats.filter(submission_date__gte=since_90)
 
@@ -529,7 +615,6 @@ def company_detail_view(request, company_id):
         compromiso_rate = (compromiso_compliant / approved_count) * 100 if approved_count > 0 else 0
 
         # Tendencia mensual (últimos 6 meses)
-        from django.utils import timezone
         six_months_ago = timezone.now() - timedelta(days=180)
         monthly_trend = all_company_reviews.filter(submission_date__gte=six_months_ago).annotate(
             month=TruncMonth('submission_date')
@@ -571,10 +656,7 @@ def company_detail_view(request, company_id):
         'user_can_create_review': user_can_create_review,
         'pending_review': pending_review,
         'company_stats': company_stats,
-        'ratings_img': ratings_img or '',
-        'modality_img': modality_img or '',
-        'status_img': status_img or '',
-        'timeline_img': timeline_img or '',
+        'chart_data': chart_data,
         'role_kpis': role_kpis,
     }
     
