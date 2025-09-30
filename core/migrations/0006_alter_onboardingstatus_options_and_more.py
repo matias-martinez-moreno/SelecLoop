@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0005_staffassignment'),
+        ('core', '0004_alter_company_options_alter_review_options_and_more'),
     ]
 
     operations = [

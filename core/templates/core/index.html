@@ -287,35 +287,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0">Estado de Mis Reseñas</h6>
-                </div>
-                <div class="card-body">
-                    {% if chart_data.status %}
-                    <canvas id="userStatusChart" width="400" height="200"></canvas>
-                    {% else %}
-                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0">Mis Reseñas por Mes</h6>
-                </div>
-                <div class="card-body">
-                    {% if chart_data.timeline %}
-                    <canvas id="userTimelineChart" width="400" height="200"></canvas>
-                    {% else %}
-                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
     {% endif %}
 
 <!-- Chart.js -->
@@ -382,56 +353,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 options: {
                     responsive: true
-                }
-            });
-        }
-    }
-    
-    // Gráfico de estado de reseñas del usuario
-    if (userChartData.status && Object.keys(userChartData.status).length > 0) {
-        const statusCtx = document.getElementById('userStatusChart');
-        if (statusCtx) {
-            new Chart(statusCtx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(userChartData.status),
-                    datasets: [{
-                        data: Object.values(userChartData.status),
-                        backgroundColor: [colors.success, colors.warning, colors.danger],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true
-                }
-            });
-        }
-    }
-    
-    // Gráfico de timeline del usuario
-    if (userChartData.timeline && Object.keys(userChartData.timeline).length > 0) {
-        const timelineCtx = document.getElementById('userTimelineChart');
-        if (timelineCtx) {
-            new Chart(timelineCtx, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(userChartData.timeline),
-                    datasets: [{
-                        label: 'Mis Reseñas por Mes',
-                        data: Object.values(userChartData.timeline),
-                        borderColor: colors.primary,
-                        backgroundColor: colors.primary + '20',
-                        tension: 0.1,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
                 }
             });
         }
