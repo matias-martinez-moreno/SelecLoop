@@ -23,7 +23,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Review, StaffAssignment, UserProfile
+from .models import Review, UserProfile, WorkHistory
 
 # ===== FORMULARIO: CREACIÓN DE USUARIOS =====
 class UserCreationForm(UserCreationForm):
@@ -297,24 +297,17 @@ class ProfileUpdateForm(forms.Form):
         profile.save()
 
 # ===== FORMULARIO: ASIGNACIÓN DE EMPRESAS POR STAFF =====
-class StaffAssignmentForm(forms.ModelForm):
+class WorkHistoryForm(forms.ModelForm):
     """
-    Formulario para que el staff asigne empresas a usuarios.
-    Permite crear asignaciones de empresas donde los usuarios participaron.
+    Formulario para agregar y editar historial laboral del usuario.
+    Permite a los candidatos agregar empresas donde han trabajado.
     """
     
     # ===== CAMPOS DE RELACIÓN =====
-    user_profile = forms.ModelChoiceField(
-        queryset=None,  # Se establece dinámicamente en la vista
-        label="Usuario",
-        help_text="Selecciona el usuario al que se le asignará la empresa",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-    
     company = forms.ModelChoiceField(
         queryset=None,  # Se establece dinámicamente en la vista
         label="Empresa",
-        help_text="Selecciona la empresa donde participó el usuario",
+        help_text="Selecciona la empresa donde trabajaste o trabajas",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     
@@ -322,46 +315,73 @@ class StaffAssignmentForm(forms.ModelForm):
     job_title = forms.CharField(
         max_length=200,
         label="Cargo o puesto",
-        help_text="Título del trabajo o puesto al que se postuló el usuario",
+        help_text="Título del trabajo o puesto que desempeñaste",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Ej: Desarrollador Backend, Diseñador UX...'
+            'placeholder': 'Ej: Desarrollador Frontend, Analista de Datos...'
         })
     )
     
-    participation_date = forms.DateField(
-        label="Fecha de participación",
-        help_text="Fecha en que el usuario participó en el proceso de selección",
+    start_date = forms.DateField(
+        label="Fecha de inicio",
+        help_text="Fecha en que comenzaste a trabajar en esta empresa",
         widget=forms.DateInput(attrs={
             'class': 'form-control',
             'type': 'date'
         })
     )
     
-    # ===== CONFIGURACIÓN DEL FORMULARIO =====
+    end_date = forms.DateField(
+        label="Fecha de finalización",
+        help_text="Fecha en que terminaste de trabajar (deja vacío si aún trabajas aquí)",
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        })
+    )
+    
+    # ===== CAMPOS DE ESTADO =====
+    is_current_job = forms.BooleanField(
+        label="Trabajo actual",
+        help_text="Marca esta casilla si actualmente trabajas en esta empresa",
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
     class Meta:
         """Configuración del formulario"""
-        model = StaffAssignment
-        fields = ['user_profile', 'company', 'job_title', 'participation_date']
+        model = WorkHistory
+        fields = ['company', 'job_title', 'start_date', 'end_date', 'is_current_job']
     
     def __init__(self, *args, **kwargs):
-        """Inicializa el formulario con configuraciones personalizadas"""
+        """Inicialización del formulario"""
         super().__init__(*args, **kwargs)
         
-        # Personalizar widgets para mejor presentación
-        for field_name, field in self.fields.items():
-            if field_name not in ['participation_date']:  # Excluir campo de fecha
-                field.widget.attrs.update({'class': 'form-control'})
+        # Establecer queryset de empresas activas
+        self.fields['company'].queryset = Company.objects.filter(is_active=True)
     
     def clean(self):
         """Validación personalizada del formulario"""
         cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        is_current_job = cleaned_data.get('is_current_job')
         
-        # Validar que la fecha de participación no sea futura
-        participation_date = cleaned_data.get('participation_date')
-        if participation_date:
-            from django.utils import timezone
-            if participation_date > timezone.now().date():
-                raise forms.ValidationError('La fecha de participación no puede ser futura.')
+        # Validar fechas
+        if start_date and end_date:
+            if start_date > end_date:
+                raise forms.ValidationError("La fecha de inicio no puede ser posterior a la fecha de finalización.")
+        
+        # Si es trabajo actual, no debe tener fecha de finalización
+        if is_current_job and end_date:
+            raise forms.ValidationError("Si es tu trabajo actual, no debes especificar fecha de finalización.")
+        
+        # Si no es trabajo actual, debe tener fecha de finalización
+        if not is_current_job and not end_date:
+            raise forms.ValidationError("Si no es tu trabajo actual, debes especificar la fecha de finalización.")
         
         return cleaned_data
+
+# ===== FORMULARIO: ASIGNACIÓN DE EMPRESAS POR STAFF =====
+# (Eliminado - ahora se usa el sistema de historial laboral automático)

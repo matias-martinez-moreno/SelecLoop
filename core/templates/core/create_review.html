@@ -32,7 +32,15 @@
                             <i class="fas fa-info-circle me-2"></i>
                             Información Básica
                         </h3>
+                        
+                        {% if form.company.field.queryset.count == 1 %}
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-building me-2"></i>
+                            <strong>Empresa preseleccionada:</strong> {{ form.company.field.queryset.first.name }}
+                        </div>
+                        {% endif %}
                         <div class="row">
+                            {% if form.company.field.queryset.count > 1 %}
                             <div class="col-md-6">
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">
@@ -57,6 +65,20 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% else %}
+                            <div class="col-12">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-briefcase me-2"></i>
+                                        Cargo o Puesto
+                                    </label>
+                                    {{ form.job_title }}
+                                    {% if form.job_title.errors %}
+                                        <div class="text-danger small mt-1">{{ form.job_title.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-bold">

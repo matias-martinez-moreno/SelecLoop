@@ -1,0 +1,251 @@
+<!-- ===== TEMPLATE: LOGROS DEL USUARIO ===== -->
+<!-- Muestra logros obtenidos y disponibles para el usuario -->
+<!-- Sistema de gamificación con estrellas y recompensas -->
+<!-- core/templates/core/achievements.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }} - SelecLoop{% endblock %}
+
+{% block content %}
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-4 text-primary mb-0">
+                    <i class="fas fa-trophy me-3"></i>
+                    {{ title }}
+                </h1>
+                <div class="text-end">
+                    <h3 class="text-warning mb-0">{{ earned_count }}/{{ total_achievements }}</h3>
+                    <small class="text-muted">Logros obtenidos</small>
+                </div>
+            </div>
+            <p class="lead text-muted">¡Comparte tu experiencia y desbloquea logros increíbles!</p>
+        </div>
+    </div>
+
+    <!-- ===== ESTADÍSTICAS DEL USUARIO ===== -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-2"></i>
+                    <h4 class="card-title">{{ user_stats.total_reviews }}</h4>
+                    <p class="card-text mb-0">Reseñas Creadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-building fa-2x mb-2"></i>
+                    <h4 class="card-title">{{ user_stats.total_companies }}</h4>
+                    <p class="card-text mb-0">Empresas Evaluadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-briefcase fa-2x mb-2"></i>
+                    <h4 class="card-title">{{ user_stats.total_work_history }}</h4>
+                    <p class="card-text mb-0">Experiencias Laborales</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== LOGROS OBTENIDOS ===== -->
+    {% if earned_achievements %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="text-success mb-3">
+                <i class="fas fa-check-circle me-2"></i>
+                Logros Obtenidos ({{ earned_achievements|length }})
+            </h3>
+            <div class="row">
+                {% for achievement in earned_achievements %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 border-success shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="achievement-icon mb-3">
+                                <i class="{{ achievement.icon }} fa-3x text-{{ achievement.color }}"></i>
+                            </div>
+                            <h5 class="card-title text-success">{{ achievement.name }}</h5>
+                            <p class="card-text text-muted">{{ achievement.description }}</p>
+                            <div class="mt-3">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Obtenido
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== LOGROS DISPONIBLES ===== -->
+    {% if unearned_achievements %}
+    <div class="row">
+        <div class="col-12">
+            <h3 class="text-muted mb-3">
+                <i class="fas fa-lock me-2"></i>
+                Logros Disponibles ({{ unearned_achievements|length }})
+            </h3>
+            <div class="row">
+                {% for achievement in unearned_achievements %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 border-light shadow-sm opacity-75">
+                        <div class="card-body text-center">
+                            <div class="achievement-icon mb-3">
+                                <i class="{{ achievement.icon }} fa-3x text-muted"></i>
+                            </div>
+                            <h5 class="card-title text-muted">{{ achievement.name }}</h5>
+                            <p class="card-text text-muted">{{ achievement.description }}</p>
+                            <div class="mt-3">
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-lock me-1"></i>Bloqueado
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== MENSAJE SI NO HAY LOGROS ===== -->
+    {% if not earned_achievements and not unearned_achievements %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay logros disponibles</h4>
+                <p class="text-muted">Los logros se crearán próximamente. ¡Mantente atento!</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== INFORMACIÓN ADICIONAL ===== -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-info-circle me-2"></i>
+                        ¿Cómo obtener logros?
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    <strong>Primera Reseña:</strong> Crea tu primera reseña
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    <strong>Experto en Reseñas:</strong> Crea 5 reseñas
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    <strong>Maestro Reseñador:</strong> Crea 10 reseñas
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-building text-info me-2"></i>
+                                    <strong>Explorador:</strong> Evalúa 3 empresas diferentes
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-briefcase text-success me-2"></i>
+                                    <strong>Experto Laboral:</strong> Agrega 3 experiencias laborales
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-trophy text-warning me-2"></i>
+                                    <strong>Colaborador:</strong> Ayuda a otros candidatos
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== BOTONES DE NAVEGACIÓN ===== -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+                </a>
+                <a href="{% url 'create_review' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Crear Reseña
+                </a>
+                <a href="{% url 'add_work_history' %}" class="btn btn-success">
+                    <i class="fas fa-briefcase me-2"></i>Agregar Experiencia
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos para los logros */
+.achievement-icon {
+    position: relative;
+}
+
+.achievement-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+    z-index: -1;
+}
+
+.card.border-success .achievement-icon::after {
+    background: radial-gradient(circle, rgba(40,167,69,0.1) 0%, transparent 70%);
+}
+
+.card.border-light .achievement-icon::after {
+    background: radial-gradient(circle, rgba(108,117,125,0.1) 0%, transparent 70%);
+}
+
+/* Animación para logros obtenidos */
+.card.border-success {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px rgba(40,167,69,0.3);
+    }
+    to {
+        box-shadow: 0 0 20px rgba(40,167,69,0.6);
+    }
+}
+
+/* Colores personalizados para logros */
+.text-gold { color: #FFD700 !important; }
+.text-silver { color: #C0C0C0 !important; }
+.text-bronze { color: #CD7F32 !important; }
+.text-blue { color: #007bff !important; }
+.text-green { color: #28a745 !important; }
+.text-red { color: #dc3545 !important; }
+</style>
+{% endblock %}

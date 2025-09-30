@@ -25,8 +25,7 @@ urlpatterns = [
     # Dashboard para representantes de empresa
     path('company-dashboard/', views.company_dashboard_view, name='company_dashboard'),
     
-    # Dashboard para el staff del sistema
-    path('staff-dashboard/', views.staff_dashboard_view, name='staff_dashboard'),
+    # Dashboard para el staff del sistema (eliminado)
     
     # ===== GESTIÓN DE EMPRESAS =====
     # Vista detallada de una empresa específica
@@ -44,18 +43,19 @@ urlpatterns = [
     path('profile/', views.my_profile_view, name='my_profile'),
     path('profile/update/', views.update_profile_view, name='update_profile'),
     
+    # ===== GESTIÓN DE HISTORIAL LABORAL =====
+    # Ver historial laboral del usuario
+    path('work-history/', views.work_history_view, name='work_history'),
+    
+    # Agregar nueva experiencia laboral
+    path('add-work-history/', views.add_work_history_view, name='add_work_history'),
+    
+    # ===== SISTEMA DE LOGROS =====
+    # Ver logros del usuario
+    path('achievements/', views.achievements_view, name='achievements'),
+    
     # ===== VISTAS DEL STAFF =====
-    # Crear nuevos usuarios (solo staff)
-    path('staff/create-user/', views.create_user_view, name='staff_create_user'),
-    
-    # Asignar empresas a usuarios (solo staff)
-    path('staff/assign-company/', views.assign_company_view, name='staff_assign_company'),
-    
-    # Eliminar reseñas (solo staff)
-    path('staff/delete-review/<int:review_id>/', views.delete_review_view, name='staff_delete_review'),
-    
-    # Aprobar o rechazar reseñas (solo staff)
-    path('staff/manage-review/<int:review_id>/', views.approve_review_view, name='staff_manage_review'),
+    # (Eliminadas - ahora se usa moderación automática con machine learning)
     # Export CSV de reseñas por empresa (solo company_rep/staff)
     path('company/<int:company_id>/export-reviews.csv', views.export_company_reviews_csv, name='export_company_reviews_csv'),
 

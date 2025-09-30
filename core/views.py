@@ -29,19 +29,68 @@ from django.contrib import messages
 from django.db.models import Q, Count, Avg
 from django.utils import timezone
 from django.contrib.auth.models import User
-from .models import Company, UserProfile, Review, OnboardingStatus, PendingReview, StaffAssignment
-from .forms import ReviewForm, UserCreationForm, StaffAssignmentForm, ProfileUpdateForm
+from .models import Company, UserProfile, Review, OnboardingStatus, PendingReview, WorkHistory, Achievement, UserAchievement
+from .forms import ReviewForm, UserCreationForm, ProfileUpdateForm, WorkHistoryForm
 from django.db.models.functions import TruncMonth
 import json
 import io
 import base64
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+# matplotlib removido - ya no se usan gráficos
 from django.http import HttpResponse
 from datetime import timedelta
 
 # ===== FUNCIONES AUXILIARES =====
+
+def check_and_award_achievements(user_profile):
+    """
+    Verifica y otorga logros automáticamente al usuario.
+    Se ejecuta después de acciones importantes como crear reseñas.
+    """
+    try:
+        # Obtener logros activos
+        active_achievements = Achievement.objects.filter(is_active=True)
+        
+        # Obtener logros ya obtenidos por el usuario
+        user_achievements = UserAchievement.objects.filter(user_profile=user_profile).values_list('achievement_id', flat=True)
+        
+        # Contar reseñas del usuario
+        review_count = Review.objects.filter(user_profile=user_profile).count()
+        
+        # Contar empresas únicas en reseñas
+        company_count = Review.objects.filter(user_profile=user_profile).values('company').distinct().count()
+        
+        # Contar experiencias laborales
+        work_history_count = WorkHistory.objects.filter(user_profile=user_profile).count()
+        
+        new_achievements = []
+        
+        for achievement in active_achievements:
+            # Saltar si ya tiene el logro
+            if achievement.id in user_achievements:
+                continue
+                
+            # Verificar criterios según el tipo de logro
+            if achievement.achievement_type == 'first_review' and review_count >= 1:
+                new_achievements.append(achievement)
+            elif achievement.achievement_type == 'review_count' and review_count >= achievement.required_value:
+                new_achievements.append(achievement)
+            elif achievement.achievement_type == 'company_count' and company_count >= achievement.required_value:
+                new_achievements.append(achievement)
+            elif achievement.achievement_type == 'work_history' and work_history_count >= achievement.required_value:
+                new_achievements.append(achievement)
+        
+        # Otorgar nuevos logros
+        for achievement in new_achievements:
+            UserAchievement.objects.create(
+                user_profile=user_profile,
+                achievement=achievement
+            )
+            
+        return new_achievements
+        
+    except Exception as e:
+        print(f"Error al verificar logros: {e}")
+        return []
 
 def is_staff_user(user):
     """Verifica si el usuario es staff"""
@@ -258,9 +307,11 @@ def company_detail_view(request, company_id):
     user_has_contributed = False
     user_review_status = None
     user_has_pending_review = False
+    user_can_create_review = False
     
     if request.user.profile.role == 'company_rep':
         user_can_access = True
+        user_can_create_review = False  # Los company_rep no pueden crear reseñas
     elif request.user.profile.role == 'candidate':
         # Verificar si tiene reseñas pendientes
         any_pending_reviews = PendingReview.objects.filter(
@@ -273,6 +324,7 @@ def company_detail_view(request, company_id):
             user_has_pending_review = True
         else:
             user_can_access = True
+            user_can_create_review = True  # Los candidatos pueden crear reseñas
             
             # Verificar reseñas para esta empresa
             user_reviews = Review.objects.filter(
@@ -404,57 +456,13 @@ def company_detail_view(request, company_id):
     ]
     timeline_counts = [item['c'] for item in monthly]
 
-    # ===== Render de gráficos en Python (matplotlib) - robusto y desde cero =====
-    def fig_to_datauri(fig):
-        buf = io.BytesIO()
-        fig.tight_layout()
-        fig.savefig(buf, format='png', dpi=140)
-        plt.close(fig)
-        buf.seek(0)
-        b64 = base64.b64encode(buf.getvalue()).decode('ascii')
-        return f"data:image/png;base64,{b64}"
+    # ===== Gráficos removidos - ya no se usan =====
 
-    def make_bar(labels, counts, title, xlabel, ylabel):
-        fig, ax = plt.subplots(figsize=(4.5, 2.6))
-        x = list(range(len(labels)))
-        ax.bar(x, counts, color='#1E3A8A')
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_xticks(x)
-        ax.set_xticklabels(labels, fontsize=8)
-        ax.set_ylim(bottom=0)
-        return fig_to_datauri(fig)
-
-    def make_pie(labels, counts, title):
-        total = sum(counts)
-        fig, ax = plt.subplots(figsize=(4.2, 2.6))
-        if total > 0:
-            ax.pie(counts, labels=labels, autopct='%1.0f%%', textprops={'fontsize': 8})
-        else:
-            ax.text(0.5, 0.5, 'Sin datos', ha='center', va='center')
-            ax.axis('off')
-        ax.set_title(title)
-        return fig_to_datauri(fig)
-
-    def make_line(labels, counts, title):
-        fig, ax = plt.subplots(figsize=(6.0, 2.6))
-        if counts:
-            x = list(range(len(labels)))
-            ax.plot(x, counts, marker='o', color='#1E3A8A')
-            ax.set_xticks(x)
-            ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=7)
-        else:
-            ax.text(0.5, 0.5, 'Sin datos', ha='center', va='center')
-            ax.axis('off')
-        ax.set_title(title)
-        ax.set_ylabel('Cantidad')
-        return fig_to_datauri(fig)
-
-    ratings_img = make_bar(['1', '2', '3', '4', '5'], rating_counts, 'Distribución de Calificaciones', 'Calificación', 'Cantidad')
-    modality_img = make_pie([lbl for _, lbl in MOD_LABELS], modality_counts, 'Modalidad de Reseñas')
-    status_img = make_pie(['Aprobadas', 'Pendientes', 'Rechazadas'], status_counts, 'Estado de Reseñas')
-    timeline_img = make_line(timeline_labels, timeline_counts, 'Reseñas por Mes')
+    # Gráficos removidos - ya no se usan
+    ratings_img = None
+    modality_img = None
+    status_img = None
+    timeline_img = None
 
     # ===== Estadísticas específicas por rol =====
     role_kpis = {}
@@ -560,6 +568,7 @@ def company_detail_view(request, company_id):
         'user_has_contributed': user_has_contributed,
         'user_review_status': user_review_status,
         'user_has_pending_review': user_has_pending_review,
+        'user_can_create_review': user_can_create_review,
         'pending_review': pending_review,
         'company_stats': company_stats,
         'ratings_img': ratings_img or '',
@@ -580,14 +589,25 @@ def create_review_view(request):
         messages.error(request, '❌ Solo los candidatos pueden crear reseñas. Si eres empresa o staff, usa las funciones correspondientes.')
         return redirect('dashboard')
     
-    # Obtener empresas con reseñas pendientes
+    # Obtener empresas con reseñas pendientes (del sistema anterior)
     pending_companies = PendingReview.objects.filter(
         user_profile=request.user.profile,
         is_reviewed=False
     ).select_related('company')
     
-    if not pending_companies.exists():
-        messages.warning(request, '⚠️ No tienes reseñas pendientes para crear. Contacta al staff para que te asignen una empresa.')
+    # Obtener empresas del historial laboral con reseñas pendientes
+    work_history_pending = WorkHistory.objects.filter(
+        user_profile=request.user.profile,
+        has_review_pending=True
+    ).select_related('company')
+    
+    # Combinar ambas fuentes de reseñas pendientes
+    all_pending_companies = list(pending_companies) + list(work_history_pending)
+    
+    # Permitir crear reseñas de cualquier empresa (nuevo flujo)
+    available_companies = Company.objects.filter(is_active=True)
+    if not available_companies.exists():
+        messages.warning(request, '⚠️ No hay empresas disponibles para crear reseñas.')
         return redirect('dashboard')
     
     if request.method == 'POST':
@@ -601,7 +621,7 @@ def create_review_view(request):
                 review.is_approved = False
                 review.save()
                 
-                # Marcar pendiente como completada
+                # Marcar pendiente como completada (sistema anterior)
                 company = form.cleaned_data['company']
                 pending_review = PendingReview.objects.filter(
                     user_profile=request.user.profile,
@@ -612,6 +632,17 @@ def create_review_view(request):
                 if pending_review:
                     pending_review.is_reviewed = True
                     pending_review.save()
+                
+                # Marcar la reseña pendiente del historial laboral como completada
+                work_history = WorkHistory.objects.filter(
+                    user_profile=request.user.profile,
+                    company=company,
+                    has_review_pending=True
+                ).first()
+                
+                if work_history:
+                    work_history.has_review_pending = False
+                    work_history.save()
                 
                 # Actualizar onboarding
                 if hasattr(request.user, 'profile'):
@@ -625,11 +656,20 @@ def create_review_view(request):
                     )
                     onboarding_status.detect_participation_status()
                 
+                # Verificar y otorgar logros
+                new_achievements = check_and_award_achievements(request.user.profile)
+                
                 # Mensaje especial si era una reseña pendiente
                 if pending_review:
                     messages.success(request, f'🎉 ¡Reseña completada exitosamente! Has completado tu reseña para {company.name}. Ahora puedes acceder a todas las empresas del sistema.')
                 else:
                     messages.success(request, '¡Reseña enviada exitosamente! 🎉 Tu reseña está pendiente de aprobación y será revisada por nuestro equipo.')
+                
+                # Mostrar logros obtenidos
+                if new_achievements:
+                    for achievement in new_achievements:
+                        messages.success(request, f'🏆 ¡Nuevo logro desbloqueado! {achievement.name} - {achievement.description}')
+                
                 return redirect('my_reviews')
                 
             except Exception as e:
@@ -660,19 +700,21 @@ def create_review_view(request):
         if company_id:
             try:
                 company = Company.objects.get(id=company_id)
-                initial_data['company'] = company
+                initial_data['company'] = company.id  # Usar el ID, no el objeto
+                # Si hay una empresa específica, solo mostrar esa empresa
+                form = ReviewForm(initial=initial_data)
+                form.fields['company'].queryset = Company.objects.filter(id=company_id)
             except Company.DoesNotExist:
-                pass
-        
-        form = ReviewForm(initial=initial_data)
-        form.fields['company'].queryset = Company.objects.filter(
-            pending_reviews__user_profile=request.user.profile,
-            pending_reviews__is_reviewed=False
-        )
+                form = ReviewForm()
+                form.fields['company'].queryset = Company.objects.filter(is_active=True)
+        else:
+            # Si no hay empresa específica, mostrar todas las empresas activas
+            form = ReviewForm()
+            form.fields['company'].queryset = Company.objects.filter(is_active=True)
     
     context = {
         'form': form,
-        'pending_companies': pending_companies,
+        'pending_companies': all_pending_companies,
     }
     
     return render(request, 'core/create_review.html', context)
@@ -705,6 +747,71 @@ def my_reviews_view(request):
 # ===== VISTAS DE PERFIL =====
 
 @login_required
+def work_history_view(request):
+    """Vista para gestionar el historial laboral del usuario"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, '❌ Solo los candidatos pueden gestionar su historial laboral.')
+        return redirect('dashboard')
+    
+    # Obtener historial laboral del usuario
+    work_history = WorkHistory.objects.filter(
+        user_profile=request.user.profile
+    ).select_related('company').order_by('-start_date')
+    
+    context = {
+        'work_history': work_history,
+        'title': 'Mi Historial Laboral'
+    }
+    
+    return render(request, 'core/work_history.html', context)
+
+@login_required
+def add_work_history_view(request):
+    """Vista para agregar una nueva experiencia laboral"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, '❌ Solo los candidatos pueden agregar experiencias laborales.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = WorkHistoryForm(request.POST)
+        if form.is_valid():
+            try:
+                # Crear la experiencia laboral
+                work_history = form.save(commit=False)
+                work_history.user_profile = request.user.profile
+                work_history.save()
+                
+                # Crear reseña pendiente automáticamente
+                work_history.create_pending_review()
+                
+                # Verificar y otorgar logros
+                new_achievements = check_and_award_achievements(request.user.profile)
+                
+                messages.success(request, f'✅ Experiencia laboral agregada exitosamente para {work_history.company.name}. Se ha creado una reseña pendiente.')
+                
+                # Mostrar logros obtenidos
+                if new_achievements:
+                    for achievement in new_achievements:
+                        messages.success(request, f'🏆 ¡Nuevo logro desbloqueado! {achievement.name} - {achievement.description}')
+                
+                return redirect('work_history')
+            except Exception as e:
+                messages.error(request, f'❌ Error al agregar experiencia laboral: {str(e)}. Verifica que todos los datos sean correctos e intenta nuevamente.')
+        else:
+            messages.error(request, '❌ Por favor, corrige los errores en el formulario.')
+    else:
+        form = WorkHistoryForm()
+        # Establecer queryset para empresas activas
+        form.fields['company'].queryset = Company.objects.filter(is_active=True)
+    
+    context = {
+        'form': form,
+        'title': 'Agregar Experiencia Laboral'
+    }
+    
+    return render(request, 'core/add_work_history.html', context)
+
+@login_required
 def my_profile_view(request):
     """Vista para mostrar el perfil del usuario"""
     user_profile = request.user.profile
@@ -726,12 +833,22 @@ def my_profile_view(request):
             is_reviewed=False
         ).select_related('company')
         
+        # Historial laboral
+        work_history = WorkHistory.objects.filter(
+            user_profile=user_profile
+        ).select_related('company').order_by('-start_date')[:3]  # Solo las 3 más recientes para el perfil
+        
+        # Contar logros obtenidos
+        achievement_count = UserAchievement.objects.filter(user_profile=user_profile).count()
+        
         context = {
             'user_profile': user_profile,
             'total_reviews': total_reviews,
             'approved_reviews': approved_reviews,
             'pending_approval': pending_approval,
             'pending_reviews': pending_reviews,
+            'work_history': work_history,
+            'achievement_count': achievement_count,
             'show_stats': True,
         }
     else:
@@ -742,6 +859,50 @@ def my_profile_view(request):
     
     return render(request, 'core/profile.html', context)
 
+# ===== VISTA DE LOGROS =====
+@login_required
+def achievements_view(request):
+    """Vista para mostrar los logros del usuario"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, '❌ Solo los candidatos pueden ver sus logros.')
+        return redirect('dashboard')
+    
+    user_profile = request.user.profile
+    
+    # Obtener logros obtenidos por el usuario
+    user_achievements = UserAchievement.objects.filter(
+        user_profile=user_profile
+    ).select_related('achievement').order_by('-earned_at')
+    
+    # Obtener todos los logros disponibles
+    all_achievements = Achievement.objects.filter(is_active=True).order_by('achievement_type', 'required_value')
+    
+    # Obtener IDs de logros ya obtenidos
+    earned_achievement_ids = user_achievements.values_list('achievement_id', flat=True)
+    
+    # Separar logros obtenidos y no obtenidos
+    earned_achievements = [ua.achievement for ua in user_achievements]
+    unearned_achievements = [achievement for achievement in all_achievements if achievement.id not in earned_achievement_ids]
+    
+    # Estadísticas del usuario
+    total_reviews = Review.objects.filter(user_profile=user_profile).count()
+    total_companies = Review.objects.filter(user_profile=user_profile).values('company').distinct().count()
+    total_work_history = WorkHistory.objects.filter(user_profile=user_profile).count()
+    
+    context = {
+        'earned_achievements': earned_achievements,
+        'unearned_achievements': unearned_achievements,
+        'total_achievements': all_achievements.count(),
+        'earned_count': user_achievements.count(),
+        'user_stats': {
+            'total_reviews': total_reviews,
+            'total_companies': total_companies,
+            'total_work_history': total_work_history,
+        },
+        'title': 'Mis Logros'
+    }
+    
+    return render(request, 'core/achievements.html', context)
 
 # ===== ACTUALIZACIÓN DE PERFIL =====
 @login_required
@@ -825,99 +986,20 @@ def company_dashboard_view(request):
     return render(request, 'core/company_dashboard.html', context)
 
 # ===== VISTAS DEL STAFF =====
+# (Eliminadas - ahora se usa moderación automática con machine learning)
 
-@login_required
-@user_passes_test(is_staff_user)
 def staff_dashboard_view(request):
-    """Dashboard para el staff del sistema"""
-    # Búsqueda
-    search_query = request.GET.get('search', '')
-    
-    # Obtener candidatos
-    candidates = UserProfile.objects.filter(role='candidate').annotate(
-        pending_reviews_count=Count('pending_reviews', filter=Q(pending_reviews__is_reviewed=False))
-    ).prefetch_related(
-        'pending_reviews__company'
-    ).order_by('user__username')
-    
-    if search_query:
-        candidates = candidates.filter(
-            Q(user__username__icontains=search_query) |
-            Q(user__first_name__icontains=search_query) |
-            Q(user__last_name__icontains=search_query)
-        )
-    
-    # Convertir a lista
-    candidates_list = []
-    for candidate in candidates:
-        pending_reviews = PendingReview.objects.filter(
-            user_profile=candidate,
-            is_reviewed=False
-        ).select_related('company')
-        
-        candidate.pending_reviews_list = list(pending_reviews)
-        candidates_list.append(candidate)
-    
-    # Obtener reseñas
-    all_reviews = Review.objects.all().select_related(
-        'user_profile__user', 'company'
-    ).order_by('-submission_date')
-    
-    # Estadísticas
-    total_candidates = len(candidates_list)
-    candidates_with_pending = sum(1 for c in candidates_list if c.pending_reviews_count > 0)
-    candidates_free = total_candidates - candidates_with_pending
-    total_reviews = all_reviews.count()
-    approved_reviews = all_reviews.filter(status='approved').count()
-    pending_reviews = all_reviews.filter(status='pending').count()
-    rejected_reviews = all_reviews.filter(status='rejected').count()
-    
-    context = {
-        'candidates': candidates_list,
-        'all_reviews': all_reviews,
-        'total_candidates': total_candidates,
-        'candidates_with_pending': candidates_with_pending,
-        'candidates_free': candidates_free,
-        'total_reviews': total_reviews,
-        'approved_reviews': approved_reviews,
-        'pending_reviews': pending_reviews,
-        'rejected_reviews': rejected_reviews,
-        'search_query': search_query,
-    }
-    
-    return render(request, 'core/staff_dashboard.html', context)
+    """Vista eliminada - redirige al dashboard principal"""
+    messages.info(request, 'El panel de staff ha sido eliminado. Ahora se usa moderación automática.')
+    return redirect('dashboard')
 
 
-@login_required
-@user_passes_test(is_staff_user)
 def create_user_view(request):
-    """Vista para crear nuevos usuarios"""
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            
-            # Crear perfil
-            UserProfile.objects.create(
-                user=user,
-                role='candidate'
-            )
-            
-            messages.success(request, f'✅ Usuario {user.username} creado exitosamente. Se ha asignado el rol de candidato por defecto.')
-            return redirect('staff_dashboard')
-    else:
-        form = UserCreationForm()
-    
-    context = {
-        'form': form,
-        'title': 'Crear Nuevo Usuario'
-    }
-    
-    return render(request, 'core/staff_create_user.html', context)
+    """Vista eliminada - redirige al dashboard principal"""
+    messages.info(request, 'La creación de usuarios por staff ha sido eliminada.')
+    return redirect('dashboard')
 
 
-@login_required
-@user_passes_test(is_staff_user)
 def assign_company_view(request):
     """Vista para asignar empresas a usuarios"""
     if request.method == 'POST':
@@ -1007,54 +1089,16 @@ def assign_company_view(request):
     return render(request, 'core/staff_assign_company.html', context)
 
 
-@login_required
-@user_passes_test(is_staff_user)
 def delete_review_view(request, review_id):
-    """Vista para eliminar reseñas"""
-    review = get_object_or_404(Review, id=review_id)
-    
-    if request.method == 'POST':
-        company_name = review.company.name
-        user_name = review.user_profile.user.username
-        review.delete()
-        messages.success(request, f'✅ Reseña de {user_name} para {company_name} eliminada exitosamente.')
-        return redirect('staff_dashboard')
-    
-    context = {
-        'review': review,
-        'title': 'Confirmar Eliminación de Reseña'
-    }
-    
-    return render(request, 'core/staff_delete_review.html', context)
+    """Vista eliminada - redirige al dashboard principal"""
+    messages.info(request, 'La eliminación manual de reseñas ha sido eliminada. Ahora se usa moderación automática.')
+    return redirect('dashboard')
 
 
-@login_required
-@user_passes_test(is_staff_user)
 def approve_review_view(request, review_id):
-    """Vista para aprobar o rechazar reseñas"""
-    review = get_object_or_404(Review, id=review_id)
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        
-        if action == 'approve':
-            review.status = 'approved'
-            review.is_approved = True
-            messages.success(request, f'✅ Reseña de {review.user_profile.user.username} para {review.company.name} aprobada exitosamente. Ya es visible para otros usuarios.')
-        elif action == 'reject':
-            review.status = 'rejected'
-            review.is_approved = False
-            messages.success(request, f'⚠️ Reseña de {review.user_profile.user.username} para {review.company.name} rechazada. No será visible para otros usuarios.')
-        
-        review.save()
-        return redirect('staff_dashboard')
-    
-    context = {
-        'review': review,
-        'title': 'Gestionar Reseña'
-    }
-    
-    return render(request, 'core/staff_manage_review.html', context)
+    """Vista eliminada - redirige al dashboard principal"""
+    messages.info(request, 'La moderación manual de reseñas ha sido eliminada. Ahora se usa moderación automática con machine learning.')
+    return redirect('dashboard')
 
 
 @login_required

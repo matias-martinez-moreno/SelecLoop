@@ -3,7 +3,7 @@
 # Permite al staff gestionar usuarios, empresas, reseñas y asignaciones
 
 from django.contrib import admin
-from .models import Company, UserProfile, Review, OnboardingStatus, PendingReview, StaffAssignment
+from .models import Company, UserProfile, Review, OnboardingStatus, PendingReview, WorkHistory, Achievement, UserAchievement
 
 # ===== ADMIN: EMPRESAS =====
 @admin.register(Company)
@@ -78,55 +78,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     ordering = ['user__username']  # Ordenar alfabéticamente por nombre de usuario
 
 # ===== ADMIN: ASIGNACIONES DE STAFF =====
-@admin.register(StaffAssignment)
-class StaffAssignmentAdmin(admin.ModelAdmin):
-    """
-    Configuración del admin para el modelo StaffAssignment.
-    Permite gestionar las asignaciones de empresas a usuarios realizadas por el staff.
-    """
-    
-    # ===== CAMPOS MOSTRADOS EN LA LISTA =====
-    list_display = [
-        'user_profile',       # Usuario asignado
-        'company',            # Empresa asignada
-        'job_title',          # Cargo o puesto
-        'participation_date', # Fecha de participación
-        'staff_user',         # Staff que realizó la asignación
-        'is_active',          # Estado de la asignación
-        'created_at'          # Fecha de creación
-    ]
-    
-    # ===== FILTROS DISPONIBLES =====
-    list_filter = [
-        'is_active',          # Filtrar por estado activo
-        'participation_date', # Filtrar por fecha de participación
-        'created_at',         # Filtrar por fecha de creación
-        'staff_user'          # Filtrar por staff que asignó
-    ]
-    
-    # ===== CAMPOS DE BÚSQUEDA =====
-    search_fields = [
-        'user_profile__user__username',  # Buscar por nombre de usuario
-        'company__name',                 # Buscar por nombre de empresa
-        'job_title',                     # Buscar por cargo
-        'staff_user__username'           # Buscar por staff
-    ]
-    
-    # ===== CAMPOS EDITABLES EN LA LISTA =====
-    list_editable = ['is_active']  # Cambiar estado sin entrar al detalle
-    
-    # ===== ORDENAMIENTO =====
-    ordering = ['-created_at']  # Ordenar por fecha de creación (más reciente primero)
-    
-    # ===== MÉTODOS PERSONALIZADOS =====
-    def save_model(self, request, obj, form, change):
-        """
-        Método personalizado que se ejecuta al guardar una asignación.
-        Crea automáticamente un PendingReview cuando se guarda.
-        """
-        super().save_model(request, obj, form, change)
-        if obj.is_active:
-            obj.create_pending_review()
+# (Eliminado - ahora se usa el sistema de historial laboral automático)
 
 # ===== ADMIN: RESEÑAS =====
 @admin.register(Review)
@@ -261,3 +213,113 @@ class OnboardingStatusAdmin(admin.ModelAdmin):
     
     # ===== ORDENAMIENTO =====
     ordering = ['user_profile__user__username']  # Ordenar alfabéticamente por nombre de usuario
+
+# ===== ADMIN: HISTORIAL LABORAL =====
+@admin.register(WorkHistory)
+class WorkHistoryAdmin(admin.ModelAdmin):
+    """
+    Configuración del admin para el modelo WorkHistory.
+    Permite gestionar el historial laboral de los usuarios desde el panel de administración.
+    """
+    
+    # ===== CAMPOS MOSTRADOS EN LA LISTA =====
+    list_display = [
+        'user_profile',       # Usuario
+        'company',            # Empresa
+        'job_title',          # Cargo o puesto
+        'start_date',         # Fecha de inicio
+        'end_date',           # Fecha de finalización
+        'is_current_job',     # Si es trabajo actual
+        'has_review_pending', # Si tiene reseña pendiente
+        'created_at'          # Fecha de creación
+    ]
+    
+    # ===== FILTROS DISPONIBLES =====
+    list_filter = [
+        'is_current_job',     # Filtrar por trabajo actual
+        'has_review_pending', # Filtrar por reseña pendiente
+        'start_date',         # Filtrar por fecha de inicio
+        'created_at'          # Filtrar por fecha de creación
+    ]
+    
+    # ===== CAMPOS DE BÚSQUEDA =====
+    search_fields = [
+        'user_profile__user__username',  # Buscar por nombre de usuario
+        'company__name',                 # Buscar por nombre de empresa
+        'job_title'                      # Buscar por cargo
+    ]
+    
+    # ===== CAMPOS EDITABLES EN LA LISTA =====
+    list_editable = ['is_current_job', 'has_review_pending']  # Cambiar estado sin entrar al detalle
+    
+    # ===== ORDENAMIENTO =====
+    ordering = ['-start_date']  # Ordenar por fecha de inicio (más reciente primero)
+
+# ===== ADMIN: LOGROS =====
+@admin.register(Achievement)
+class AchievementAdmin(admin.ModelAdmin):
+    """
+    Configuración del admin para el modelo Achievement.
+    Permite gestionar logros desde el panel de administración.
+    """
+    
+    # ===== CAMPOS MOSTRADOS EN LA LISTA =====
+    list_display = [
+        'name',           # Nombre del logro
+        'achievement_type', # Tipo de logro
+        'required_value', # Valor requerido
+        'color',          # Color del logro
+        'is_active',      # Estado activo
+        'created_at'      # Fecha de creación
+    ]
+    
+    # ===== FILTROS DISPONIBLES =====
+    list_filter = [
+        'achievement_type', # Filtrar por tipo
+        'color',           # Filtrar por color
+        'is_active',       # Filtrar por estado
+        'created_at'       # Filtrar por fecha
+    ]
+    
+    # ===== CAMPOS DE BÚSQUEDA =====
+    search_fields = [
+        'name',           # Buscar por nombre
+        'description'     # Buscar por descripción
+    ]
+    
+    # ===== CAMPOS EDITABLES EN LA LISTA =====
+    list_editable = ['is_active']  # Cambiar estado sin entrar al detalle
+    
+    # ===== ORDENAMIENTO =====
+    ordering = ['achievement_type', 'required_value']
+
+# ===== ADMIN: LOGROS DE USUARIO =====
+@admin.register(UserAchievement)
+class UserAchievementAdmin(admin.ModelAdmin):
+    """
+    Configuración del admin para el modelo UserAchievement.
+    Permite gestionar logros de usuarios desde el panel de administración.
+    """
+    
+    # ===== CAMPOS MOSTRADOS EN LA LISTA =====
+    list_display = [
+        'user_profile',   # Usuario
+        'achievement',    # Logro
+        'earned_at'       # Fecha de obtención
+    ]
+    
+    # ===== FILTROS DISPONIBLES =====
+    list_filter = [
+        'achievement__achievement_type', # Filtrar por tipo de logro
+        'achievement__color',           # Filtrar por color
+        'earned_at'                     # Filtrar por fecha
+    ]
+    
+    # ===== CAMPOS DE BÚSQUEDA =====
+    search_fields = [
+        'user_profile__user__username', # Buscar por nombre de usuario
+        'achievement__name'             # Buscar por nombre del logro
+    ]
+    
+    # ===== ORDENAMIENTO =====
+    ordering = ['-earned_at']  # Ordenar por fecha de obtención (más reciente primero)
