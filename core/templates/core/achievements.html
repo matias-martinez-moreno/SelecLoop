@@ -28,7 +28,7 @@
     <!-- ===== ESTADÍSTICAS DEL USUARIO ===== -->
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card bg-primary text-white h-100">
+            <div class="card stats-card-blue h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-star fa-2x mb-2"></i>
                     <h4 class="card-title">{{ user_stats.total_reviews }}</h4>
@@ -37,7 +37,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-success text-white h-100">
+            <div class="card stats-card-green h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-building fa-2x mb-2"></i>
                     <h4 class="card-title">{{ user_stats.total_companies }}</h4>
@@ -46,7 +46,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-info text-white h-100">
+            <div class="card stats-card-orange h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-briefcase fa-2x mb-2"></i>
                     <h4 class="card-title">{{ user_stats.total_work_history }}</h4>
@@ -55,6 +55,27 @@
             </div>
         </div>
     </div>
+
+    <!-- ===== MENSAJE SI NO HAY DATOS ===== -->
+    {% if user_stats.total_reviews == 0 and user_stats.total_companies == 0 and user_stats.total_work_history == 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h4>¡Comienza tu experiencia en SelecLoop!</h4>
+                <p class="mb-3">Aún no tienes reseñas ni experiencias laborales registradas. ¡Es hora de empezar!</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'create_review' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Crear Mi Primera Reseña
+                    </a>
+                    <a href="{% url 'add_work_history' %}" class="btn btn-success">
+                        <i class="fas fa-briefcase me-2"></i>Agregar Experiencia Laboral
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- ===== LOGROS OBTENIDOS ===== -->
     {% if earned_achievements %}

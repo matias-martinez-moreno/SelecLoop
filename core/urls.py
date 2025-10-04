@@ -1,8 +1,8 @@
 # ===== URLs DE LA APLICACIÓN CORE =====
-# Este archivo define todas las rutas de la aplicación principal
-# Cada URL está conectada a una vista específica en views.py
+# Este archivo define las rutas principales y coordina las URLs de todas las apps
+# Las URLs específicas han sido movidas a sus respectivas aplicaciones
 
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 # ===== PATRONES DE URL =====
@@ -11,49 +11,28 @@ urlpatterns = [
     # Página de inicio - redirige según el rol del usuario
     path('', views.root_redirect_view, name='root'),
     
-    # ===== AUTENTICACIÓN =====
-    # Página de login
-    path('login/', views.login_view, name='login'),
-    
-    # Cerrar sesión
-    path('logout/', views.logout_view, name='logout'),
-    
-    # ===== DASHBOARDS POR ROL =====
     # Dashboard principal para candidatos
     path('dashboard/', views.dashboard_view, name='dashboard'),
     
-    # Dashboard para representantes de empresa
-    path('company-dashboard/', views.company_dashboard_view, name='company_dashboard'),
+    # ===== INCLUIR URLs DE OTRAS APPS =====
+    # URLs de autenticación y perfiles
+    path('', include('accounts.urls')),
     
-    # Dashboard para el staff del sistema (eliminado)
+    # URLs de empresas
+    path('', include('companies.urls')),
     
-    # ===== GESTIÓN DE EMPRESAS =====
-    # Vista detallada de una empresa específica
-    path('company/<int:company_id>/', views.company_detail_view, name='company_detail'),
+    # URLs de reseñas
+    path('', include('reviews.urls')),
     
-    # ===== GESTIÓN DE RESEÑAS =====
-    # Crear una nueva reseña
-    path('create-review/', views.create_review_view, name='create_review'),
+    # URLs de historial laboral
+    path('', include('work_history.urls')),
     
-    # Ver las reseñas del usuario actual
-    path('my-reviews/', views.my_reviews_view, name='my_reviews'),
+    # URLs de logros
+    path('', include('achievements.urls')),
     
-    # ===== GESTIÓN DE PERFIL =====
-    # Ver y editar el perfil del usuario
-    path('profile/', views.my_profile_view, name='my_profile'),
-    path('profile/update/', views.update_profile_view, name='update_profile'),
-    
-    # ===== GESTIÓN DE HISTORIAL LABORAL =====
-    # Ver historial laboral del usuario
-    path('work-history/', views.work_history_view, name='work_history'),
-    
-    # Agregar nueva experiencia laboral
-    path('add-work-history/', views.add_work_history_view, name='add_work_history'),
-    
-    # ===== SISTEMA DE LOGROS =====
-    # Ver logros del usuario
-    path('achievements/', views.achievements_view, name='achievements'),
-    
+    # URLs de utilidades comunes (SEO)
+    path('', include('common.urls')),
+
     # ===== VISTAS DEL STAFF =====
     # (Eliminadas - ahora se usa moderación automática con machine learning)
     # Export CSV de reseñas por empresa (solo company_rep/staff)

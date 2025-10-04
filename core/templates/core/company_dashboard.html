@@ -7,6 +7,90 @@
 {% block title %}Dashboard de Empresas{% endblock %}
 
 {% block content %}
+<!-- ===== ESTILOS CSS PARA TARJETAS DE EMPRESAS ADMIN ===== -->
+<style>
+.company-card-admin {
+    position: relative;
+    overflow: hidden;
+}
+
+.company-card-admin::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.company-card-admin:hover::before {
+    left: 100%;
+}
+
+.company-card-admin:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.company-card-admin .card-header {
+    position: relative;
+    z-index: 2;
+}
+
+.company-card-admin .card-body {
+    position: relative;
+    z-index: 2;
+}
+
+.company-card-admin .btn {
+    transition: all 0.3s ease;
+}
+
+.company-card-admin .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Animación de entrada para las tarjetas admin */
+.company-card-admin {
+    animation: slideInUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.company-card-admin:nth-child(1) { animation-delay: 0.1s; }
+.company-card-admin:nth-child(2) { animation-delay: 0.2s; }
+.company-card-admin:nth-child(3) { animation-delay: 0.3s; }
+.company-card-admin:nth-child(4) { animation-delay: 0.4s; }
+.company-card-admin:nth-child(5) { animation-delay: 0.5s; }
+.company-card-admin:nth-child(6) { animation-delay: 0.6s; }
+.company-card-admin:nth-child(7) { animation-delay: 0.7s; }
+.company-card-admin:nth-child(8) { animation-delay: 0.8s; }
+.company-card-admin:nth-child(9) { animation-delay: 0.9s; }
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto de hover simple y profesional para admin */
+.company-card-admin:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.rating-display {
+    display: inline-block;
+}
+</style>
+
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="container mt-5">
     <div class="row mb-4">
@@ -50,6 +134,109 @@
         </div>
     </div>
 
+    <!-- ===== GRÁFICOS DE ANÁLISIS ===== -->
+    {% if chart_data %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Análisis Visual del Sistema
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Gráfico de distribución por sector -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Distribución por Sector</h6>
+                                    {% if chart_data.sector_distribution %}
+                                    <canvas id="sectorChart" width="400" height="200"></canvas>
+                                    {% else %}
+                                    <p class="text-muted small">No hay datos suficientes</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráfico de distribución por ubicación -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Top Ciudades</h6>
+                                    {% if chart_data.location_distribution %}
+                                    <canvas id="locationChart" width="400" height="200"></canvas>
+                                    {% else %}
+                                    <p class="text-muted small">No hay datos suficientes</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráfico de calificaciones generales -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Distribución de Calificaciones</h6>
+                                    {% if chart_data.rating_distribution %}
+                                    <canvas id="ratingChart" width="400" height="200"></canvas>
+                                    {% else %}
+                                    <p class="text-muted small">No hay datos suficientes</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráfico de tendencia mensual -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Reseñas por Mes (Últimos 6 meses)</h6>
+                                    {% if chart_data.monthly_trend %}
+                                    <canvas id="trendChart" width="400" height="200"></canvas>
+                                    {% else %}
+                                    <p class="text-muted small">No hay datos suficientes</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráfico de estado de reseñas -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Estado de Reseñas</h6>
+                                    {% if chart_data.review_status %}
+                                    <canvas id="statusChart" width="400" height="200"></canvas>
+                                    {% else %}
+                                    <p class="text-muted small">No hay datos suficientes</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Top empresas -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Top Empresas por Calificación</h6>
+                                    {% if chart_data.top_companies %}
+                                    <canvas id="topCompaniesChart" width="400" height="200"></canvas>
+                                    {% else %}
+                                    <p class="text-muted small">No hay datos suficientes</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- ===== LISTA DE EMPRESAS ===== -->
     <div class="row">
         <div class="col-12">
@@ -75,54 +262,81 @@
                     </form>
                     
                     {% if companies %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Empresa</th>
-                                        <th>Sector</th>
-                                        <th>Ubicación</th>
-                                        <th>Reseñas</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for company in companies %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ company.name }}</strong>
-                                            {% if company.website %}
-                                                <br><small class="text-muted">{{ company.website }}</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary">{{ company.sector }}</span>
-                                        </td>
-                                        <td>
-                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
-                                            {{ company.location }}
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-info">{{ company.reviews.count }}</span>
-                                        </td>
-                                        <td>
-                                            {% if company.is_active %}
-                                                <span class="badge bg-success">Activa</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">Inactiva</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-primary btn-sm">
+                        <div class="row">
+                            {% for company in companies %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100 company-card-admin" style="background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                    <div class="card-header" style="background: #f8fafc; border-bottom: 1px solid #e5e7eb;">
+                                        <h6 class="card-title mb-0 fw-bold" style="color: #1e3a8a;">{{ company.name }}</h6>
+                                        {% if company.website %}
+                                            <small style="color: #6b7280;">{{ company.website }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <p class="card-text small mb-2" style="color: #6b7280;">
+                                                    <i class="fas fa-industry me-1" style="color: #1e3a8a;"></i>
+                                                    {{ company.sector }}
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <p class="card-text small mb-2" style="color: #6b7280;">
+                                                    <i class="fas fa-map-marker-alt me-1" style="color: #ef4444;"></i>
+                                                    {{ company.location }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <div class="text-center">
+                                                    <span class="badge" style="background: #e5e7eb; color: #374151; font-size: 0.9rem;">
+                                                        <i class="fas fa-comments me-1"></i>
+                                                        {{ company.total_reviews }} reseñas
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-center">
+                                                    {% if company.is_active %}
+                                                        <span class="badge" style="background: #d1fae5; color: #065f46;">
+                                                            <i class="fas fa-check-circle me-1"></i>Activa
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge" style="background: #fee2e2; color: #991b1b;">
+                                                            <i class="fas fa-times-circle me-1"></i>Inactiva
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if company.avg_rating > 0 %}
+                                        <div class="text-center mb-3">
+                                            <div class="rating-display">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= company.avg_rating %}
+                                                        <i class="fas fa-star" style="color: #f59e0b;"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star" style="color: #d1d5db;"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <small style="color: #6b7280; margin-left: 5px;">{{ company.avg_rating|floatformat:1 }}</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="d-grid">
+                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-sm" style="background: #1e3a8a; border: none; color: white;">
                                                 <i class="fas fa-eye me-1"></i>
-                                                Ver
+                                                Ver Detalles
                                             </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                     {% else %}
                         <div class="text-center py-4">
@@ -135,4 +349,211 @@
         </div>
     </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ chart_data|json_script:"chart-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Datos de los gráficos
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    
+    // Colores para los gráficos
+    const colors = {
+        primary: '#1E3A8A',
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger: '#EF4444',
+        info: '#3B82F6',
+        secondary: '#6B7280'
+    };
+    
+    // Gráfico de distribución por sector
+    if (chartData.sector_distribution && Object.keys(chartData.sector_distribution).length > 0) {
+        const sectorCtx = document.getElementById('sectorChart');
+        if (sectorCtx) {
+            new Chart(sectorCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(chartData.sector_distribution),
+                    datasets: [{
+                        data: Object.values(chartData.sector_distribution).map(item => item.companies),
+                        backgroundColor: [
+                            colors.primary,
+                            colors.success,
+                            colors.warning,
+                            colors.danger,
+                            colors.info,
+                            colors.secondary
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Gráfico de distribución por ubicación
+    if (chartData.location_distribution && Object.keys(chartData.location_distribution).length > 0) {
+        const locationCtx = document.getElementById('locationChart');
+        if (locationCtx) {
+            new Chart(locationCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(chartData.location_distribution),
+                    datasets: [{
+                        label: 'Número de Empresas',
+                        data: Object.values(chartData.location_distribution).map(item => item.companies),
+                        backgroundColor: colors.info,
+                        borderColor: colors.primary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Gráfico de distribución de calificaciones
+    if (chartData.rating_distribution && Object.keys(chartData.rating_distribution).length > 0) {
+        const ratingCtx = document.getElementById('ratingChart');
+        if (ratingCtx) {
+            new Chart(ratingCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(chartData.rating_distribution),
+                    datasets: [{
+                        label: 'Número de Reseñas',
+                        data: Object.values(chartData.rating_distribution),
+                        backgroundColor: [
+                            colors.danger,
+                            colors.warning,
+                            colors.secondary,
+                            colors.info,
+                            colors.success
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Gráfico de tendencia mensual
+    if (chartData.monthly_trend && Object.keys(chartData.monthly_trend).length > 0) {
+        const trendCtx = document.getElementById('trendChart');
+        if (trendCtx) {
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(chartData.monthly_trend),
+                    datasets: [{
+                        label: 'Cantidad de Reseñas',
+                        data: Object.values(chartData.monthly_trend),
+                        borderColor: colors.primary,
+                        backgroundColor: colors.primary + '20',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Gráfico de estado de reseñas
+    if (chartData.review_status && Object.keys(chartData.review_status).length > 0) {
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(chartData.review_status),
+                    datasets: [{
+                        data: Object.values(chartData.review_status),
+                        backgroundColor: [
+                            colors.success,
+                            colors.warning,
+                            colors.danger
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Gráfico de top empresas
+    if (chartData.top_companies && Object.keys(chartData.top_companies).length > 0) {
+        const topCompaniesCtx = document.getElementById('topCompaniesChart');
+        if (topCompaniesCtx) {
+            new Chart(topCompaniesCtx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: Object.keys(chartData.top_companies),
+                    datasets: [{
+                        label: 'Calificación Promedio',
+                        data: Object.values(chartData.top_companies).map(item => item.rating),
+                        backgroundColor: colors.primary,
+                        borderColor: colors.primary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+
 {% endblock %}

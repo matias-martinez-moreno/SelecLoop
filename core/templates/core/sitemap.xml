@@ -1,41 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-
-    <!-- Página principal -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>{{ protocol }}://{{ domain }}{% url 'root' %}</loc>
+        <loc>{{ request.scheme }}://{{ request.get_host }}/</loc>
         <lastmod>{% now "Y-m-d" %}</lastmod>
-        <changefreq>weekly</changefreq>
+        <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
-
-    <!-- Página de login -->
     <url>
-        <loc>{{ protocol }}://{{ domain }}{% url 'login' %}</loc>
-        <lastmod>{% now "Y-m-d" %}</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.8</priority>
-    </url>
-
-    <!-- Dashboard -->
-    <url>
-        <loc>{{ protocol }}://{{ domain }}{% url 'dashboard' %}</loc>
+        <loc>{{ request.scheme }}://{{ request.get_host }}/dashboard/</loc>
         <lastmod>{% now "Y-m-d" %}</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
-
-    <!-- Empresas individuales -->
-    {% for company in companies %}
     <url>
-        <loc>{{ protocol }}://{{ domain }}{% url 'company_detail' company.id %}</loc>
-        <lastmod>{{ company.updated_at|date:"Y-m-d" }}</lastmod>
-        <changefreq>weekly</changefreq>
+        <loc>{{ request.scheme }}://{{ request.get_host }}/login/</loc>
+        <lastmod>{% now "Y-m-d" %}</lastmod>
+        <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
+    {% for company in companies %}
+    <url>
+        <loc>{{ request.scheme }}://{{ request.get_host }}/company/{{ company.id }}/</loc>
+        <lastmod>{{ company.created_at|date:"Y-m-d" }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
     {% endfor %}
-
 </urlset>

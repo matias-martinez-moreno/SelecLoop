@@ -39,6 +39,12 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',              # Tema Bootstrap 5 para formularios
     
     # Aplicaciones del proyecto
+    'accounts',                       # Gestión de usuarios y autenticación
+    'companies',                      # Gestión de empresas
+    'reviews',                        # Sistema de reseñas
+    'work_history',                   # Historial laboral
+    'achievements',                   # Sistema de logros
+    'common',                         # Utilidades compartidas
     'core',                           # Aplicación principal del proyecto
 ]
 

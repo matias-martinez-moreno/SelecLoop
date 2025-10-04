@@ -38,10 +38,17 @@
                                         <i class="fas fa-building me-2"></i>
                                         Empresa
                                     </label>
-                                    {{ form.company }}
-                                    {% if form.company.errors %}
-                                        <div class="text-danger small mt-1">{{ form.company.errors.0 }}</div>
+                                    {{ form.company_name }}
+                                    {% if form.company_name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.company_name.errors.0 }}</div>
                                     {% endif %}
+                                    <small class="text-muted">Escribe el nombre de la empresa o selecciona una existente</small>
+                                    <!-- Lista de empresas para autocompletado -->
+                                    <datalist id="companies-list">
+                                        {% for company in existing_companies %}
+                                            <option value="{{ company.name }}">
+                                        {% endfor %}
+                                    </datalist>
                                 </div>
                             </div>
                             <div class="col-md-6">

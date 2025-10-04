@@ -424,7 +424,7 @@
     {% endif %}
 
     <!-- ===== GRÁFICOS DE ANÁLISIS (SOLO PARA USUARIOS SIN RESEÑAS PENDIENTES) ===== -->
-    {% if user_can_access and chart_data.ratings or chart_data.modality or chart_data.status or chart_data.timeline %}
+    {% if user_can_access and chart_data %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -463,9 +463,9 @@
                         <div class="col-md-6 mb-4">
                             <div class="card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Estado de Reseñas</h6>
-                                    {% if chart_data.status %}
-                                    <canvas id="statusChart" width="400" height="200"></canvas>
+                                    <h6 class="card-title">Fortalezas y Debilidades</h6>
+                                    {% if chart_data.strengths_weaknesses %}
+                                    <canvas id="strengthsChart" width="400" height="200"></canvas>
                                     {% else %}
                                     <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     {% endif %}
@@ -475,7 +475,7 @@
                         <div class="col-md-6 mb-4">
                             <div class="card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Reseñas por Mes</h6>
+                                    <h6 class="card-title">Reseñas por Mes (Últimos 6 meses)</h6>
                                     {% if chart_data.timeline %}
                                     <canvas id="timelineChart" width="400" height="200"></canvas>
                                     {% else %}
@@ -731,28 +731,47 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Gráfico de estado de reseñas
-    if (chartData.status && Object.keys(chartData.status).length > 0) {
-        const statusCtx = document.getElementById('statusChart');
-        if (statusCtx) {
-            new Chart(statusCtx, {
-                type: 'pie',
+    // Gráfico de fortalezas y debilidades (Radar Chart)
+    if (chartData.strengths_weaknesses && Object.keys(chartData.strengths_weaknesses).length > 0) {
+        const strengthsCtx = document.getElementById('strengthsChart');
+        if (strengthsCtx) {
+            new Chart(strengthsCtx, {
+                type: 'radar',
                 data: {
-                    labels: Object.keys(chartData.status),
+                    labels: Object.keys(chartData.strengths_weaknesses),
                     datasets: [{
-                        data: Object.values(chartData.status),
-                        backgroundColor: [colors.success, colors.warning, colors.danger],
-                        borderWidth: 2
+                        label: 'Calificación Promedio',
+                        data: Object.values(chartData.strengths_weaknesses),
+                        backgroundColor: 'rgba(30, 58, 138, 0.2)',
+                        borderColor: colors.primary,
+                        borderWidth: 2,
+                        pointBackgroundColor: colors.primary,
+                        pointBorderColor: colors.primaryDark,
+                        pointRadius: 4
                     }]
                 },
                 options: {
-                    responsive: true
+                    responsive: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
                 }
             });
         }
     }
     
-    // Gráfico de timeline
+    // Gráfico de timeline de reseñas
     if (chartData.timeline && Object.keys(chartData.timeline).length > 0) {
         const timelineCtx = document.getElementById('timelineChart');
         if (timelineCtx) {
@@ -761,19 +780,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 data: {
                     labels: Object.keys(chartData.timeline),
                     datasets: [{
-                        label: 'Reseñas por Mes',
+                        label: 'Cantidad de Reseñas',
                         data: Object.values(chartData.timeline),
                         borderColor: colors.primary,
                         backgroundColor: colors.primary + '20',
-                        tension: 0.1,
-                        fill: true
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: colors.primary,
+                        pointBorderColor: colors.primary,
+                        pointRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     }
                 }
@@ -781,6 +812,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+</script>
+
+<!-- Datos estructurados adicionales para AEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ company.name }} - Reseñas y Opiniones",
+  "description": "Lee reseñas y opiniones sobre {{ company.name }} en {{ company.location }}",
+  "url": "{{ request.build_absolute_uri }}",
+  "mainEntity": {
+    "@type": "Organization",
+    "name": "{{ company.name }}",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ company.location }}",
+      {% if company.region %}"addressRegion": "{{ company.region }}",{% endif %}
+      "addressCountry": "{{ company.country }}"
+    }
+  },
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "{{ request.scheme }}://{{ request.get_host }}/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Empresas",
+        "item": "{{ request.scheme }}://{{ request.get_host }}/dashboard/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "{{ company.name }}",
+        "item": "{{ request.build_absolute_uri }}"
+      }
+    ]
+  }
+}
 </script>
 
 {% endblock %}

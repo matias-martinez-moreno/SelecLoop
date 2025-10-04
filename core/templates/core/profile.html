@@ -76,36 +76,36 @@
     {% if show_stats %}
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-star fa-2x mb-3"></i>
+            <div class="card h-100" style="background: linear-gradient(135deg, #1e3a8a, #1e40af); border: none; box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);">
+                <div class="card-body text-white text-center">
+                    <i class="fas fa-star fa-2x mb-3" style="color: #fbbf24;"></i>
                     <h3 class="card-title">{{ total_reviews }}</h3>
                     <p class="card-text">Total de Reseñas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-check fa-2x mb-3"></i>
+            <div class="card h-100" style="background: linear-gradient(135deg, #059669, #10b981); border: none; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);">
+                <div class="card-body text-white text-center">
+                    <i class="fas fa-check fa-2x mb-3" style="color: #fbbf24;"></i>
                     <h3 class="card-title">{{ approved_reviews }}</h3>
                     <p class="card-text">Reseñas Aprobadas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-warning text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-clock fa-2x mb-3"></i>
+            <div class="card h-100" style="background: linear-gradient(135deg, #d97706, #f59e0b); border: none; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.2);">
+                <div class="card-body text-white text-center">
+                    <i class="fas fa-clock fa-2x mb-3" style="color: #ffffff;"></i>
                     <h3 class="card-title">{{ pending_approval }}</h3>
                     <p class="card-text">Pendientes de Aprobación</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-trophy fa-2x mb-3"></i>
+            <div class="card h-100" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6); border: none; box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);">
+                <div class="card-body text-white text-center">
+                    <i class="fas fa-trophy fa-2x mb-3" style="color: #fbbf24;"></i>
                     <h3 class="card-title">{{ achievement_count|default:0 }}</h3>
                     <p class="card-text">Logros Obtenidos</p>
                 </div>

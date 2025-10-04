@@ -14,39 +14,88 @@
 {% block og_description %}Descubre experiencias reales de candidatos en procesos de selección. SelecLoop te ayuda a tomar decisiones informadas sobre empresas y oportunidades laborales en Colombia.{% endblock %}
 
 {% block content %}
+<!-- ===== ESTILOS CSS PARA TARJETAS DE EMPRESAS ===== -->
+<style>
+.company-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.company-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.company-card:hover::before {
+    left: 100%;
+}
+
+.company-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.company-card .card-header {
+    position: relative;
+    z-index: 2;
+}
+
+.company-card .card-body {
+    position: relative;
+    z-index: 2;
+}
+
+.company-card .btn {
+    transition: all 0.3s ease;
+}
+
+.company-card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Animación de entrada para las tarjetas */
+.company-card {
+    animation: slideInUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.company-card:nth-child(1) { animation-delay: 0.1s; }
+.company-card:nth-child(2) { animation-delay: 0.2s; }
+.company-card:nth-child(3) { animation-delay: 0.3s; }
+.company-card:nth-child(4) { animation-delay: 0.4s; }
+.company-card:nth-child(5) { animation-delay: 0.5s; }
+.company-card:nth-child(6) { animation-delay: 0.6s; }
+.company-card:nth-child(7) { animation-delay: 0.7s; }
+.company-card:nth-child(8) { animation-delay: 0.8s; }
+.company-card:nth-child(9) { animation-delay: 0.9s; }
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto de hover simple y profesional */
+.company-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+</style>
+
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="container-fluid">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== ESTADÍSTICAS RÁPIDAS ===== -->
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <div class="card stats-card-blue h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-building fa-2x mb-3"></i>
-                    <h3 class="card-title">{{ companies.count }}</h3>
-                    <p class="card-text">Empresas Disponibles</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card stats-card-orange h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-clock fa-2x mb-3"></i>
-                    <h3 class="card-title">{{ pending_reviews.count }}</h3>
-                    <p class="card-text">Reseñas Pendientes</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card stats-card-green h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-star fa-2x mb-3"></i>
-                    <h3 class="card-title">{{ completed_reviews.count }}</h3>
-                    <p class="card-text">Reseñas Completadas</p>
                 </div>
             </div>
         </div>
@@ -64,7 +113,7 @@
                 </div>
                 <div class="card-body">
                     <form method="get" class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Nombre de Empresa</label>
                             <input type="text" class="form-control" name="search" value="{{ request.GET.search }}" placeholder="Buscar empresa...">
                         </div>
@@ -86,7 +135,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label">Modalidad</label>
                             <select class="form-select" name="modality">
                                 <option value="">Todas las modalidades</option>
@@ -95,18 +144,17 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-search me-1"></i>
-                                Buscar
-                            </button>
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label">&nbsp;</label>
-                            <a href="{% url 'dashboard' %}" class="btn btn-secondary w-100" title="Limpiar filtros">
-                                <i class="fas fa-times"></i>
-                            </a>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="fas fa-search me-1"></i>
+                                    Buscar
+                                </button>
+                                <a href="{% url 'dashboard' %}" class="btn btn-secondary" title="Limpiar filtros">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -189,23 +237,23 @@
                         <div class="row">
                             {% for company in companies %}
                             <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <h6 class="card-title mb-0">{{ company.name }}</h6>
+                                <div class="card h-100 company-card" style="background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                    <div class="card-header" style="background: #f8fafc; border-bottom: 1px solid #e5e7eb;">
+                                        <h6 class="card-title mb-0 fw-bold" style="color: #1e3a8a;">{{ company.name }}</h6>
                                     </div>
                                     <div class="card-body">
-                                        <p class="card-text small text-muted mb-2">
-                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                        <p class="card-text small mb-2" style="color: #6b7280;">
+                                            <i class="fas fa-map-marker-alt me-1" style="color: #ef4444;"></i>
                                             {{ company.location }}{% if company.region %}, {{ company.region }}{% endif %} - {{ company.country }}
                                         </p>
-                                        <p class="card-text small text-muted mb-2">
-                                            <i class="fas fa-industry text-primary me-1"></i>
+                                        <p class="card-text small mb-2" style="color: #6b7280;">
+                                            <i class="fas fa-industry me-1" style="color: #1e3a8a;"></i>
                                             {{ company.sector }}
                                         </p>
                                         
                                         <!-- ===== ESTADO DE LA EMPRESA ===== -->
                                         {% if company.has_pending_review %}
-                                            <div class="alert alert-warning py-2 mb-2">
+                                            <div class="alert py-2 mb-2" style="background: #fef3c7; border: 1px solid #f59e0b; color: #92400e;">
                                                 <small>
                                                     <i class="fas fa-clock me-1"></i>
                                                     <strong>Reseña Pendiente</strong><br>
@@ -213,7 +261,7 @@
                                                 </small>
                                             </div>
                                         {% elif company.has_completed_review %}
-                                            <div class="alert alert-success py-2 mb-2">
+                                            <div class="alert py-2 mb-2" style="background: #d1fae5; border: 1px solid #10b981; color: #065f46;">
                                                 <small>
                                                     <i class="fas fa-check me-1"></i>
                                                     <strong>Reseña Completada</strong><br>
@@ -223,12 +271,12 @@
                                         {% endif %}
                                         
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-primary btn-sm">
+                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-sm" style="background: #1e3a8a; border: none; color: white;">
                                                 <i class="fas fa-eye me-1"></i>
                                                 Ver Detalles
                                             </a>
                                             {% if company.has_pending_review %}
-                                                <a href="{% url 'create_review' %}?company={{ company.id }}" class="btn btn-warning btn-sm">
+                                                <a href="{% url 'create_review' %}?company={{ company.id }}" class="btn btn-sm" style="background: #f59e0b; border: none; color: white; font-weight: bold;">
                                                     <i class="fas fa-edit me-1"></i>
                                                     Crear Reseña
                                                 </a>
@@ -251,7 +299,7 @@
     </div>
 
     <!-- ===== GRÁFICOS DEL USUARIO ===== -->
-    {% if chart_data.ratings or chart_data.modality or chart_data.status or chart_data.timeline %}
+    {% if chart_data.ratings or chart_data.modality or chart_data.status or chart_data.timeline or chart_data.sector_satisfaction %}
     <div class="row mt-5">
         <div class="col-12">
             <h4 class="text-primary mb-4">
@@ -281,6 +329,20 @@
                 <div class="card-body">
                     {% if chart_data.modality %}
                     <canvas id="userModalityChart" width="400" height="200"></canvas>
+                    {% else %}
+                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">Satisfacción por Sector</h6>
+                </div>
+                <div class="card-body">
+                    {% if chart_data.sector_satisfaction %}
+                    <canvas id="userSectorChart" width="400" height="200"></canvas>
                     {% else %}
                     <p class="text-muted small">No hay datos para mostrar el gráfico</p>
                     {% endif %}
@@ -353,6 +415,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 options: {
                     responsive: true
+                }
+            });
+        }
+    }
+    
+    // Gráfico de satisfacción por sector del usuario
+    if (userChartData.sector_satisfaction && Object.keys(userChartData.sector_satisfaction).length > 0) {
+        const sectorCtx = document.getElementById('userSectorChart');
+        if (sectorCtx) {
+            new Chart(sectorCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(userChartData.sector_satisfaction),
+                    datasets: [{
+                        label: 'Calificación Promedio',
+                        data: Object.values(userChartData.sector_satisfaction),
+                        backgroundColor: colors.primary,
+                        borderColor: colors.primaryDark,
+                        borderWidth: 2,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
                 }
             });
         }

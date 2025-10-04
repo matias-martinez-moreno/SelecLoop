@@ -1,17 +1,22 @@
 User-agent: *
 Allow: /
 
-# Allow access to main pages
-Allow: /login/
+# Sitemap
+Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /accounts/logout/
+Disallow: /accounts/password_reset/
+Disallow: /accounts/password_reset/done/
+Disallow: /accounts/reset/
+Disallow: /accounts/reset/done/
+
+# Allow important pages
 Allow: /dashboard/
 Allow: /company/
+Allow: /login/
+Allow: /register/
 
-# Disallow admin and sensitive areas
-Disallow: /admin/
-Disallow: /staff/
-Disallow: /create-review/
-Disallow: /my-reviews/
-Disallow: /profile/
-
-# Sitemap
-Sitemap: {{ protocol }}://{{ domain }}{% url 'sitemap' %}
+# Crawl delay
+Crawl-delay: 1

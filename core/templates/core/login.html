@@ -49,16 +49,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem 1rem;
+            padding: 1rem;
         }
 
         /* ===== TARJETA DE LOGIN ===== */
         .login-card {
             background: var(--white);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            max-width: 450px;
+            max-width: 400px;
             width: 100%;
         }
 
@@ -66,36 +66,36 @@
         .login-header {
             background: var(--blue-600);
             color: var(--white);
-            padding: 2.5rem 2rem 2rem;
+            padding: 1.5rem 1.5rem 1rem;
             text-align: center;
         }
 
         .login-logo-container {
             text-align: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .login-logo {
-            width: 100px;
+            width: 70px;
             height: auto;
             display: block;
             margin-left: auto;
             margin-right: auto;
             background: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            padding: 8px;
+            border-radius: 6px;
+            padding: 6px;
         }
 
         .login-body {
-            padding: 2.5rem 2rem;
+            padding: 1.5rem;
         }
 
         /* ===== ESTILOS DE FORMULARIOS ===== */
         .form-control {
             border: 2px solid var(--gray-200);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.95rem;
             transition: border-color 0.3s ease;
         }
 
@@ -108,15 +108,17 @@
         .form-label {
             font-weight: 600;
             color: var(--gray-800);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
         }
 
         .btn-primary {
             background: var(--blue-600);
             border: none;
-            border-radius: 8px;
-            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            padding: 0.6rem 1.5rem;
             font-weight: 600;
+            font-size: 0.95rem;
             transition: background-color 0.3s ease;
         }
 
@@ -126,35 +128,35 @@
 
         /* ===== TARJETAS DE CARACTERÍSTICAS ===== */
         .feature-cards {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             width: 100%;
-            max-width: 450px;
+            max-width: 400px;
         }
 
         .feature-card {
             background: var(--white);
-            border-radius: 12px;
-            padding: 1.2rem;
+            border-radius: 8px;
+            padding: 0.8rem;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
             transition: transform 0.3s ease;
             border: 1px solid var(--gray-200);
             height: 100%;
         }
 
         .feature-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
         .feature-icon {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 0.8rem;
-            font-size: 1rem;
+            margin: 0 auto 0.5rem;
+            font-size: 0.8rem;
             color: var(--white);
         }
 
@@ -195,19 +197,23 @@
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .login-container {
-                padding: 1rem;
+                padding: 0.5rem;
             }
             
             .login-header {
-                padding: 2rem 1.5rem 1.5rem;
+                padding: 1rem 1rem 0.75rem;
             }
             
             .login-body {
-                padding: 2rem 1.5rem;
+                padding: 1rem;
             }
             
             .login-logo {
-                width: 80px;
+                width: 60px;
+            }
+            
+            .feature-cards {
+                margin-top: 1rem;
             }
         }
     </style>
@@ -224,8 +230,8 @@
                             <img src="{% static 'core/logo.png' %}" alt="SelecLoop Logo" class="login-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                             <i class="fas fa-search fa-3x text-white" style="display: none; margin-bottom: 1rem;"></i>
                         </div>
-                        <h2 class="h3 mb-2">Bienvenido a SelecLoop</h2>
-                        <p class="text-white-50 mb-0">Tu plataforma de feedback empresarial</p>
+                        <h3 class="h4 mb-1">Bienvenido a SelecLoop</h3>
+                        <p class="text-white-50 mb-0 small">Tu plataforma de feedback empresarial</p>
                     </div>
                     
                     <div class="login-body">
@@ -244,7 +250,7 @@
                         <form method="post" class="login-form">
                             {% csrf_token %}
                             
-                            <div class="mb-3">
+                            <div class="mb-2">
                                 <label for="username" class="form-label">
                                     <i class="fas fa-user me-2 text-primary"></i>Nombre de Usuario
                                 </label>
@@ -256,7 +262,7 @@
                                        placeholder="Ingresa tu nombre de usuario">
                             </div>
 
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="password" class="form-label">
                                     <i class="fas fa-lock me-2 text-primary"></i>Contraseña
                                 </label>
@@ -268,14 +274,14 @@
                                        placeholder="Ingresa tu contraseña">
                             </div>
 
-                            <div class="d-grid mb-4">
+                            <div class="d-grid mb-3">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                                 </button>
                             </div>
 
                             <div class="text-center">
-                                <p class="text-muted mb-0">
+                                <p class="text-muted mb-0 small">
                                     ¿No tienes cuenta? 
                                     <a href="#" class="text-primary fw-bold">Contacta al administrador</a>
                                 </p>

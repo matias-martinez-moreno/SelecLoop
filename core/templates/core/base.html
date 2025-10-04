@@ -33,8 +33,29 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'core/logo.png' %}">
 
-    <!-- ===== DATOS ESTRUCTURADOS PARA AEO ===== -->
-    {% include 'core/structured_data.html' %}
+    <!-- ===== DATOS ESTRUCTURADOS PARA SEO/AEO ===== -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "SelecLoop",
+        "description": "Plataforma para compartir reseñas de procesos de selección de empresas",
+        "url": "{{ request.build_absolute_uri }}",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ request.build_absolute_uri }}dashboard/?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "SelecLoop",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ request.build_absolute_uri }}{% static 'core/logo.png' %}"
+            }
+        }
+    }
+    </script>
     
     <!-- ===== META TAGS ADICIONALES PARA AEO ===== -->
     <meta name="robots" content="index, follow">
@@ -43,9 +64,70 @@
     <meta name="theme-color" content="#2563EB">
     <meta name="msapplication-TileColor" content="#2563EB">
     
+    <!-- App Store Optimization (AEO) -->
+    <meta name="application-name" content="SelecLoop">
+    <meta name="apple-mobile-web-app-title" content="SelecLoop">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- App Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/logo.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'core/logo.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'core/logo.png' %}">
+    <link rel="manifest" href="{% static 'core/site.webmanifest' %}">
+    
+    <!-- App Store Meta Tags -->
+    <meta name="apple-itunes-app" content="app-id=selecloop-web">
+    <meta name="google-play-app" content="app-id=com.selecloop.web">
+    
     <!-- ===== HREFLANG PARA SEO INTERNACIONAL ===== -->
     <link rel="alternate" hreflang="es" href="{{ request.build_absolute_uri }}">
     <link rel="alternate" hreflang="es-co" href="{{ request.build_absolute_uri }}">
+
+    <!-- ===== FUNCIONES DE ACCESIBILIDAD ===== -->
+    <!-- Skip to main content link -->
+    <style>
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            z-index: 10000;
+        }
+        .skip-link:focus {
+            top: 6px;
+        }
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-blue: #000080;
+                --secondary-blue: #0000CD;
+                --accent-yellow: #FFD700;
+                --neutral-gray: #000000;
+            }
+        }
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        /* Focus indicators */
+        .nav-link:focus,
+        .btn:focus,
+        .form-control:focus,
+        .form-select:focus {
+            outline: 3px solid var(--accent-yellow);
+            outline-offset: 2px;
+        }
+    </style>
 
     <!-- ===== RECURSOS EXTERNOS ===== -->
     <!-- Bootstrap 5 para diseño responsive -->
@@ -94,26 +176,24 @@
             line-height: 1.6;
         }
 
-        /* ===== ESTILOS DEL SIDEBAR FLUIDO ===== */
+        /* ===== ESTILOS DEL SIDEBAR PROFESIONAL ===== */
         .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             height: 100vh;
             width: 280px;
-            background: var(--gradient-primary);
+            background: var(--primary-blue);
             box-shadow: var(--shadow-large);
             z-index: 1000;
             overflow-y: auto;
-            backdrop-filter: blur(10px);
         }
 
         .sidebar-header {
             padding: 1.5rem 1.25rem;
             text-align: center;
-            background: rgba(30, 64, 175, 0.2);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
+            background: var(--secondary-blue);
+            border-bottom: 1px solid var(--primary-blue);
         }
 
         .sidebar-brand {
@@ -126,13 +206,12 @@
             justify-content: center;
             gap: 0.75rem;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .sidebar-brand:hover {
-            color: #FBBF24;
+            color: var(--accent-yellow);
             text-decoration: none;
-            transform: scale(1.05);
         }
 
         .sidebar-brand img {
@@ -168,7 +247,7 @@
             color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
             border-radius: 6px;
-            font-weight: 500;
+          font-weight: 500;
             font-size: 0.9rem;
             transition: all 0.2s ease;
             background: transparent;
@@ -185,14 +264,14 @@
         }
 
         .nav-link.active {
-            background: var(--secondary-blue);
+            background: var(--primary-blue);
             color: var(--white);
             border: none;
             box-shadow: none;
         }
 
         .nav-link i {
-            font-size: 1.1rem;
+          font-size: 1.1rem;
             width: 1.5rem;
             text-align: center;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
@@ -200,26 +279,26 @@
 
         /* Botón de logout */
         .nav-link.logout-btn {
-            background: #DC2626;
-            color: #FECACA;
-            border: 1px solid #B91C1C;
+            background: var(--neutral-gray);
+            color: var(--white);
+            border: 1px solid var(--neutral-gray);
             margin-top: 2rem;
         }
 
         .nav-link.logout-btn:hover {
-            background: #B91C1C;
-            color: #FEE2E2;
-            border-color: #991B1B;
+            background: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-blue);
             transform: translateX(8px);
         }
 
         /* Sección de usuario */
         .user-section {
-            background: #1E40AF;
+            background: var(--secondary-blue);
             border-radius: 15px;
             padding: 1.25rem;
             margin-bottom: 1.5rem;
-            border: 1px solid #1D4ED8;
+            border: 1px solid var(--primary-blue);
         }
 
         .user-info {
@@ -230,7 +309,7 @@
         }
 
         .user-role {
-            color: #FBBF24;
+            color: var(--accent-yellow);
             font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -265,7 +344,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(30, 58, 138, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
+            background: rgba(30, 58, 138, 0.02);
             opacity: 1;
         }
 
@@ -296,7 +375,7 @@
         .stat-item:hover {
             transform: translateY(-6px) scale(1.05);
             box-shadow: 0 12px 40px rgba(30, 58, 138, 0.15);
-            border-color: #3B82F6;
+            border-color: var(--secondary-blue);
         }
 
         .stat-number {
@@ -311,57 +390,49 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #64748B;
+            color: var(--neutral-gray);
         }
 
         /* Colores específicos para estadísticas */
         .stat-blue .stat-number {
-            color: #3B82F6;
+            color: var(--primary-blue);
         }
 
         .stat-green .stat-number {
-            color: #10B981;
+            color: var(--success);
         }
 
-        .stat-purple .stat-number {
-            color: #8B5CF6;
+        .stat-orange .stat-number {
+            color: var(--warning);
         }
 
-        /* ===== PALETA DE COLORES FLUIDA Y MODERNA ===== */
+        /* ===== PALETA DE COLORES SIMPLIFICADA ===== */
         :root {
-            --primary-blue: #1E3A8A;        /* Azul principal del logo */
-            --primary-dark: #1E40AF;         /* Azul oscuro */
-            --primary-light: #3B82F6;        /* Azul claro */
-            --secondary-blue: #1D4ED8;       /* Azul secundario */
-            --accent-blue: #2563EB;          /* Azul de acento */
-            --gradient-primary: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
-            --gradient-secondary: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
-            --gradient-subtle: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
-            --neutral-gray: #64748B;         /* Gris neutro */
-            --text-primary: #1F2937;         /* Texto principal */
-            --text-secondary: #6B7280;       /* Texto secundario */
-            --background: #F8FAFC;           /* Fondo claro */
+            --primary-blue: #1E3A8A;        /* Azul principal */
+            --secondary-blue: #1E40AF;       /* Azul secundario */
+            --accent-yellow: #F59E0B;        /* Amarillo para acentos */
+            --neutral-gray: #6B7280;         /* Gris neutro */
             --white: #FFFFFF;
-            --border-color: #E5E7EB;
-            --success: #059669;              /* Verde solo para éxito */
-            --warning: #D97706;              /* Naranja solo para advertencias */
-            --danger: #DC2626;              /* Rojo solo para errores */
-            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --background: #FFFFFF;
+            --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            
+            /* Colores de estado simplificados */
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
         }
 
-        /* ===== CARDS DE ESTADÍSTICAS CON GRADIENTES ===== */
+        /* ===== CARDS DE ESTADÍSTICAS PROFESIONALES ===== */
         .stats-card-blue {
-            background: var(--gradient-primary) !important;
+            background: var(--primary-blue) !important;
             color: var(--white) !important;
-            border: none !important;
+            border: 1px solid var(--primary-dark) !important;
             box-shadow: var(--shadow-medium) !important;
-            transition: all 0.3s ease !important;
+            transition: all 0.2s ease !important;
         }
 
         .stats-card-blue:hover {
-            transform: translateY(-2px) !important;
             box-shadow: var(--shadow-large) !important;
         }
 
@@ -389,15 +460,14 @@
         }
 
         .stats-card-orange {
-            background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%) !important;
+            background: var(--warning) !important;
             color: var(--white) !important;
-            border: none !important;
+            border: 1px solid var(--warning) !important;
             box-shadow: var(--shadow-medium) !important;
-            transition: all 0.3s ease !important;
+            transition: all 0.2s ease !important;
         }
 
         .stats-card-orange:hover {
-            transform: translateY(-2px) !important;
             box-shadow: var(--shadow-large) !important;
         }
 
@@ -425,15 +495,14 @@
         }
 
         .stats-card-green {
-            background: linear-gradient(135deg, #059669 0%, #10B981 100%) !important;
+            background: var(--success) !important;
             color: var(--white) !important;
-            border: none !important;
+            border: 1px solid var(--success) !important;
             box-shadow: var(--shadow-medium) !important;
-            transition: all 0.3s ease !important;
+            transition: all 0.2s ease !important;
         }
 
         .stats-card-green:hover {
-            transform: translateY(-2px) !important;
             box-shadow: var(--shadow-large) !important;
         }
 
@@ -460,26 +529,25 @@
             font-size: 1.25rem !important;
         }
 
-        /* ===== CARDS FLUIDAS Y MODERNAS ===== */
+        /* ===== CARDS PROFESIONALES Y SERIAS ===== */
         .card {
             background: var(--white);
-            border: none;
-            border-radius: 12px;
-            box-shadow: var(--shadow-soft);
-            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-subtle);
+            transition: box-shadow 0.2s ease;
             overflow: hidden;
             position: relative;
         }
 
         .card:hover {
-            transform: translateY(-2px);
             box-shadow: var(--shadow-medium);
         }
 
         .card-header {
-            background: var(--gradient-primary);
+            background: var(--primary-blue);
             color: var(--white);
-            border-bottom: none;
+            border-bottom: 1px solid var(--primary-dark);
             padding: 0.75rem 1rem;
             font-weight: 600;
             font-size: 0.95rem;
@@ -487,35 +555,37 @@
 
         .card-body {
             padding: 1.25rem;
-            background: var(--gradient-subtle);
+            background: var(--white);
         }
 
-        /* ===== BOTONES FLUIDOS Y MODERNOS ===== */
+        /* ===== BOTONES PROFESIONALES ===== */
         .btn {
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 0.6rem 1.2rem;
             font-weight: 500;
             font-size: 0.9rem;
-            border: none;
-            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
         }
 
         .btn-primary {
-            background: var(--gradient-primary);
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
             color: var(--white);
-            box-shadow: var(--shadow-soft);
+            box-shadow: var(--shadow-subtle);
         }
 
         .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-medium);
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
             color: var(--white);
+            box-shadow: var(--shadow-medium);
         }
 
         .btn-primary:active {
-            transform: translateY(0);
+            background: var(--primary-blue);
         }
 
         .btn-success {
@@ -569,8 +639,8 @@
         }
 
         .alert-success {
-            background: #D1FAE5;
-            color: #065F46;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
             border-left: 4px solid var(--success);
         }
 
@@ -581,14 +651,14 @@
         }
 
         .alert-warning {
-            background: #FEF3C7;
-            color: #92400E;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
             border-left: 4px solid var(--warning);
         }
 
         .alert-danger {
-            background: #FEE2E2;
-            color: #991B1B;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
             border-left: 4px solid var(--danger);
         }
 
@@ -751,7 +821,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            background: rgba(255, 255, 255, 0.1);
             transition: left 0.6s ease;
         }
 
@@ -760,27 +830,59 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
             color: var(--white);
-            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+            box-shadow: var(--shadow-subtle);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(30, 58, 138, 0.4);
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: var(--white);
+            box-shadow: var(--shadow-medium);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+            background: var(--success);
+            border-color: var(--success);
             color: var(--white);
-            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
+            box-shadow: var(--shadow-subtle);
         }
 
         .btn-success:hover {
-            background: linear-gradient(135deg, #047857 0%, #059669 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(5, 150, 105, 0.4);
+            background: var(--success);
+            border-color: var(--success);
+            color: var(--white);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            border-color: var(--warning);
+            color: var(--white);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .btn-warning:hover {
+            background: var(--warning);
+            border-color: var(--warning);
+            color: var(--white);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: var(--white);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: var(--white);
+            box-shadow: var(--shadow-medium);
         }
 
         /* ===== MENU MÓVIL ===== */
@@ -876,24 +978,27 @@
     </style>
 </head>
 <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+    
     <!-- Botón de menú móvil -->
     <button class="mobile-menu-btn" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </button>
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navegación principal">
         <div class="sidebar-header">
-            <a href="{% url 'dashboard' %}" class="sidebar-brand">
+            <a href="{% url 'dashboard' %}" class="sidebar-brand" aria-label="SelecLoop - Ir al inicio">
                 <img src="{% static 'core/logo2.png' %}" alt="SelecLoop Logo">
             </a>
             <div class="sidebar-tagline">
-                <i class="fas fa-comments me-1"></i>
+                <i class="fas fa-comments me-1" aria-hidden="true"></i>
                 Tu plataforma de feedback empresarial
             </div>
         </div>
 
-        <div class="sidebar-nav">
+        <div class="sidebar-nav" role="menubar">
       {% if user.is_authenticated %}
                 <!-- Información del usuario -->
                 <div class="user-section">
@@ -991,7 +1096,7 @@
     </nav>
 
     <!-- Contenido Principal -->
-    <main class="main-content">
+    <main class="main-content" id="main-content" role="main">
         <!-- ===== SISTEMA DE MENSAJES MEJORADO ===== -->
         {% if messages %}
             <div class="messages-container">

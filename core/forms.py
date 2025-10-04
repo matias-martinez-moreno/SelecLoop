@@ -23,7 +23,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Review, UserProfile, WorkHistory
+from reviews.models import Review
+from accounts.models import UserProfile
+from work_history.models import WorkHistory
+from companies.models import Company
 
 # ===== FORMULARIO: CREACIÓN DE USUARIOS =====
 class UserCreationForm(UserCreationForm):
@@ -304,11 +307,15 @@ class WorkHistoryForm(forms.ModelForm):
     """
     
     # ===== CAMPOS DE RELACIÓN =====
-    company = forms.ModelChoiceField(
-        queryset=None,  # Se establece dinámicamente en la vista
+    company_name = forms.CharField(
+        max_length=200,
         label="Empresa",
-        help_text="Selecciona la empresa donde trabajaste o trabajas",
-        widget=forms.Select(attrs={'class': 'form-select'})
+        help_text="Escribe el nombre de la empresa o selecciona una existente",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ej: Google, Microsoft, Empresa Local...',
+            'list': 'companies-list'
+        })
     )
     
     # ===== CAMPOS BÁSICOS =====
@@ -352,14 +359,37 @@ class WorkHistoryForm(forms.ModelForm):
     class Meta:
         """Configuración del formulario"""
         model = WorkHistory
-        fields = ['company', 'job_title', 'start_date', 'end_date', 'is_current_job']
+        fields = ['job_title', 'start_date', 'end_date', 'is_current_job']
     
     def __init__(self, *args, **kwargs):
         """Inicialización del formulario"""
         super().__init__(*args, **kwargs)
         
-        # Establecer queryset de empresas activas
-        self.fields['company'].queryset = Company.objects.filter(is_active=True)
+        # Si estamos editando, mostrar el nombre de la empresa actual
+        if self.instance and self.instance.pk and self.instance.company:
+            self.fields['company_name'].initial = self.instance.company.name
+    
+    def clean_company_name(self):
+        """Validar y obtener/crear la empresa"""
+        company_name = self.cleaned_data.get('company_name')
+        
+        if not company_name:
+            raise forms.ValidationError("Debes especificar el nombre de la empresa.")
+        
+        # Buscar empresa existente
+        company, created = Company.objects.get_or_create(
+            name=company_name.strip(),
+            defaults={
+                'description': f'Empresa creada automáticamente: {company_name}',
+                'sector': 'No especificado',
+                'location': 'No especificada',
+                'region': 'No especificada',
+                'country': 'Colombia',
+                'is_active': True
+            }
+        )
+        
+        return company
     
     def clean(self):
         """Validación personalizada del formulario"""
@@ -382,6 +412,17 @@ class WorkHistoryForm(forms.ModelForm):
             raise forms.ValidationError("Si no es tu trabajo actual, debes especificar la fecha de finalización.")
         
         return cleaned_data
+    
+    def save(self, commit=True):
+        """Guardar el formulario con la empresa correcta"""
+        instance = super().save(commit=False)
+        instance.company = self.cleaned_data['company_name']
+        
+        if commit:
+            instance.save()
+        
+        return instance
+
 
 # ===== FORMULARIO: ASIGNACIÓN DE EMPRESAS POR STAFF =====
 # (Eliminado - ahora se usa el sistema de historial laboral automático)
