@@ -81,14 +81,17 @@ class WorkHistory(models.Model):
         """Crea automáticamente una reseña pendiente para esta experiencia laboral"""
         if not self.has_review_pending:
             from reviews.models import PendingReview
-            PendingReview.objects.create(
+            pending_review, created = PendingReview.objects.get_or_create(
                 user_profile=self.user_profile,
                 company=self.company,
                 job_title=self.job_title,
-                participation_date=self.start_date
+                defaults={
+                    'participation_date': self.start_date
+                }
             )
-            self.has_review_pending = True
-            self.save()
+            if created:
+                self.has_review_pending = True
+                self.save()
     
     def __str__(self):
         """Representación en string del modelo"""

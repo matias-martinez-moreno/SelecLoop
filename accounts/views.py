@@ -135,6 +135,11 @@ def my_profile_view(request):
         
         # Contar logros obtenidos
         achievement_count = UserAchievement.objects.filter(user_profile=user_profile).count()
+        user_achievements = UserAchievement.objects.filter(user_profile=user_profile).select_related('achievement').order_by('-earned_at')
+        
+        # Estadísticas adicionales para logros
+        companies_reviewed = Review.objects.filter(user_profile=user_profile).values('company').distinct().count()
+        work_experiences = WorkHistory.objects.filter(user_profile=user_profile).count()
         
         context = {
             'user_profile': user_profile,
@@ -144,6 +149,9 @@ def my_profile_view(request):
             'pending_reviews': pending_reviews,
             'work_history': work_history,
             'achievement_count': achievement_count,
+            'user_achievements': user_achievements,
+            'companies_reviewed': companies_reviewed,
+            'work_experiences': work_experiences,
             'show_stats': True,
         }
     else:

@@ -18,5 +18,10 @@ Allow: /company/
 Allow: /login/
 Allow: /register/
 
+# AI Engine Optimization endpoints
+Allow: /ai/data/
+Allow: /ai/company/
+Allow: /ai/reviews/
+
 # Crawl delay
 Crawl-delay: 1

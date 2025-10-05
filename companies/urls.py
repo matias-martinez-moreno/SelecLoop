@@ -12,4 +12,7 @@ urlpatterns = [
     
     # Dashboard para representantes de empresa
     path('company-dashboard/', views.company_dashboard_view, name='company_dashboard'),
+    
+    # Editar empresa (solo para company_rep)
+    path('company/<int:company_id>/edit/', views.edit_company_view, name='edit_company'),
 ]

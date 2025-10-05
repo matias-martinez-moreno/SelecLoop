@@ -1,0 +1,161 @@
+<!-- ===== TEMPLATE: EDITAR EMPRESA ===== -->
+<!-- Formulario para que company_rep edite información de su empresa -->
+<!-- companies/templates/companies/edit_company.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Editar {{ company.name }} - SelecLoop{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header py-2" style="background: var(--primary-blue);">
+                    <h4 class="mb-0 text-white text-center">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar {{ company.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Logo -->
+                            <div class="col-12 text-center mb-3">
+                                <div class="mb-2">
+                                    <label for="{{ form.logo.id_for_label }}" class="form-label">
+                                        <i class="fas fa-image me-1"></i>{{ form.logo.label }}
+                                    </label>
+                                    {{ form.logo }}
+                                    {% if form.logo.errors %}
+                                        <div class="text-danger small">{{ form.logo.errors.0 }}</div>
+                                    {% endif %}
+                                    {% if company.logo %}
+                                        <div class="mt-2">
+                                            <small class="text-muted">Logo actual:</small><br>
+                                            <img src="{{ company.logo.url }}" alt="Logo actual" class="img-thumbnail" style="max-height: 80px;">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Información básica -->
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label small">
+                                        <i class="fas fa-building me-1"></i>{{ form.name.label }}
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small">{{ form.name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label for="{{ form.sector.id_for_label }}" class="form-label small">
+                                        <i class="fas fa-industry me-1"></i>{{ form.sector.label }}
+                                    </label>
+                                    {{ form.sector }}
+                                    {% if form.sector.errors %}
+                                        <div class="text-danger small">{{ form.sector.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label for="{{ form.location.id_for_label }}" class="form-label small">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ form.location.label }}
+                                    </label>
+                                    {{ form.location }}
+                                    {% if form.location.errors %}
+                                        <div class="text-danger small">{{ form.location.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Información adicional -->
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label for="{{ form.region.id_for_label }}" class="form-label small">
+                                        <i class="fas fa-map me-1"></i>{{ form.region.label }}
+                                    </label>
+                                    {{ form.region }}
+                                    {% if form.region.errors %}
+                                        <div class="text-danger small">{{ form.region.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label for="{{ form.country.id_for_label }}" class="form-label small">
+                                        <i class="fas fa-flag me-1"></i>{{ form.country.label }}
+                                    </label>
+                                    {{ form.country }}
+                                    {% if form.country.errors %}
+                                        <div class="text-danger small">{{ form.country.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label for="{{ form.website.id_for_label }}" class="form-label small">
+                                        <i class="fas fa-globe me-1"></i>{{ form.website.label }}
+                                    </label>
+                                    {{ form.website }}
+                                    {% if form.website.errors %}
+                                        <div class="text-danger small">{{ form.website.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Descripción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label small">
+                                        <i class="fas fa-align-left me-1"></i>{{ form.description.label }}
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger small">{{ form.description.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estado -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_active }}
+                                        <label for="{{ form.is_active.id_for_label }}" class="form-check-label small">
+                                            <i class="fas fa-toggle-on me-1"></i>{{ form.is_active.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="text-danger small">{{ form.is_active.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="{% url 'company_detail' company.id %}" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-times me-1"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-save me-1"></i>Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

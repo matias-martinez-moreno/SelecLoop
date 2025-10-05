@@ -15,6 +15,7 @@ from django.db.models import Q, Avg, Count
 from django.db.models.functions import TruncMonth
 from .models import Company
 from accounts.models import UserProfile
+from .forms import CompanyEditForm
 
 
 @login_required
@@ -186,18 +187,61 @@ def company_detail_view(request, company_id):
                 status_counts[status.title()] = count
         chart_data['status'] = status_counts
         
-        # Datos de timeline (últimos 6 meses)
+        # Datos de timeline (4 meses hacia atrás, ordenados de menor a mayor)
         timeline_data = {}
-        for i in range(6):
-            month_start = timezone.now() - timedelta(days=30*i)
-            month_end = month_start + timedelta(days=30)
+        from datetime import datetime
+        import calendar
+        
+        current_date = timezone.now()
+        
+        # Crear lista de meses para ordenar después
+        months_data = []
+        
+        for i in range(4):  # Cambiado a 4 meses
+            # Calcular el mes correcto (hacia atrás desde el mes actual)
+            target_month = current_date.month - i
+            target_year = current_date.year
+            
+            # Si el mes es negativo o cero, ajustar al año anterior
+            while target_month <= 0:
+                target_month += 12
+                target_year -= 1
+            
+            # Primer día del mes
+            month_start = timezone.make_aware(datetime(target_year, target_month, 1))
+            
+            # Último día del mes
+            last_day = calendar.monthrange(target_year, target_month)[1]
+            month_end = timezone.make_aware(datetime(target_year, target_month, last_day, 23, 59, 59))
+            
             count = reviews_for_stats.filter(
                 submission_date__gte=month_start,
-                submission_date__lt=month_end
+                submission_date__lte=month_end
             ).count()
+            
             month_name = month_start.strftime('%b %Y')
+            months_data.append((month_start, month_name, count))
+        
+        # Ordenar de menor a mayor (más antiguo primero)
+        months_data.sort(key=lambda x: x[0])
+        
+        # Crear diccionario ordenado
+        for month_start, month_name, count in months_data:
             timeline_data[month_name] = count
+        
         chart_data['timeline'] = timeline_data
+        
+        # Debug: Agregar información adicional para verificar
+        chart_data['debug_info'] = {
+            'total_reviews': reviews_for_stats.count(),
+            'latest_review_date': reviews_for_stats.order_by('-submission_date').first().submission_date if reviews_for_stats.exists() else None,
+            'current_time': timezone.now().isoformat(),
+            'ratings_data': chart_data['ratings'],
+            'modality_data': chart_data['modality'],
+            'status_data': chart_data['status'],
+            'timeline_data': chart_data['timeline'],
+            'strengths_data': chart_data['strengths_weaknesses']
+        }
         
         # Gráfico de Fortalezas y Debilidades (Radar Chart)
         strengths_weaknesses = {}
@@ -319,7 +363,7 @@ def company_detail_view(request, company_id):
         ).values('month').annotate(
             count=DJCount('id'),
             approved=DJCount('id', filter=Q(status='approved')),
-            avg_rating=Avg('overall_rating')
+            avg_rating=DJAvg('overall_rating')
         ).order_by('month')
 
         # Calificaciones por mes
@@ -407,3 +451,32 @@ def company_dashboard_view(request):
     }
     
     return render(request, 'core/company_dashboard.html', context)
+
+
+@login_required
+def edit_company_view(request, company_id):
+    """Vista para editar información de empresa (solo para company_rep)"""
+    company = get_object_or_404(Company, id=company_id)
+    
+    # Verificar que el usuario es company_rep
+    if request.user.profile.role != 'company_rep':
+        messages.error(request, 'No tienes permisos para editar empresas.')
+        return redirect('company_detail', company_id=company.id)
+    
+    if request.method == 'POST':
+        form = CompanyEditForm(request.POST, request.FILES, instance=company)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Información de la empresa actualizada exitosamente.')
+            return redirect('company_detail', company_id=company.id)
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = CompanyEditForm(instance=company)
+    
+    context = {
+        'form': form,
+        'company': company,
+    }
+    
+    return render(request, 'companies/edit_company.html', context)

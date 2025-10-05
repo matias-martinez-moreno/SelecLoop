@@ -4,26 +4,28 @@
 <!-- core/templates/core/my_reviews.html -->
 {% extends 'core/base.html' %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}Mis Reseñas - SelecLoop{% endblock %}
 
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="container mt-5">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="display-4 text-primary mb-0">{{ title }}</h1>
-                <a href="{% url 'create_review' %}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Nueva Reseña
-                </a>
+            <div class="card">
+                <div class="card-header py-3" style="background: var(--primary-blue);">
+                    <h3 class="mb-0 text-white text-center">
+                        <i class="fas fa-star me-2"></i>
+                        Mis Reseñas
+                    </h3>
+                    <p class="text-white-50 text-center mb-0 mt-2">Aquí verás un listado de todas las reseñas que has enviado.</p>
+                </div>
             </div>
-            <p class="lead text-muted">Aquí verás un listado de todas las reseñas que has enviado.</p>
         </div>
     </div>
 
     <!-- ===== RESEÑAS PENDIENTES ===== -->
     {% if pending_reviews %}
-    <div class="row mb-4">
+    <div class="row mb-4 mt-4">
         <div class="col-12">
             <div class="card border-warning">
                 <div class="card-header bg-warning text-white">
@@ -76,7 +78,7 @@
     {% endif %}
 
     <!-- ===== RESEÑAS ENVIADAS ===== -->
-    <div class="row">
+    <div class="row mt-4">
         <div class="col-12">
             <h3 class="text-primary mb-3">
                 <i class="fas fa-list me-2"></i>
@@ -91,7 +93,7 @@
             <div class="col-lg-6 col-xl-4 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 text-primary">{{ review.company.name }}</h5>
+                        <h5 class="card-title mb-0 text-white">{{ review.company.name }}</h5>
                         <span class="badge {% if review.status == 'approved' %}bg-success{% elif review.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
                             {% if review.status == 'approved' %}Aprobada{% elif review.status == 'pending' %}Pendiente{% else %}Rechazada{% endif %}
                         </span>

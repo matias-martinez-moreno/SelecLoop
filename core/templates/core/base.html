@@ -39,8 +39,19 @@
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "SelecLoop",
-        "description": "Plataforma para compartir reseñas de procesos de selección de empresas",
+        "alternateName": "SelecLoop Platform",
+        "description": "Plataforma colaborativa para compartir reseñas anónimas sobre procesos de selección laboral. Los candidatos pueden compartir sus experiencias y las empresas pueden mejorar sus prácticas de reclutamiento.",
         "url": "{{ request.build_absolute_uri }}",
+        "inLanguage": "es",
+        "audience": {
+            "@type": "Audience",
+            "audienceType": "Job seekers, candidates, professionals"
+        },
+        "about": {
+            "@type": "Thing",
+            "name": "Job selection processes and company reviews",
+            "description": "Reviews and experiences from job selection processes across different companies and industries"
+        },
         "potentialAction": {
             "@type": "SearchAction",
             "target": "{{ request.build_absolute_uri }}dashboard/?search={search_term_string}",
@@ -49,41 +60,42 @@
         "publisher": {
             "@type": "Organization",
             "name": "SelecLoop",
+            "description": "Platform for sharing job selection process reviews",
             "logo": {
                 "@type": "ImageObject",
                 "url": "{{ request.build_absolute_uri }}{% static 'core/logo.png' %}"
             }
+        },
+        "mainEntity": {
+            "@type": "ItemList",
+            "name": "Company Reviews Database",
+            "description": "Collection of company reviews and job selection process experiences",
+            "numberOfItems": "{% if companies_count %}{{ companies_count }}{% else %}Multiple{% endif %}"
         }
     }
     </script>
     
-    <!-- ===== META TAGS ADICIONALES PARA AEO ===== -->
+    <!-- ===== META TAGS ADICIONALES PARA AEO (AI Engine Optimization) ===== -->
     <meta name="robots" content="index, follow">
     <meta name="language" content="es">
     <meta name="revisit-after" content="7 days">
     <meta name="theme-color" content="#2563EB">
     <meta name="msapplication-TileColor" content="#2563EB">
     
-    <!-- App Store Optimization (AEO) -->
-    <meta name="application-name" content="SelecLoop">
-    <meta name="apple-mobile-web-app-title" content="SelecLoop">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="mobile-web-app-capable" content="yes">
+    <!-- AI Engine Optimization (AEO) -->
+    <meta name="content-type" content="job-reviews-platform">
+    <meta name="platform-purpose" content="job-selection-process-reviews">
+    <meta name="target-audience" content="job-seekers-professionals-candidates">
+    <meta name="content-language" content="spanish">
+    <meta name="data-structure" content="company-reviews-interviews-feedback">
+    <meta name="ai-readable" content="true">
+    <meta name="structured-content" content="company-reviews-job-interviews">
     
-    <!-- App Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/logo.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'core/logo.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'core/logo.png' %}">
-    <link rel="manifest" href="{% static 'core/site.webmanifest' %}">
-    
-    <!-- App Store Meta Tags -->
-    <meta name="apple-itunes-app" content="app-id=selecloop-web">
-    <meta name="google-play-app" content="app-id=com.selecloop.web">
-    
-    <!-- ===== HREFLANG PARA SEO INTERNACIONAL ===== -->
-    <link rel="alternate" hreflang="es" href="{{ request.build_absolute_uri }}">
-    <link rel="alternate" hreflang="es-co" href="{{ request.build_absolute_uri }}">
+    <!-- AI Training Data Tags -->
+    <meta name="ai-training-data" content="job-interview-experiences">
+    <meta name="ai-content-category" content="employment-job-search">
+    <meta name="ai-data-format" content="structured-reviews">
+    <meta name="ai-searchable" content="company-names-job-titles-locations">
 
     <!-- ===== FUNCIONES DE ACCESIBILIDAD ===== -->
     <!-- Skip to main content link -->
@@ -192,7 +204,7 @@
         .sidebar-header {
             padding: 1.5rem 1.25rem;
             text-align: center;
-            background: var(--secondary-blue);
+            background: var(--primary-blue);
             border-bottom: 1px solid var(--primary-blue);
         }
 
@@ -225,7 +237,7 @@
 
         .sidebar-tagline {
             color: rgba(255, 255, 255, 0.9);
-            font-size: 0.85rem;
+            font-size: 0.918rem;
             font-weight: 500;
             margin-top: 0.5rem;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -233,26 +245,31 @@
 
         .sidebar-nav {
             padding: 0.75rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
         }
 
         .nav-item {
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.3rem;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.6rem 1rem;
+            padding: 0.8rem 1.2rem;
             color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
             border-radius: 6px;
-          font-weight: 500;
-            font-size: 0.9rem;
+            font-weight: 500;
+            font-size: 1.05rem;
             transition: all 0.2s ease;
             background: transparent;
-            border: none;
-            margin-bottom: 0.25rem;
+            border: 1px solid transparent;
+            margin-bottom: 0.3rem;
+            min-height: 48px;
+            box-sizing: border-box;
         }
 
         .nav-link:hover {
@@ -270,51 +287,149 @@
             box-shadow: none;
         }
 
+        /* Estilos específicos para el botón de perfil */
+        .nav-link.profile-btn {
+            background: var(--primary-blue);
+            color: var(--white);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .nav-link.profile-btn:hover {
+            background: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-blue);
+            transform: translateX(1px);
+        }
+
+        .nav-link.profile-btn.active {
+            background: var(--secondary-blue);
+            color: var(--white);
+            border-color: var(--secondary-blue);
+        }
+
+
         .nav-link i {
-          font-size: 1.1rem;
+            font-size: 1.1rem;
             width: 1.5rem;
             text-align: center;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Contenedor para los elementos de navegación principales */
+        .nav-main {
+            flex-grow: 1;
+        }
+
+        /* Contenedor para el logout en la parte inferior */
+        .nav-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Botón de logout */
         .nav-link.logout-btn {
-            background: var(--neutral-gray);
+            background: #6c757d;
             color: var(--white);
-            border: 1px solid var(--neutral-gray);
-            margin-top: 2rem;
+            border: 1px solid #6c757d;
+            margin-top: 0;
         }
 
         .nav-link.logout-btn:hover {
-            background: var(--primary-blue);
+            background: #5a6268;
             color: var(--white);
-            border-color: var(--primary-blue);
+            border-color: #5a6268;
             transform: translateX(8px);
         }
 
         /* Sección de usuario */
         .user-section {
             background: var(--secondary-blue);
-            border-radius: 15px;
-            padding: 1.25rem;
+            border-radius: 12px;
+            padding: 0.8rem;
             margin-bottom: 1.5rem;
-            border: 1px solid var(--primary-blue);
+            border: 1px solid var(--secondary-blue);
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Layout en línea para foto y nombre */
+        .user-info-inline {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Avatar pequeño para layout en línea */
+        .user-avatar-small {
+            flex-shrink: 0;
+        }
+
+        .user-avatar-img-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar-img-small:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-yellow);
+        }
+
+        .user-avatar-placeholder-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar-placeholder-small:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-yellow);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Detalles del usuario */
+        .user-details {
+            flex-grow: 1;
+            min-width: 0;
         }
 
         .user-info {
             color: rgba(255, 255, 255, 0.95);
-            font-size: 0.9rem;
+            font-size: 0.918rem;
             font-weight: 600;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            margin-bottom: 0.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .user-role {
             color: var(--accent-yellow);
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Contenido principal */
@@ -639,9 +754,9 @@
         }
 
         .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-            border-left: 4px solid var(--success);
+            background: #6c757d;
+            color: white;
+            border-left: 4px solid #495057;
         }
 
         .alert-info {
@@ -707,7 +822,7 @@
         }
 
         .alert-success .message-icon i {
-            color: var(--success);
+            color: white;
         }
 
         .alert-danger .message-icon i,
@@ -993,7 +1108,6 @@
                 <img src="{% static 'core/logo2.png' %}" alt="SelecLoop Logo">
             </a>
             <div class="sidebar-tagline">
-                <i class="fas fa-comments me-1" aria-hidden="true"></i>
                 Tu plataforma de feedback empresarial
             </div>
         </div>
@@ -1002,94 +1116,107 @@
       {% if user.is_authenticated %}
                 <!-- Información del usuario -->
                 <div class="user-section">
-                    <div class="user-info">
-                        <i class="fas fa-user-circle me-2"></i>
-                        {{ user.get_full_name|default:user.username }}
-                    </div>
-                    <div class="user-role">
-                        <i class="fas fa-badge me-1"></i>
-                        {{ user.profile.get_role_display }}
+                    <div class="user-info-inline">
+                        <div class="user-avatar-small">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="user-avatar-img-small">
+                            {% else %}
+                                <div class="user-avatar-placeholder-small">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="user-details">
+                            <div class="user-info">
+                                {{ user.get_full_name|default:user.username }}
+                            </div>
+                            <div class="user-role">
+                                <i class="fas fa-badge me-1"></i>
+                                {{ user.profile.get_role_display }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {% if user.profile.role == 'company_rep' %}
-                    <!-- Navegación para Representantes de Empresa (prioridad sobre staff) -->
-                    <div class="nav-item">
-                        <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %} {% if request.path == '/' %}{% endif %}">
-                            <i class="fas fa-building"></i>
-                            Panel de Empresa
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
-                            <i class="fas fa-user"></i>
-                            Mi Perfil
-                        </a>
-                    </div>
-                {% elif user.profile.role == 'staff' %}
-                    <!-- Navegación para Staff del Sistema (simplificada) -->
-                    <div class="nav-item">
-                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
-                            <i class="fas fa-user"></i>
-                            Mi Perfil
-                        </a>
-                    </div>
-                {% elif user.profile.role == 'candidate' %}
-                    <!-- Navegación para Candidatos -->
-                    <div class="nav-item">
-                        <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                            <i class="fas fa-building"></i>
-                            Explorar Empresas
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{% url 'my_reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'my_reviews' %}active{% endif %}">
-                            <i class="fas fa-star"></i>
-                            Mis Reseñas
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{% url 'work_history' %}" class="nav-link {% if request.resolver_match.url_name == 'work_history' %}active{% endif %}">
-                            <i class="fas fa-briefcase"></i>
-                            Mi Historial Laboral
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{% url 'achievements' %}" class="nav-link {% if request.resolver_match.url_name == 'achievements' %}active{% endif %}">
-                            <i class="fas fa-trophy"></i>
-                            Mis Logros
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
-                            <i class="fas fa-user"></i>
-                            Mi Perfil
-                        </a>
-                    </div>
-                {% elif user.is_staff %}
-                    <!-- Navegación para el Staff (simplificada) -->
-                    <div class="nav-item">
-                        <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
-                            <i class="fas fa-user"></i>
-                            Mi Perfil
-                        </a>
-                    </div>
-        {% endif %}
+                <!-- Contenedor principal de navegación -->
+                <div class="nav-main">
+                    {% if user.profile.role == 'company_rep' %}
+                        <!-- Navegación para Representantes de Empresa (prioridad sobre staff) -->
+                        <div class="nav-item">
+                            <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %} {% if request.path == '/' %}{% endif %}">
+                                <i class="fas fa-building"></i>
+                                Panel de Empresa
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="{% url 'my_profile' %}" class="nav-link profile-btn {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                                <i class="fas fa-user"></i>
+                                Mi Perfil
+                            </a>
+                        </div>
+                    {% elif user.profile.role == 'staff' %}
+                        <!-- Navegación para Staff del Sistema (simplificada) -->
+                        <div class="nav-item">
+                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                                <i class="fas fa-user"></i>
+                                Mi Perfil
+                            </a>
+                        </div>
+                    {% elif user.profile.role == 'candidate' %}
+                        <!-- Navegación para Candidatos -->
+                        <div class="nav-item">
+                            <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                                <i class="fas fa-building"></i>
+                                Explorar Empresas
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="{% url 'my_reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'my_reviews' %}active{% endif %}">
+                                <i class="fas fa-star"></i>
+                                Mis Reseñas
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="{% url 'work_history' %}" class="nav-link {% if request.resolver_match.url_name == 'work_history' %}active{% endif %}">
+                                <i class="fas fa-briefcase"></i>
+                                Mi Historial Laboral
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                                <i class="fas fa-user"></i>
+                                Mi Perfil
+                            </a>
+                        </div>
+                    {% elif user.is_staff %}
+                        <!-- Navegación para el Staff (simplificada) -->
+                        <div class="nav-item">
+                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                                <i class="fas fa-user"></i>
+                                Mi Perfil
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
                 
-                <!-- Logout para todos -->
-                <div class="nav-item">
-                    <a href="{% url 'logout' %}" class="nav-link logout-btn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Cerrar Sesión
-                    </a>
+                <!-- Footer con logout en la parte inferior -->
+                <div class="nav-footer">
+                    <div class="nav-item">
+                        <a href="{% url 'logout' %}" class="nav-link logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Cerrar Sesión
+                        </a>
+                    </div>
                 </div>
       {% else %}
                 <!-- Navegación para usuarios no autenticados -->
-                <div class="nav-item">
-                    <a href="{% url 'login' %}" class="nav-link">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Iniciar Sesión
-                    </a>
+                <div class="nav-main">
+                    <div class="nav-item">
+                        <a href="{% url 'login' %}" class="nav-link">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Iniciar Sesión
+                        </a>
+                    </div>
                 </div>
       {% endif %}
         </div>

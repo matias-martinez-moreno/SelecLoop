@@ -40,7 +40,10 @@ class ReviewForm(forms.ModelForm):
     company = forms.ModelChoiceField(
         queryset=None,  # Se establece dinámicamente en la vista
         label="Empresa",
-        help_text="Selecciona la empresa donde participaste en el proceso de selección"
+        help_text="Selecciona la empresa donde participaste en el proceso de selección",
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
     )
     
     job_title = forms.CharField(
@@ -104,15 +107,21 @@ class ReviewForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     
-    overall_rating = forms.IntegerField(
-        min_value=1,
-        max_value=5,
+    # ===== CAMPOS DE CALIFICACIÓN =====
+    OVERALL_RATING_CHOICES = [
+        (1, '1 - Muy Malo'),
+        (2, '2 - Malo'),
+        (3, '3 - Regular'),
+        (4, '4 - Bueno'),
+        (5, '5 - Excelente'),
+    ]
+    
+    overall_rating = forms.ChoiceField(
+        choices=OVERALL_RATING_CHOICES,
         label="Calificación general",
-        help_text="Calificación general del 1 al 5",
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'min': '1',
-            'max': '5'
+        help_text="Califica tu experiencia general del proceso de selección (1 = Muy malo, 5 = Excelente)",
+        widget=forms.Select(attrs={
+            'class': 'form-control'
         })
     )
     
@@ -180,7 +189,12 @@ class ReviewForm(forms.ModelForm):
         
         # Validar que la calificación general esté en el rango correcto
         overall_rating = cleaned_data.get('overall_rating')
-        if overall_rating and (overall_rating < 1 or overall_rating > 5):
-            raise forms.ValidationError('La calificación general debe estar entre 1 y 5.')
+        if overall_rating:
+            try:
+                rating_value = int(overall_rating)
+                if rating_value < 1 or rating_value > 5:
+                    raise forms.ValidationError('La calificación general debe estar entre 1 y 5.')
+            except (ValueError, TypeError):
+                raise forms.ValidationError('La calificación general debe ser un número válido.')
         
         return cleaned_data

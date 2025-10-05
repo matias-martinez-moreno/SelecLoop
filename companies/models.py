@@ -82,6 +82,14 @@ class Company(models.Model):
         null=True
     )
     
+    logo = models.ImageField(
+        verbose_name="Logo",
+        help_text="Logo de la empresa",
+        upload_to="company_logos/",
+        blank=True,
+        null=True
+    )
+    
     # ===== CAMPOS DE ESTADO =====
     is_active = models.BooleanField(
         default=True,

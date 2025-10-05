@@ -1,0 +1,27 @@
+{
+    "name": "SelecLoop - Reseñas de Empresas",
+    "short_name": "SelecLoop",
+    "description": "Plataforma para compartir reseñas de procesos de selección de empresas",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1E3A8A",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/static/core/logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/core/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["business", "productivity", "social"],
+    "lang": "es",
+    "dir": "ltr"
+}

@@ -248,3 +248,4 @@ class PendingReview(models.Model):
         verbose_name = "Reseña Pendiente"
         verbose_name_plural = "Reseñas Pendientes"
         ordering = ['-participation_date']  # Ordenar por fecha de participación
+        unique_together = ['user_profile', 'company', 'job_title']  # Evitar duplicados

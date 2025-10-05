@@ -105,7 +105,7 @@
     <div class="row mb-3">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header" style="background: var(--secondary-blue); color: white;">
                     <h5 class="mb-0">
                         <i class="fas fa-search me-2"></i>
                         Buscar y Filtrar Empresas
@@ -147,7 +147,7 @@
                         <div class="col-md-3">
                             <label class="form-label">&nbsp;</label>
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary flex-fill">
+                                <button type="submit" class="btn flex-fill" style="background: var(--secondary-blue); border: none; color: white;">
                                     <i class="fas fa-search me-1"></i>
                                     Buscar
                                 </button>
@@ -206,7 +206,7 @@
                                         <strong>Participaste el:</strong> {{ pending.participation_date|date:"d M Y" }}
                                     </p>
                                     <div class="mt-3">
-                                        <a href="{% url 'create_review' %}?company={{ pending.company.id }}" class="btn btn-warning btn-sm w-100">
+                                        <a href="{% url 'create_review' %}?company={{ pending.company.id }}&job_title={{ pending.job_title|urlencode }}" class="btn btn-warning btn-sm w-100">
                                             <i class="fas fa-edit me-1"></i>
                                             Crear Reseña Ahora
                                         </a>
@@ -226,7 +226,7 @@
     <div class="row mb-3">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header" style="background: var(--secondary-blue); color: white;">
                     <h5 class="mb-0">
                         <i class="fas fa-list me-2"></i>
                         Empresas Disponibles
@@ -239,7 +239,16 @@
                             <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card h-100 company-card" style="background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s ease;">
                                     <div class="card-header" style="background: #f8fafc; border-bottom: 1px solid #e5e7eb;">
-                                        <h6 class="card-title mb-0 fw-bold" style="color: #1e3a8a;">{{ company.name }}</h6>
+                                        <div class="d-flex align-items-center">
+                                            {% if company.logo %}
+                                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="me-2" style="width: 24px; height: 24px; object-fit: cover; border-radius: 4px;">
+                                            {% else %}
+                                                <div class="me-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; background: #e5e7eb; border-radius: 4px;">
+                                                    <i class="fas fa-building" style="font-size: 12px; color: #6b7280;"></i>
+                                                </div>
+                                            {% endif %}
+                                            <h6 class="card-title mb-0 fw-bold" style="color: #1e3a8a;">{{ company.name }}</h6>
+                                        </div>
                                     </div>
                                     <div class="card-body">
                                         <p class="card-text small mb-2" style="color: #6b7280;">
@@ -271,7 +280,7 @@
                                         {% endif %}
                                         
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-sm" style="background: #1e3a8a; border: none; color: white;">
+                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-sm" style="background: var(--secondary-blue); border: none; color: white;">
                                                 <i class="fas fa-eye me-1"></i>
                                                 Ver Detalles
                                             </a>
@@ -298,166 +307,5 @@
         </div>
     </div>
 
-    <!-- ===== GRÁFICOS DEL USUARIO ===== -->
-    {% if chart_data.ratings or chart_data.modality or chart_data.status or chart_data.timeline or chart_data.sector_satisfaction %}
-    <div class="row mt-5">
-        <div class="col-12">
-            <h4 class="text-primary mb-4">
-                <i class="fas fa-chart-bar me-2"></i>
-                Mis Estadísticas
-            </h4>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0">Mis Calificaciones</h6>
-                </div>
-                <div class="card-body">
-                    {% if chart_data.ratings %}
-                    <canvas id="userRatingsChart" width="400" height="200"></canvas>
-                    {% else %}
-                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0">Modalidades de Trabajo</h6>
-                </div>
-                <div class="card-body">
-                    {% if chart_data.modality %}
-                    <canvas id="userModalityChart" width="400" height="200"></canvas>
-                    {% else %}
-                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0">Satisfacción por Sector</h6>
-                </div>
-                <div class="card-body">
-                    {% if chart_data.sector_satisfaction %}
-                    <canvas id="userSectorChart" width="400" height="200"></canvas>
-                    {% else %}
-                    <p class="text-muted small">No hay datos para mostrar el gráfico</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    {% endif %}
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-{{ chart_data|json_script:"user-chart-data" }}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Datos de los gráficos del usuario
-    const userChartData = JSON.parse(document.getElementById('user-chart-data').textContent);
-    
-    // Colores para los gráficos
-    const colors = {
-        primary: '#1E3A8A',
-        success: '#10B981',
-        warning: '#F59E0B',
-        danger: '#EF4444',
-        info: '#3B82F6',
-        secondary: '#6B7280'
-    };
-    
-    // Gráfico de calificaciones del usuario
-    if (userChartData.ratings && Object.keys(userChartData.ratings).length > 0) {
-        const ratingsCtx = document.getElementById('userRatingsChart');
-        if (ratingsCtx) {
-            new Chart(ratingsCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(userChartData.ratings),
-                    datasets: [{
-                        label: 'Mis Calificaciones',
-                        data: Object.values(userChartData.ratings),
-                        backgroundColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
-                        borderColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-    }
-    
-    // Gráfico de modalidad del usuario
-    if (userChartData.modality && Object.keys(userChartData.modality).length > 0) {
-        const modalityCtx = document.getElementById('userModalityChart');
-        if (modalityCtx) {
-            new Chart(modalityCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(userChartData.modality),
-                    datasets: [{
-                        data: Object.values(userChartData.modality),
-                        backgroundColor: [colors.primary, colors.success, colors.info],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true
-                }
-            });
-        }
-    }
-    
-    // Gráfico de satisfacción por sector del usuario
-    if (userChartData.sector_satisfaction && Object.keys(userChartData.sector_satisfaction).length > 0) {
-        const sectorCtx = document.getElementById('userSectorChart');
-        if (sectorCtx) {
-            new Chart(sectorCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(userChartData.sector_satisfaction),
-                    datasets: [{
-                        label: 'Calificación Promedio',
-                        data: Object.values(userChartData.sector_satisfaction),
-                        backgroundColor: colors.primary,
-                        borderColor: colors.primaryDark,
-                        borderWidth: 2,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 5,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-        }
-    }
-});
-</script>
 
 {% endblock %}

@@ -4,6 +4,7 @@
 
 from django.urls import path, include
 from . import views
+from . import ai_views
 
 # ===== PATRONES DE URL =====
 urlpatterns = [
@@ -44,4 +45,14 @@ urlpatterns = [
 
     # Sitemap.xml para motores de búsqueda
     path('sitemap.xml', views.sitemap_xml_view, name='sitemap'),
+    
+    # ===== VISTAS AEO (AI Engine Optimization) =====
+    # Endpoint para datos estructurados para IA
+    path('ai/data/', ai_views.ai_data_endpoint, name='ai_data'),
+    
+    # Datos específicos de empresa para IA
+    path('ai/company/<int:company_id>/', ai_views.company_ai_data, name='company_ai_data'),
+    
+    # Datos de reseñas para IA
+    path('ai/reviews/', ai_views.reviews_ai_data, name='reviews_ai_data'),
 ]

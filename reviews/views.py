@@ -101,7 +101,19 @@ def create_review_view(request):
         return redirect('dashboard')
     
     if request.method == 'POST':
-        form = ReviewForm(request.POST, request.FILES)
+        # Establecer el queryset antes de crear el formulario
+        company_id = request.GET.get('company')
+        if company_id:
+            try:
+                company = Company.objects.get(id=company_id)
+                form = ReviewForm(request.POST, request.FILES)
+                form.fields['company'].queryset = Company.objects.filter(id=company_id)
+            except Company.DoesNotExist:
+                form = ReviewForm(request.POST, request.FILES)
+                form.fields['company'].queryset = Company.objects.filter(is_active=True)
+        else:
+            form = ReviewForm(request.POST, request.FILES)
+            form.fields['company'].queryset = Company.objects.filter(is_active=True)
         if form.is_valid():
             try:
                 # Crear reseña
@@ -184,13 +196,20 @@ def create_review_view(request):
                 for error in errors:
                     messages.error(request, f'❌ {field_name}: {error}')
     else:
-        # Pre-seleccionar empresa
+        # Pre-seleccionar empresa y cargo
         initial_data = {}
         company_id = request.GET.get('company')
+        job_title = request.GET.get('job_title')
+        
         if company_id:
             try:
                 company = Company.objects.get(id=company_id)
-                initial_data['company'] = company.id  # Usar el ID, no el objeto
+                initial_data['company'] = company  # Usar el objeto completo, no el ID
+                
+                # Si hay un cargo específico, preseleccionarlo también
+                if job_title:
+                    initial_data['job_title'] = job_title
+                
                 # Si hay una empresa específica, solo mostrar esa empresa
                 form = ReviewForm(initial=initial_data)
                 form.fields['company'].queryset = Company.objects.filter(id=company_id)

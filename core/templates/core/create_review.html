@@ -38,6 +38,8 @@
                             <i class="fas fa-building me-2"></i>
                             <strong>Empresa preseleccionada:</strong> {{ form.company.field.queryset.first.name }}
                         </div>
+                        <!-- Campo oculto para la empresa preseleccionada -->
+                        <input type="hidden" name="company" value="{{ form.company.field.queryset.first.id }}">
                         {% endif %}
                         <div class="row">
                             {% if form.company.field.queryset.count > 1 %}
@@ -225,8 +227,8 @@
                                 Enviar Reseña
                             </button>
                             <div class="alert alert-info mt-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Importante:</strong> Una vez enviada, tu reseña será revisada por nuestro equipo antes de ser publicada.
+                                <i class="fas fa-robot me-2"></i>
+                                <strong>Análisis automático:</strong> Tu reseña será analizada por nuestro sistema de IA para detectar contenido inapropiado, ofensivo o fuera de lugar antes de ser publicada.
                             </div>
                         </div>
                     </form>

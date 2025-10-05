@@ -89,46 +89,126 @@
 .rating-display {
     display: inline-block;
 }
+
+/* Estilos para las tarjetas de estadísticas */
+.stats-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card .card-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stats-card .card-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.stats-card i {
+    opacity: 0.8;
+}
+
+/* Forzar estilos para las tarjetas de estadísticas */
+.card.h-100[style*="background-color: #2563eb"] {
+    background-color: #2563eb !important;
+    color: white !important;
+}
+
+.card.h-100[style*="background-color: #2563eb"] .card-body {
+    background-color: #2563eb !important;
+    color: white !important;
+}
+
+.card.h-100[style*="background-color: #2563eb"] .card-title {
+    color: white !important;
+}
+
+.card.h-100[style*="background-color: #2563eb"] .card-text {
+    color: white !important;
+}
+
+.card.h-100[style*="background-color: #2563eb"] i {
+    color: white !important;
+}
+
+/* Estilos específicos para las tarjetas azules de estadísticas */
+.stats-card-blue {
+    background-color: #2563eb !important;
+    color: white !important;
+    border: none !important;
+}
+
+.stats-card-blue .card-body {
+    background-color: #2563eb !important;
+    color: white !important;
+}
+
+.stats-card-blue .card-title {
+    color: white !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+}
+
+.stats-card-blue .card-text {
+    color: white !important;
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+}
+
+.stats-card-blue i {
+    color: white !important;
+}
 </style>
 
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
-<div class="container mt-5">
-    <div class="row mb-4">
+<div class="container mt-2">
+    <div class="row mb-2">
         <div class="col-12">
-            <h1 class="display-4 text-primary mb-3">
-                <i class="fas fa-building me-3"></i>
+            <h3 class="text-primary mb-2">
+                <i class="fas fa-building me-2"></i>
                 Dashboard de Empresas
-            </h1>
-            <p class="lead text-muted">Panel de gestión y análisis de todas las empresas del sistema</p>
+            </h3>
         </div>
     </div>
 
     <!-- ===== ESTADÍSTICAS GENERALES ===== -->
-    <div class="row mb-4">
+    <div class="row mb-3">
         <div class="col-md-4">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-building fa-2x mb-2"></i>
-                    <h4 class="card-title">{{ total_companies }}</h4>
-                    <p class="card-text mb-0">Total Empresas</p>
+            <div class="card h-100 stats-card-blue">
+                <div class="card-body text-center py-2">
+                    <i class="fas fa-building fa-lg mb-1"></i>
+                    <h5 class="card-title mb-1">{{ total_companies }}</h5>
+                    <p class="card-text mb-0 small">Total Empresas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-star fa-2x mb-2"></i>
-                    <h4 class="card-title">{{ total_reviews }}</h4>
-                    <p class="card-text mb-0">Total Reseñas</p>
+            <div class="card h-100 stats-card-blue">
+                <div class="card-body text-center py-2">
+                    <i class="fas fa-star fa-lg mb-1"></i>
+                    <h5 class="card-title mb-1">{{ total_reviews }}</h5>
+                    <p class="card-text mb-0 small">Total Reseñas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-users fa-2x mb-2"></i>
-                    <h4 class="card-title">{{ total_candidates }}</h4>
-                    <p class="card-text mb-0">Total Candidatos</p>
+            <div class="card h-100 stats-card-blue">
+                <div class="card-body text-center py-2">
+                    <i class="fas fa-users fa-lg mb-1"></i>
+                    <h5 class="card-title mb-1">{{ total_candidates }}</h5>
+                    <p class="card-text mb-0 small">Total Candidatos</p>
                 </div>
             </div>
         </div>
@@ -251,7 +331,7 @@
                     <!-- ===== BARRA DE BÚSQUEDA ===== -->
                     <form method="get" class="row g-3 mb-4">
                         <div class="col-md-8">
-                            <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Buscar empresas por nombre, sector o ubicación...">
+                            <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Buscar empresas por nombre...">
                         </div>
                         <div class="col-md-4">
                             <button type="submit" class="btn btn-primary w-100">
@@ -267,10 +347,21 @@
                             <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card h-100 company-card-admin" style="background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.3s ease;">
                                     <div class="card-header" style="background: #f8fafc; border-bottom: 1px solid #e5e7eb;">
-                                        <h6 class="card-title mb-0 fw-bold" style="color: #1e3a8a;">{{ company.name }}</h6>
-                                        {% if company.website %}
-                                            <small style="color: #6b7280;">{{ company.website }}</small>
-                                        {% endif %}
+                                        <div class="d-flex align-items-center">
+                                            {% if company.logo %}
+                                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="me-2" style="width: 24px; height: 24px; object-fit: cover; border-radius: 4px;">
+                                            {% else %}
+                                                <div class="me-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; background: #e5e7eb; border-radius: 4px;">
+                                                    <i class="fas fa-building" style="font-size: 12px; color: #6b7280;"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div class="flex-grow-1">
+                                                <h6 class="card-title mb-0 fw-bold" style="color: #1e3a8a;">{{ company.name }}</h6>
+                                                {% if company.website %}
+                                                    <small style="color: #6b7280;">{{ company.website }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="card-body">
                                         <div class="row mb-3">
@@ -328,7 +419,7 @@
                                         {% endif %}
                                         
                                         <div class="d-grid">
-                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-sm" style="background: #1e3a8a; border: none; color: white;">
+                                            <a href="{% url 'company_detail' company.id %}" class="btn btn-sm" style="background: var(--secondary-blue); border: none; color: white;">
                                                 <i class="fas fa-eye me-1"></i>
                                                 Ver Detalles
                                             </a>

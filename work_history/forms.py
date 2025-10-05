@@ -27,7 +27,9 @@ class WorkHistoryForm(forms.ModelForm):
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Ej: Google, Microsoft, Empresa Local...',
-            'list': 'companies-list'
+            'list': 'companies-list',
+            'autocomplete': 'off',
+            'id': 'company-input'
         })
     )
     

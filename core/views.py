@@ -2,7 +2,7 @@
 # VISTAS DE LA APLICACIÓN CORE - SelecLoop
 # =============================================================================
 # Este archivo contiene las vistas principales del sistema SelecLoop
-# 
+#
 # Funcionalidades principales:
 # - Dashboard principal para candidatos
 # - Redirección inicial según rol
@@ -19,7 +19,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from companies.models import Company
 from accounts.models import UserProfile
-from reviews.models import Review
+from reviews.models import Review, PendingReview
 from work_history.models import WorkHistory
 from achievements.models import Achievement, UserAchievement
 from django.db.models.functions import TruncMonth
@@ -103,8 +103,21 @@ def dashboard_view(request):
         has_review_pending=True
     ).select_related('company')
     
-    # Combinar ambas fuentes de reseñas pendientes
-    all_pending_companies = list(pending_reviews) + list(work_history_pending)
+    # Combinar ambas fuentes de reseñas pendientes, evitando duplicados
+    all_pending_companies = []
+    pending_company_ids = set()
+    
+    # Agregar reseñas pendientes
+    for pending in pending_reviews:
+        if pending.company.id not in pending_company_ids:
+            all_pending_companies.append(pending)
+            pending_company_ids.add(pending.company.id)
+    
+    # Agregar historial laboral pendiente (solo si no está ya en pending_reviews)
+    for work in work_history_pending:
+        if work.company.id not in pending_company_ids:
+            all_pending_companies.append(work)
+            pending_company_ids.add(work.company.id)
     
     # Agregar información adicional a cada empresa
     for company in companies:
@@ -117,7 +130,7 @@ def dashboard_view(request):
             company.avg_rating = company_rated_reviews.aggregate(avg=Avg('overall_rating'))['avg']
         else:
             company.avg_rating = 0
-        
+    
         # Verificar si el usuario puede acceder a esta empresa
         user_can_access = True
         if pending_reviews.filter(company=company).exists():
@@ -228,7 +241,7 @@ def dashboard_view(request):
                 }
         
         chart_data['sector_satisfaction'] = sector_satisfaction
-    
+
     context = {
         'companies': companies,
         'pending_reviews': all_pending_companies,

@@ -42,7 +42,7 @@
                                     {% if form.company_name.errors %}
                                         <div class="text-danger small mt-1">{{ form.company_name.errors.0 }}</div>
                                     {% endif %}
-                                    <small class="text-muted">Escribe el nombre de la empresa o selecciona una existente</small>
+                                    <small class="text-muted">Escribe el nombre de la empresa o selecciona una existente de la lista</small>
                                     <!-- Lista de empresas para autocompletado -->
                                     <datalist id="companies-list">
                                         {% for company in existing_companies %}
@@ -218,6 +218,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Ejecutar cuando cambie el checkbox
         currentJobCheckbox.addEventListener('change', toggleEndDate);
+    }
+    
+    // Mejorar funcionalidad del campo de empresa
+    const companyInput = document.getElementById('company-input');
+    const datalist = document.getElementById('companies-list');
+    
+    if (companyInput && datalist) {
+        // Mejorar la experiencia del usuario
+        companyInput.addEventListener('focus', function() {
+            this.setAttribute('placeholder', 'Escribe o selecciona una empresa...');
+        });
+        
+        companyInput.addEventListener('blur', function() {
+            this.setAttribute('placeholder', 'Ej: Google, Microsoft, Empresa Local...');
+        });
+        
+        // Mostrar indicador visual cuando se selecciona una empresa existente
+        companyInput.addEventListener('input', function() {
+            const value = this.value;
+            const options = Array.from(datalist.options);
+            const exactMatch = options.find(option => option.value === value);
+            
+            if (exactMatch) {
+                this.style.borderColor = '#28a745';
+                this.style.backgroundColor = '#f8fff9';
+            } else {
+                this.style.borderColor = '';
+                this.style.backgroundColor = '';
+            }
+        });
     }
 });
 </script>
