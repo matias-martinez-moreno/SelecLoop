@@ -1278,8 +1278,8 @@
     <script>
         // Sistema básico de mensajes
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-ocultar mensajes después de 5 segundos
-            const messages = document.querySelectorAll('.alert');
+            // Auto-ocultar solo mensajes del sistema (con data-auto-dismiss="true") después de 5 segundos
+            const messages = document.querySelectorAll('.alert[data-auto-dismiss="true"]');
             messages.forEach(function(message, index) {
                 setTimeout(function() {
                     if (message) {

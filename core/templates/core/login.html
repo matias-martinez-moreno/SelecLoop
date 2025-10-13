@@ -52,6 +52,14 @@
             padding: 1rem;
         }
 
+        .login-wrapper {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         /* ===== TARJETA DE LOGIN ===== */
         .login-card {
             background: var(--white);
@@ -131,6 +139,8 @@
             margin-top: 1.5rem;
             width: 100%;
             max-width: 400px;
+            display: flex;
+            justify-content: center;
         }
 
         .feature-card {
@@ -200,6 +210,10 @@
                 padding: 0.5rem;
             }
             
+            .login-wrapper {
+                max-width: 350px;
+            }
+            
             .login-header {
                 padding: 1rem 1rem 0.75rem;
             }
@@ -214,6 +228,7 @@
             
             .feature-cards {
                 margin-top: 1rem;
+                max-width: 350px;
             }
         }
     </style>
@@ -221,8 +236,8 @@
 <body>
     <!-- ===== CONTENEDOR PRINCIPAL ===== -->
     <div class="login-container">
-        <div class="row justify-content-center w-100">
-            <div class="col-lg-5 col-xl-4">
+        <div class="d-flex justify-content-center w-100">
+            <div class="login-wrapper">
                 <!-- ===== TARJETA DE LOGIN ===== -->
                 <div class="login-card">
                     <div class="login-header">
