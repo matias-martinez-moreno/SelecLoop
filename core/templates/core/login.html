@@ -43,74 +43,180 @@
             min-height: 100vh;
         }
 
-        /* ===== CONTENEDOR DE LOGIN ===== */
-        .login-container {
+        /* ===== LAYOUT DE AUTENTICACIÓN (2 COLUMNAS) ===== */
+        .auth-layout {
             min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 0;
+            background: linear-gradient(135deg, var(--blue-50), #f7f9ff);
+        }
+
+        /* Panel izquierdo (branding) */
+        .brand-panel {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 3rem 2rem;
+            background: radial-gradient(1000px 700px at -10% -20%, #314e7d, #1f3a68 50%, #1b335c 70%),
+                        linear-gradient(180deg, #1e3a8a 0%, #183058 100%);
+            color: #eaf1ff;
+            overflow: hidden;
         }
 
-        .login-wrapper {
+        .brand-content {
             width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 560px;
+            text-align: center; /* centrar contenido e imagen */
         }
 
-        /* ===== TARJETA DE LOGIN ===== */
+        .brand-logo {
+            width: 180px;
+            height: auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .brand-title {
+            font-weight: 900;
+            font-size: 2.6rem;
+            line-height: 1.2;
+            margin: 1rem 0 0.5rem 0;
+            color: var(--blue-600);
+        }
+
+        .brand-subtitle {
+            font-size: 1.1rem;
+            color: #eaf1ff;
+            opacity: 0.95;
+            margin: 1.25rem 0 1.25rem 0;
+        }
+
+        .brand-bullets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem 1rem;
+            justify-items: center;
+        }
+
+        .brand-bullet {
+            position: relative;
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+            color: #f2f6ff;
+        }
+
+        .badge-emoji {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.12); /* igual a cards */
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #cfe0ff; /* icono claro como los de las cards */
+            border-radius: 8px; /* chip como cards */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            font-size: 0.85rem;
+            line-height: 1;
+        }
+
+        .brand-bullet i {
+            color: #cfe0ff;
+            margin-top: 2px;
+        }
+
+        /* Panel derecho (formulario) */
+        .form-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3.25rem 1.75rem;
+            background: linear-gradient(180deg, #f7f9ff 0%, #f4f6fb 100%);
+        }
+
         .login-card {
             background: var(--white);
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            max-width: 400px;
+            border-radius: 14px;
+            box-shadow: 0 18px 44px rgba(2, 6, 23, 0.12);
             width: 100%;
+            max-width: 440px;
+            border: 1px solid var(--gray-200);
+            border-top: 4px solid var(--blue-600);
         }
 
-        /* ===== HEADER DEL LOGIN ===== */
         .login-header {
-            background: var(--blue-600);
-            color: var(--white);
-            padding: 1.5rem 1.5rem 1rem;
-            text-align: center;
+            padding: 1.75rem 1.5rem 0.5rem 1.5rem;
+            text-align: left;
         }
 
-        .login-logo-container {
-            text-align: center;
-            margin-bottom: 0.75rem;
+        .login-title {
+            font-weight: 900;
+            font-size: 2.2rem;
+            color: #173561;
+            letter-spacing: 0.3px;
+            margin: 0;
         }
 
-        .login-logo {
-            width: 70px;
-            height: auto;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 6px;
-            padding: 6px;
+        .login-subtitle {
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+            margin-bottom: 0;
         }
 
         .login-body {
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem 1.5rem 1.5rem;
         }
 
         /* ===== ESTILOS DE FORMULARIOS ===== */
         .form-control {
-            border: 2px solid var(--gray-200);
-            border-radius: 6px;
-            padding: 0.6rem 0.8rem;
-            font-size: 0.95rem;
-            transition: border-color 0.3s ease;
+            border: 2px solid #e2e8f0;
+            background: #eef3ff;
+            border-radius: 12px;
+            padding: 0.85rem 1rem 0.85rem 2.75rem; /* espacio para icono */
+            font-size: 0.98rem;
+            min-height: 52px; /* altura consistente para centrar icono */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .form-control:focus {
-            border-color: var(--blue-600);
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            border-color: #2a4f8a;
+            box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.12);
             outline: none;
+            background: #eaf1ff;
+        }
+
+        .input-with-icon { margin-bottom: 1rem; }
+
+        .icon-field {
+            position: relative;
+        }
+
+        .icon-field i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 1.05rem;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .icon-field .form-control {
+            padding-left: 2.75rem; /* espacio para el icono */
         }
 
         .form-label {
@@ -135,51 +241,24 @@
         }
 
         /* ===== TARJETAS DE CARACTERÍSTICAS ===== */
-        .feature-cards {
-            margin-top: 1.5rem;
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            justify-content: center;
+        /* Botón submit */
+        .btn-primary {
+            background: #133255;
+            border: none;
+            border-radius: 999px; /* pill */
+            padding: 0.9rem 1.5rem;
+            font-weight: 800;
+            font-size: 1rem;
+            transition: transform 0.06s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: 0 8px 24px rgba(19, 50, 85, 0.25);
         }
 
-        .feature-card {
-            background: var(--white);
-            border-radius: 8px;
-            padding: 0.8rem;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease;
-            border: 1px solid var(--gray-200);
-            height: 100%;
+        .btn-primary:hover {
+            background: #0f2845;
         }
 
-        .feature-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .feature-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 0.5rem;
-            font-size: 0.8rem;
-            color: var(--white);
-        }
-
-        .feature-icon.primary {
-            background: var(--blue-600);
-        }
-
-        .feature-icon.success {
-            background: var(--success);
-        }
-
-        .feature-icon.warning {
-            background: var(--warning);
+        .btn-primary:active {
+            transform: translateY(1px);
         }
 
         /* ===== ALERTAS ===== */
@@ -205,140 +284,117 @@
         }
 
         /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 0.5rem;
+        @media (max-width: 992px) {
+            .auth-layout {
+                grid-template-columns: 1fr;
             }
-            
-            .login-wrapper {
-                max-width: 350px;
+            .brand-panel {
+                padding: 2.25rem 1.25rem;
             }
-            
-            .login-header {
-                padding: 1rem 1rem 0.75rem;
-            }
-            
-            .login-body {
-                padding: 1rem;
-            }
-            
-            .login-logo {
-                width: 60px;
-            }
-            
-            .feature-cards {
-                margin-top: 1rem;
-                max-width: 350px;
-            }
+            .brand-content { max-width: 640px; }
+            .form-panel { padding: 2rem 1rem 3rem 1rem; }
         }
     </style>
 </head>
 <body>
-    <!-- ===== CONTENEDOR PRINCIPAL ===== -->
-    <div class="login-container">
-        <div class="d-flex justify-content-center w-100">
-            <div class="login-wrapper">
-                <!-- ===== TARJETA DE LOGIN ===== -->
-                <div class="login-card">
-                    <div class="login-header">
-                        <div class="login-logo-container">
-                            <img src="{% static 'core/logo.png' %}" alt="SelecLoop Logo" class="login-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                            <i class="fas fa-search fa-3x text-white" style="display: none; margin-bottom: 1rem;"></i>
+    <!-- ===== LAYOUT 2 COLUMNAS ===== -->
+    <div class="auth-layout">
+        <!-- Panel izquierdo: branding/descripción -->
+        <section class="brand-panel">
+            <div class="brand-content">
+                <img src="{% static 'core/logo.png' %}" alt="SelecLoop" class="brand-logo" onerror="this.style.display='none'">
+                <p class="brand-subtitle">Opiniones claras para elevar cada etapa del proceso.</p>
+                <div class="brand-bullets">
+                    <div class="brand-bullet">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <div>
+                            <strong>Explora Empresas</strong>
+                            <div class="small">Conoce cómo reclutan y entrevistan.</div>
                         </div>
-                        <h3 class="h4 mb-1">Bienvenido a SelecLoop</h3>
-                        <p class="text-white-50 mb-0 small">Tu plataforma de feedback empresarial</p>
                     </div>
-                    
-                    <div class="login-body">
-                        <!-- ===== MENSAJES DEL SISTEMA ===== -->
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        <!-- ===== FORMULARIO DE LOGIN ===== -->
-                        <form method="post" class="login-form">
-                            {% csrf_token %}
-                            
-                            <div class="mb-2">
-                                <label for="username" class="form-label">
-                                    <i class="fas fa-user me-2 text-primary"></i>Nombre de Usuario
-                                </label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="username" 
-                                       name="username" 
-                                       required 
-                                       placeholder="Ingresa tu nombre de usuario">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="password" class="form-label">
-                                    <i class="fas fa-lock me-2 text-primary"></i>Contraseña
-                                </label>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="password" 
-                                       name="password" 
-                                       required 
-                                       placeholder="Ingresa tu contraseña">
-                            </div>
-
-                            <div class="d-grid mb-3">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-                                </button>
-                            </div>
-
-                            <div class="text-center">
-                                <p class="text-muted mb-0 small">
-                                    ¿No tienes cuenta? 
-                                    <a href="#" class="text-primary fw-bold">Contacta al administrador</a>
-                                </p>
-                            </div>
-                        </form>
+                    <div class="brand-bullet">
+                        <i class="fas fa-message"></i>
+                        <div>
+                            <strong>Comparte Experiencias</strong>
+                            <div class="small">Ayuda a otros candidatos a prepararse.</div>
+                        </div>
                     </div>
-                </div>
-
-                <!-- ===== INFORMACIÓN ADICIONAL ===== -->
-                <div class="feature-cards">
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <div class="feature-card">
-                                <div class="feature-icon primary">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <h6 class="fw-bold small">Explora Empresas</h6>
-                                <small class="text-muted">Descubre procesos</small>
-                            </div>
+                    <div class="brand-bullet">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <strong>Analiza Tendencias</strong>
+                            <div class="small">Datos para decisiones más inteligentes.</div>
                         </div>
-                        <div class="col-4">
-                            <div class="feature-card">
-                                <div class="feature-icon success">
-                                    <i class="fas fa-share-alt"></i>
-                                </div>
-                                <h6 class="fw-bold small">Comparte Experiencias</h6>
-                                <small class="text-muted">Ayuda a otros</small>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="feature-card">
-                                <div class="feature-icon warning">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                                <h6 class="fw-bold small">Accede a Estadísticas</h6>
-                                <small class="text-muted">Obtén insights</small>
-                            </div>
+                    </div>
+                    <div class="brand-bullet">
+                        <i class="fas fa-user"></i>
+                        <div>
+                            <strong>Experiencias Reales</strong>
+                            <div class="small">Contenido aportado por la comunidad.</div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Panel derecho: login -->
+        <section class="form-panel">
+            <div class="login-card">
+                <div class="login-header">
+                    <h2 class="login-title">SelecLoop</h2>
+                    <p class="login-subtitle">Inicia sesión para continuar</p>
+                </div>
+                <div class="login-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" class="login-form">
+                        {% csrf_token %}
+
+                        <div class="mb-2 input-with-icon">
+                            <label for="username" class="form-label">Nombre de usuario</label>
+                            <div class="icon-field">
+                                <i class="fas fa-user"></i>
+                                <input type="text"
+                                       class="form-control"
+                                       id="username"
+                                       name="username"
+                                       required
+                                       placeholder="Ingresa tu nombre de usuario">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 input-with-icon">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <div class="icon-field">
+                                <i class="fas fa-lock"></i>
+                                <input type="password"
+                                       class="form-control"
+                                       id="password"
+                                       name="password"
+                                       required
+                                       placeholder="Ingresa tu contraseña">
+                            </div>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-right-to-bracket me-2"></i>Iniciar sesión
+                            </button>
+                        </div>
+
+                        
+                    </form>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- ===== RECURSOS JAVASCRIPT ===== -->
