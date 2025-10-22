@@ -167,12 +167,22 @@
                             {{ review.submission_date|date:"d/m/Y H:i" }}
                         </small>
                     </div>
-                    <div class="card-footer">
+                    <div class="card-footer bg-light">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge bg-primary">Calificación: {{ review.overall_rating }}/5</span>
-                            <a href="{% url 'company_detail' review.company.id %}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-1"></i>Ver Empresa
-                            </a>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'company_detail' review.company.id %}" 
+                                   class="btn btn-outline-secondary btn-sm" 
+                                   title="Ver empresa">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'delete_review' review.id %}" 
+                                   class="btn btn-outline-danger btn-sm"
+                                   title="Eliminar reseña"
+                                   onclick="return confirm('¿Estás seguro de que quieres eliminar esta reseña? Esta acción no se puede deshacer.')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

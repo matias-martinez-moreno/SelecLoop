@@ -77,6 +77,76 @@ def work_history_view(request):
 
 
 @login_required
+def edit_work_history_view(request, work_id):
+    """Vista para editar una experiencia laboral existente"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, '❌ Solo los candidatos pueden editar su historial laboral.')
+        return redirect('dashboard')
+    
+    try:
+        # Obtener la experiencia laboral y verificar que pertenece al usuario
+        work_history = WorkHistory.objects.get(
+            id=work_id,
+            user_profile=request.user.profile
+        )
+    except WorkHistory.DoesNotExist:
+        messages.error(request, '❌ La experiencia laboral no existe o no tienes permisos para editarla.')
+        return redirect('work_history')
+    
+    if request.method == 'POST':
+        form = WorkHistoryForm(request.POST, instance=work_history)
+        if form.is_valid():
+            work_history = form.save(commit=False)
+            work_history.user_profile = request.user.profile
+            work_history.save()
+            
+            # Verificar logros después de editar
+            new_achievements = check_and_award_achievements(request.user.profile)
+            if new_achievements:
+                for achievement in new_achievements:
+                    messages.success(request, f'🏆 ¡Nuevo logro desbloqueado: {achievement.name}!')
+            
+            messages.success(request, f'✅ Experiencia laboral en {work_history.company.name} actualizada exitosamente.')
+            return redirect('work_history')
+    else:
+        form = WorkHistoryForm(instance=work_history)
+    
+    context = {
+        'form': form,
+        'work_history': work_history,
+        'title': 'Editar Experiencia Laboral'
+    }
+    
+    return render(request, 'core/add_work_history.html', context)
+
+
+@login_required
+def delete_work_history_view(request, work_id):
+    """Vista para eliminar una experiencia laboral"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, '❌ Solo los candidatos pueden eliminar su historial laboral.')
+        return redirect('dashboard')
+    
+    try:
+        # Obtener la experiencia laboral y verificar que pertenece al usuario
+        work_history = WorkHistory.objects.get(
+            id=work_id,
+            user_profile=request.user.profile
+        )
+        
+        # Eliminar la experiencia laboral
+        company_name = work_history.company.name
+        work_history.delete()
+        
+        messages.success(request, f'✅ Experiencia laboral en {company_name} eliminada exitosamente.')
+        
+    except WorkHistory.DoesNotExist:
+        messages.error(request, '❌ La experiencia laboral no existe o no tienes permisos para eliminarla.')
+    
+    return redirect('work_history')
+
+
+@login_required
 def add_work_history_view(request):
     """Vista para agregar una nueva experiencia laboral"""
     if request.user.profile.role != 'candidate':

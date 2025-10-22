@@ -252,3 +252,29 @@ def my_reviews_view(request):
     }
     
     return render(request, 'core/my_reviews.html', context)
+
+
+@login_required
+def delete_review_view(request, review_id):
+    """Vista para eliminar una reseña del usuario"""
+    if request.user.profile.role != 'candidate':
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('dashboard')
+    
+    try:
+        # Obtener la reseña y verificar que pertenece al usuario
+        review = Review.objects.get(
+            id=review_id,
+            user_profile=request.user.profile
+        )
+        
+        # Eliminar la reseña
+        company_name = review.company.name
+        review.delete()
+        
+        messages.success(request, f'✅ Reseña de {company_name} eliminada exitosamente.')
+        
+    except Review.DoesNotExist:
+        messages.error(request, '❌ La reseña no existe o no tienes permisos para eliminarla.')
+    
+    return redirect('my_reviews')

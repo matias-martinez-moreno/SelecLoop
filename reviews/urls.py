@@ -12,4 +12,7 @@ urlpatterns = [
     
     # Ver las reseñas del usuario actual
     path('my-reviews/', views.my_reviews_view, name='my_reviews'),
+    
+    # Eliminar una reseña
+    path('delete-review/<int:review_id>/', views.delete_review_view, name='delete_review'),
 ]

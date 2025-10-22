@@ -87,18 +87,37 @@
                         </div>
                         {% endif %}
                     </div>
-                    <div class="card-footer">
+                    <div class="card-footer bg-light">
                         <div class="d-flex justify-content-between align-items-center">
-                            {% if work.has_review_pending %}
-                                <a href="{% url 'create_review' %}?company={{ work.company.id }}" class="btn btn-warning btn-sm">
-                                    <i class="fas fa-edit me-1"></i>Crear Reseña
+                            <div class="d-flex align-items-center gap-2">
+                                {% if work.has_review_pending %}
+                                    <a href="{% url 'create_review' %}?company={{ work.company.id }}" 
+                                       class="btn btn-warning btn-sm"
+                                       title="Crear reseña">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-success">Reseña completada</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'edit_work_history' work.id %}" 
+                                   class="btn btn-outline-primary btn-sm"
+                                   title="Editar experiencia">
+                                    <i class="fas fa-edit"></i>
                                 </a>
-                            {% else %}
-                                <span class="badge bg-success">Reseña completada</span>
-                            {% endif %}
-                            <a href="{% url 'company_detail' work.company.id %}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-1"></i>Ver Empresa
-                            </a>
+                                <a href="{% url 'company_detail' work.company.id %}" 
+                                   class="btn btn-outline-secondary btn-sm"
+                                   title="Ver empresa">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'delete_work_history' work.id %}" 
+                                   class="btn btn-outline-danger btn-sm"
+                                   title="Eliminar experiencia"
+                                   onclick="return confirm('¿Estás seguro de que quieres eliminar esta experiencia laboral? Esta acción no se puede deshacer.')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

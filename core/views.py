@@ -242,11 +242,19 @@ def dashboard_view(request):
         
         chart_data['sector_satisfaction'] = sector_satisfaction
 
+    # Modalidades disponibles para el filtro
+    modality_choices = [
+        ('presencial', 'Presencial'),
+        ('remoto', 'Remoto'),
+        ('híbrido', 'Híbrido'),
+    ]
+
     context = {
         'companies': companies,
         'pending_reviews': all_pending_companies,
         'cities': cities,
         'sectors': sectors,
+        'modality_choices': modality_choices,
         'search_query': search_query,
         'city_filter': city_filter,
         'sector_filter': sector_filter,

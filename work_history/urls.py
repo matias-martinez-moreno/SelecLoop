@@ -12,4 +12,10 @@ urlpatterns = [
     
     # Agregar nueva experiencia laboral
     path('add-work-history/', views.add_work_history_view, name='add_work_history'),
+    
+    # Editar experiencia laboral
+    path('edit-work-history/<int:work_id>/', views.edit_work_history_view, name='edit_work_history'),
+    
+    # Eliminar experiencia laboral
+    path('delete-work-history/<int:work_id>/', views.delete_work_history_view, name='delete_work_history'),
 ]
