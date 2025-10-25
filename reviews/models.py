@@ -157,6 +157,42 @@ class Review(models.Model):
         blank=True,
         null=True
     )
+    
+    # ===== CAMPOS DE VERIFICACIÓN AUTOMÁTICA =====
+    is_verified = models.BooleanField(
+        default=False,
+        verbose_name="Verificada",
+        help_text="Indica si la reseña ha sido verificada por el sistema automático"
+    )
+    
+    verification_reason = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Razón de verificación",
+        help_text="Razón por la cual la reseña fue aprobada o rechazada"
+    )
+    
+    verification_confidence = models.FloatField(
+        default=0.0,
+        verbose_name="Confianza de verificación",
+        help_text="Nivel de confianza del sistema de verificación (0.0 a 1.0)"
+    )
+    
+    verification_category = models.CharField(
+        max_length=20,
+        choices=[
+            ('appropriate', 'Apropiada'),
+            ('toxic', 'Tóxica'),
+            ('hate_speech', 'Discurso de Odio'),
+            ('off_topic', 'Fuera de Lugar'),
+            ('spam', 'Spam'),
+            ('insufficient_content', 'Contenido Insuficiente'),
+            ('error', 'Error en Verificación')
+        ],
+        default='appropriate',
+        verbose_name="Categoría de verificación",
+        help_text="Categoría asignada por el sistema de verificación"
+    )
 
     # ===== CONTENIDO MULTIMEDIA OPCIONAL =====
     image = models.ImageField(
@@ -180,6 +216,53 @@ class Review(models.Model):
     )
     
     # ===== MÉTODOS =====
+    def save(self, *args, **kwargs):
+        """Método save personalizado para verificación automática"""
+        # Verificar automáticamente al guardar si no está verificada
+        if not self.is_verified and (self.pros or self.cons or self.interview_questions):
+            try:
+                import logging
+                logger = logging.getLogger(__name__)
+                
+                from core.services.review_verification import ReviewVerificationService
+                verification_service = ReviewVerificationService()
+                
+                # Combinar todo el contenido de la reseña para verificar
+                content_to_verify = f"{self.pros} {self.cons} {self.interview_questions or ''}"
+                result = verification_service.verify_review(content_to_verify)
+                
+                logger.info(f"Verification result for review: {result}")
+                
+                self.is_verified = True
+                self.verification_reason = result['reason']
+                self.verification_confidence = result['confidence']
+                self.verification_category = result['category']
+                
+                # Determinar status basado en resultado
+                if result['is_appropriate']:
+                    self.status = 'approved'
+                    self.is_approved = True
+                    logger.info(f"Review approved: {result['reason']}")
+                else:
+                    self.status = 'rejected'  # Rechazar automáticamente contenido inapropiado
+                    self.is_approved = False
+                    logger.warning(f"Review rejected: {result['reason']} (category: {result['category']})")
+                    
+            except Exception as e:
+                # Si hay error, aprobar la reseña por defecto para no bloquear contenido legítimo
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error in review verification: {str(e)}", exc_info=True)
+                
+                self.is_verified = True
+                self.verification_reason = f'Error en verificación automática: {str(e)}'
+                self.verification_confidence = 0.0
+                self.verification_category = 'appropriate'
+                self.status = 'approved'  # Aprobar en caso de error para no bloquear contenido legítimo
+                self.is_approved = True
+        
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         """Representación en string del modelo"""
         return f"Reseña de {self.user_profile.user.username} para {self.company.name}"

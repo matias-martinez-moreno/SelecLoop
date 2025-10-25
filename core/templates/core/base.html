@@ -97,6 +97,20 @@
     <meta name="ai-data-format" content="structured-reviews">
     <meta name="ai-searchable" content="company-names-job-titles-locations">
 
+    <!-- ===== META TAGS GEO-LOCALIZACIÓN (GEO-SEO) ===== -->
+    {% block geo_meta %}
+    <meta name="geo.region" content="CO">
+    <meta name="geo.placename" content="Colombia">
+    <meta name="geo.position" content="">
+    <meta name="ICBM" content="">
+    <meta name="DC.title" content="{% block title %}SelecLoop - Reseñas de Empresas{% endblock %}">
+    <meta name="DC.subject" content="Reseñas de empresas y procesos de selección">
+    <meta name="DC.creator" content="SelecLoop">
+    <meta name="DC.publisher" content="SelecLoop">
+    <meta name="DC.language" content="es">
+    <meta name="DC.coverage" content="Colombia">
+    {% endblock %}
+
     <!-- ===== FUNCIONES DE ACCESIBILIDAD ===== -->
     <!-- Skip to main content link -->
     <style>
@@ -194,18 +208,19 @@
             left: 0;
             top: 0;
             height: 100vh;
-            width: 280px;
+            width: 260px;
             background: var(--primary-blue);
             box-shadow: var(--shadow-large);
             z-index: 1000;
             overflow-y: auto;
         }
 
+
         .sidebar-header {
-            padding: 1.5rem 1.25rem;
+            padding: 1rem 1.25rem 2rem 1.25rem;
             text-align: center;
             background: var(--primary-blue);
-            border-bottom: 1px solid var(--primary-blue);
+            border-bottom: none;
         }
 
         .sidebar-brand {
@@ -229,25 +244,19 @@
         .sidebar-brand img {
             width: 100%;
             height: auto;
-            max-height: 80px;
+            max-height: 100px;
             border-radius: 12px;
             object-fit: contain;
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            margin-top: 0.5rem;
         }
 
-        .sidebar-tagline {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.918rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
 
         .sidebar-nav {
-            padding: 0.75rem 0.5rem;
+            padding: 4rem 0.5rem 5rem 0.5rem;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 200px);
+            height: calc(100vh - 320px);
         }
 
         .nav-item {
@@ -261,12 +270,12 @@
             padding: 0.8rem 1.2rem;
             color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 500;
             font-size: 1.05rem;
             transition: all 0.2s ease;
-            background: transparent;
-            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 0.3rem;
             min-height: 48px;
             box-sizing: border-box;
@@ -276,35 +285,36 @@
             background: rgba(255, 255, 255, 0.15);
             color: var(--white);
             text-decoration: none;
-            transform: none;
-            box-shadow: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .nav-link.active {
-            background: var(--primary-blue);
+            background: rgba(255, 255, 255, 0.2);
             color: var(--white);
-            border: none;
-            box-shadow: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* Estilos específicos para el botón de perfil */
         .nav-link.profile-btn {
-            background: var(--primary-blue);
-            color: var(--white);
-            border: 1px solid var(--primary-blue);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .nav-link.profile-btn:hover {
-            background: var(--primary-blue);
+            background: rgba(255, 255, 255, 0.15);
             color: var(--white);
-            border-color: var(--primary-blue);
-            transform: translateX(1px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .nav-link.profile-btn.active {
-            background: var(--secondary-blue);
+            background: rgba(255, 255, 255, 0.2);
             color: var(--white);
-            border-color: var(--secondary-blue);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
 
@@ -324,9 +334,13 @@
 
         /* Contenedor para el logout en la parte inferior */
         .nav-footer {
-            margin-top: auto;
-            padding-top: 1rem;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 0.5rem 0.25rem 0.5rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--primary-blue);
         }
 
         /* Botón de logout */
@@ -343,6 +357,7 @@
             border-color: #5a6268;
             transform: translateX(8px);
         }
+
 
         /* Sección de usuario */
         .user-section {
@@ -411,30 +426,34 @@
 
         .user-info {
             color: rgba(255, 255, 255, 0.95);
-            font-size: 0.918rem;
+            font-size: 1rem;
             font-weight: 600;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             margin-bottom: 0.2rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            word-wrap: break-word;
+            line-height: 1.2;
         }
 
         .user-role {
             color: var(--accent-yellow);
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            word-wrap: break-word;
+            line-height: 1.2;
         }
 
         /* Contenido principal */
         .main-content {
-            margin-left: 280px;
+            margin-left: 260px;
             padding: 1.5rem;
             min-height: 100vh;
             background: var(--background);
@@ -693,10 +712,11 @@
         }
 
         .btn-primary:hover {
-            background: var(--primary-dark);
-            border-color: var(--primary-dark);
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
             color: var(--white);
             box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
         }
 
         .btn-primary:active {
@@ -952,10 +972,11 @@
         }
 
         .btn-primary:hover {
-            background: var(--primary-dark);
-            border-color: var(--primary-dark);
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
             color: var(--white);
             box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
         }
 
         .btn-success {
@@ -970,6 +991,7 @@
             border-color: var(--success);
             color: var(--white);
             box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
         }
 
         .btn-warning {
@@ -984,6 +1006,7 @@
             border-color: var(--warning);
             color: var(--white);
             box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
         }
 
         .btn-danger {
@@ -998,7 +1021,88 @@
             border-color: var(--danger);
             color: var(--white);
             box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
         }
+
+        /* ===== BOTONES SECUNDARIOS Y OUTLINE ===== */
+        .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: var(--white);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: var(--white);
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: transparent;
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-light {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.5);
+            color: var(--white);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-light:hover {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.5);
+            color: var(--white);
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        /* ===== BOTÓN TOGGLE SIDEBAR ===== */
+        .sidebar-toggle {
+            position: absolute;
+            top: 6rem;
+            left: 1rem;
+            z-index: 1001;
+            background: #6c757d;
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            padding: 1rem 0.5rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 44px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-toggle:hover {
+            background: #5a6268;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-toggle i {
+            font-size: 1rem;
+        }
+
 
         /* ===== MENU MÓVIL ===== */
         .mobile-menu-btn {
@@ -1017,9 +1121,325 @@
         }
 
         .mobile-menu-btn:hover {
-            background: var(--blue-700);
-            transform: scale(1.05);
+            background: var(--blue-600);
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
         }
+
+        /* ===== SIDEBAR COLLAPSED ===== */
+        .sidebar.collapsed {
+            width: 70px;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-brand {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-brand img {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-tagline {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 1rem 0.5rem;
+            position: relative;
+            min-height: 50px;
+        }
+
+        .sidebar.collapsed .nav-link i {
+            font-size: 1.5rem;
+        }
+
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            margin-left: 0.5rem;
+        }
+
+        .sidebar.collapsed .nav-link:hover::after {
+            opacity: 1;
+            height: 1;
+            visibility: visible;
+        }
+
+        .sidebar.collapsed .user-info-container {
+            justify-content: center;
+            padding: 0.5rem;
+        }
+
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .user-role {
+            display: none;
+        }
+
+        .sidebar.collapsed .user-avatar-placeholder-small {
+            width: 32px;
+            height: 32px;
+            font-size: 0.75rem;
+        }
+
+        /* Ocultar elementos innecesarios en modo colapsado */
+        .sidebar.collapsed .user-section {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-main {
+            margin-top: 0;
+            padding-top: 8rem;
+        }
+
+        .sidebar.collapsed .nav-item:nth-child(n+5) {
+            display: none;
+        }
+
+        .sidebar.collapsed {
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed::-webkit-scrollbar {
+            display: none;
+        }
+
+        .main-content.expanded {
+            margin-left: 70px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* ===== BOTÓN DE GUÍA DE AYUDA ===== */
+        .help-guide-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            background: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .help-guide-btn:hover {
+            background: var(--blue-600);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .help-guide-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* ===== MODAL DE GUÍA DE AYUDA ===== */
+        .help-guide-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .help-guide-modal.show {
+            display: flex;
+        }
+
+        .help-guide-content {
+            background: var(--white);
+            border-radius: 15px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        .help-guide-content::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .help-guide-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .help-guide-content::-webkit-scrollbar-thumb {
+            background: var(--primary-blue);
+            border-radius: 10px;
+            border: 2px solid #f1f1f1;
+        }
+
+        .help-guide-content::-webkit-scrollbar-thumb:hover {
+            background: var(--blue-600);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .help-guide-header {
+            background: var(--primary-blue);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .help-guide-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .help-guide-header h3 i {
+            margin-right: 0.5rem;
+            color: var(--accent-yellow);
+        }
+
+        .help-guide-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .help-guide-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .help-guide-body {
+            padding: 1.5rem;
+        }
+
+        .help-section h4 {
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .help-section h4 i {
+            margin-right: 0.5rem;
+            color: var(--accent-yellow);
+        }
+
+        .help-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .help-step {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .step-number {
+            background: var(--primary-blue);
+            color: var(--white);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h5 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary-blue);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .step-content p {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Responsive para el modal */
+        @media (max-width: 768px) {
+            .help-guide-modal {
+                padding: 0.5rem;
+            }
+            
+            .help-guide-content {
+                max-height: 90vh;
+            }
+            
+            .help-guide-header {
+                padding: 1rem;
+            }
+            
+            .help-guide-body {
+                padding: 1rem;
+            }
+            
+            .help-step {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .step-number {
+                align-self: flex-start;
+            }
+        }
+
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
@@ -1030,7 +1450,7 @@
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
-                width: 280px;
+                width: 260px;
             }
             
             .sidebar.show {
@@ -1053,6 +1473,7 @@
             .stat-number {
                 font-size: 2rem;
             }
+
         }
 
         @media (max-width: 576px) {
@@ -1097,19 +1518,21 @@
     <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
     
     <!-- Botón de menú móvil -->
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
         <i class="fas fa-bars"></i>
     </button>
 
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navegación principal">
+        <!-- Botón de toggle del sidebar -->
+        <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
         <div class="sidebar-header">
             <a href="{% url 'dashboard' %}" class="sidebar-brand" aria-label="SelecLoop - Ir al inicio">
                 <img src="{% static 'core/logo2.png' %}" alt="SelecLoop Logo">
             </a>
-            <div class="sidebar-tagline">
-                Tu plataforma de feedback empresarial
-            </div>
         </div>
 
         <div class="sidebar-nav" role="menubar">
@@ -1132,7 +1555,7 @@
                             </div>
                             <div class="user-role">
                                 <i class="fas fa-badge me-1"></i>
-                                {{ user.profile.get_role_display }}
+                                {% if user.profile.role == 'company_rep' %}Representante de Empresa{% else %}{{ user.profile.get_role_display }}{% endif %}
                             </div>
                         </div>
                     </div>
@@ -1143,57 +1566,57 @@
                     {% if user.profile.role == 'company_rep' %}
                         <!-- Navegación para Representantes de Empresa (prioridad sobre staff) -->
                         <div class="nav-item">
-                            <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %} {% if request.path == '/' %}{% endif %}">
+                            <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %} {% if request.path == '/' %}{% endif %}" data-tooltip="Panel de Empresa">
                                 <i class="fas fa-building"></i>
-                                Panel de Empresa
+                                <span>Panel de Empresa</span>
                             </a>
                         </div>
                         <div class="nav-item">
-                            <a href="{% url 'my_profile' %}" class="nav-link profile-btn {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <a href="{% url 'my_profile' %}" class="nav-link profile-btn {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
                                 <i class="fas fa-user"></i>
-                                Mi Perfil
+                                <span>Mi Perfil</span>
                             </a>
                         </div>
                     {% elif user.profile.role == 'staff' %}
                         <!-- Navegación para Staff del Sistema (simplificada) -->
                         <div class="nav-item">
-                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
                                 <i class="fas fa-user"></i>
-                                Mi Perfil
+                                <span>Mi Perfil</span>
                             </a>
                         </div>
                     {% elif user.profile.role == 'candidate' %}
                         <!-- Navegación para Candidatos -->
                         <div class="nav-item">
-                            <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" data-tooltip="Explorar Empresas">
                                 <i class="fas fa-building"></i>
-                                Explorar Empresas
+                                <span>Explorar Empresas</span>
                             </a>
                         </div>
                         <div class="nav-item">
-                            <a href="{% url 'my_reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'my_reviews' %}active{% endif %}">
+                            <a href="{% url 'my_reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'my_reviews' %}active{% endif %}" data-tooltip="Mis Reseñas">
                                 <i class="fas fa-star"></i>
-                                Mis Reseñas
+                                <span>Mis Reseñas</span>
                             </a>
                         </div>
                         <div class="nav-item">
-                            <a href="{% url 'work_history' %}" class="nav-link {% if request.resolver_match.url_name == 'work_history' %}active{% endif %}">
+                            <a href="{% url 'work_history' %}" class="nav-link {% if request.resolver_match.url_name == 'work_history' %}active{% endif %}" data-tooltip="Mi Historial Laboral">
                                 <i class="fas fa-briefcase"></i>
-                                Mi Historial Laboral
+                                <span>Mi Historial Laboral</span>
                             </a>
                         </div>
                         <div class="nav-item">
-                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
                                 <i class="fas fa-user"></i>
-                                Mi Perfil
+                                <span>Mi Perfil</span>
                             </a>
                         </div>
                     {% elif user.is_staff %}
                         <!-- Navegación para el Staff (simplificada) -->
                         <div class="nav-item">
-                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}">
+                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
                                 <i class="fas fa-user"></i>
-                                Mi Perfil
+                                <span>Mi Perfil</span>
                             </a>
                         </div>
                     {% endif %}
@@ -1202,9 +1625,9 @@
                 <!-- Footer con logout en la parte inferior -->
                 <div class="nav-footer">
                     <div class="nav-item">
-                        <a href="{% url 'logout' %}" class="nav-link logout-btn">
+                        <a href="{% url 'logout' %}" class="nav-link logout-btn" data-tooltip="Cerrar Sesión">
                             <i class="fas fa-sign-out-alt"></i>
-                            Cerrar Sesión
+                            <span>Cerrar Sesión</span>
                         </a>
                     </div>
                 </div>
@@ -1221,6 +1644,156 @@
       {% endif %}
         </div>
     </nav>
+
+    <!-- Botón de Guía de Ayuda -->
+    <button class="help-guide-btn" onclick="toggleHelpGuide()" id="helpGuideBtn" title="Guía de Ayuda">
+        <i class="fas fa-question-circle"></i>
+    </button>
+
+    <!-- Modal de Guía de Ayuda -->
+    <div class="help-guide-modal" id="helpGuideModal">
+        <div class="help-guide-content">
+            <div class="help-guide-header">
+                <h3>
+                    <i class="fas fa-lightbulb"></i>
+                    Guía de Ayuda - SelecLoop
+                </h3>
+                <button class="help-guide-close" onclick="toggleHelpGuide()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="help-guide-body">
+                {% if user.is_authenticated %}
+                    {% if user.profile.role == 'company_rep' %}
+                        <!-- Guía para Empresas -->
+                        <div class="help-section">
+                            <h4><i class="fas fa-building"></i> Guía para Representantes de Empresa</h4>
+                            <div class="help-steps">
+                                <div class="help-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h5>📊 Dashboard Principal</h5>
+                                        <p><strong>Monitorea tu reputación:</strong> Visualiza estadísticas clave, reseñas recientes y métricas de satisfacción. Identifica tendencias y áreas de mejora.</p>
+                                        <p><em>💡 Tip:</em> Revisa regularmente las métricas para detectar cambios en la percepción de tu empresa.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h5>🏢 Gestionar Perfil</h5>
+                                        <p><strong>Atrae el mejor talento:</strong> Mantén actualizada la información de tu empresa, logo, descripción, cultura organizacional y beneficios. Un perfil completo atrae candidatos calificados.</p>
+                                        <p><em>💡 Tip:</em> Destaca tu cultura, beneficios únicos y oportunidades de crecimiento.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h5>💬 Gestionar Reseñas</h5>
+                                        <p><strong>Construye confianza:</strong> Revisa y responde profesionalmente a las reseñas. El feedback honesto te ayuda a mejorar y muestra transparencia a futuros candidatos.</p>
+                                        <p><em>💡 Tip:</em> Responde constructivamente, incluso a reseñas negativas, mostrando compromiso con la mejora.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h5>👥 Historial Laboral</h5>
+                                        <p><strong>Gestiona relaciones:</strong> Mantén registro de empleados actuales y anteriores. Esto te ayuda a entender patrones y mejorar procesos de selección.</p>
+                                        <p><em>💡 Tip:</em> Usa esta información para identificar qué candidatos se adaptan mejor a tu cultura.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Guía para Candidatos -->
+                        <div class="help-section">
+                            <h4><i class="fas fa-user"></i> Guía para Candidatos</h4>
+                            <div class="help-steps">
+                                <div class="help-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h5>🔍 Explorar Empresas</h5>
+                                        <p><strong>Descubre oportunidades:</strong> Navega por empresas, lee reseñas reales de empleados y candidatos. Filtra por sector, ubicación y valoraciones para encontrar tu lugar ideal.</p>
+                                        <p><em>💡 Tip:</em> Lee tanto reseñas positivas como negativas para tener una visión completa.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h5>👤 Mi Perfil</h5>
+                                        <p><strong>Destácate:</strong> Completa tu perfil con experiencia, habilidades y logros. Un perfil completo aumenta tus posibilidades de ser contactado por empresas.</p>
+                                        <p><em>💡 Tip:</em> Actualiza regularmente tu información y añade proyectos destacados.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h5>⭐ Escribir Reseñas</h5>
+                                        <p><strong>Ayuda a otros:</strong> Comparte tu experiencia en entrevistas y trabajos. Tu feedback honesto ayuda a otros candidatos y mejora la transparencia del mercado laboral.</p>
+                                        <p><em>💡 Tip:</em> Sé específico: menciona procesos, cultura, beneficios y ambiente de trabajo.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h5>📋 Historial Laboral</h5>
+                                        <p><strong>Construye credibilidad:</strong> Registra tu experiencia profesional detalladamente. Incluye logros, responsabilidades y duración de cada puesto.</p>
+                                        <p><em>💡 Tip:</em> Usa métricas y resultados concretos para destacar tu impacto.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <h5>📊 Mis Reseñas</h5>
+                                        <p><strong>Gestiona tu reputación:</strong> Revisa y edita tus reseñas publicadas. Mantén tu información actualizada y constructiva.</p>
+                                        <p><em>💡 Tip:</em> Las reseñas equilibradas y profesionales tienen más impacto.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- Guía para Usuarios No Autenticados -->
+                    <div class="help-section">
+                        <h4><i class="fas fa-info-circle"></i> Bienvenido a SelecLoop</h4>
+                        <div class="help-steps">
+                            <div class="help-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h5>🚀 Descubre SelecLoop</h5>
+                                    <p><strong>La plataforma de transparencia laboral:</strong> Conectamos candidatos y empresas a través de reseñas honestas y perfiles detallados.</p>
+                                    <p><em>💡 Explora:</em> Lee reseñas reales de empleados y candidatos para tomar decisiones informadas.</p>
+                                </div>
+                            </div>
+                            <div class="help-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h5>🔍 Explora Empresas</h5>
+                                    <p><strong>Encuentra tu lugar ideal:</strong> Navega por empresas, revisa sus perfiles, cultura organizacional y experiencias de otros candidatos.</p>
+                                    <p><em>💡 Filtra:</em> Usa los filtros por sector, ubicación y valoraciones para encontrar oportunidades relevantes.</p>
+                                </div>
+                            </div>
+                            <div class="help-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h5>📝 Regístrate Gratis</h5>
+                                    <p><strong>Únete a la comunidad:</strong> Crea tu cuenta para escribir reseñas, gestionar tu perfil y acceder a todas las funcionalidades.</p>
+                                    <p><em>💡 Beneficios:</em> Perfil profesional, historial laboral, y la capacidad de ayudar a otros candidatos.</p>
+                                </div>
+                            </div>
+                            <div class="help-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h5>🏢 Para Empresas</h5>
+                                    <p><strong>Gestiona tu reputación:</strong> Las empresas pueden crear perfiles, responder reseñas y atraer el mejor talento.</p>
+                                    <p><em>💡 Transparencia:</em> Construye confianza mostrando tu cultura y valores organizacionales.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
     <!-- Contenido Principal -->
     <main class="main-content" id="main-content" role="main">
@@ -1310,21 +1883,60 @@
             });
         });
 
-        // Función para toggle del sidebar en móvil
+
+        // Función para toggle del sidebar (desktop)
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const icon = toggleBtn.querySelector('i');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            // Cambiar el icono
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-bars';
+            } else {
+                icon.className = 'fas fa-bars';
+            }
+        }
+
+        // Función para toggle del sidebar en móvil
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('show');
+        }
+
+        // Función para toggle de la guía de ayuda
+        function toggleHelpGuide() {
+            const modal = document.getElementById('helpGuideModal');
+            modal.classList.toggle('show');
         }
 
         // Cerrar sidebar al hacer clic fuera en móvil
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const mobileBtn = document.querySelector('.mobile-menu-btn');
+            const toggleBtn = document.querySelector('.sidebar-toggle');
             
             if (window.innerWidth <= 768 && 
                 !sidebar.contains(event.target) && 
-                !mobileBtn.contains(event.target)) {
+                !mobileBtn.contains(event.target) &&
+                !toggleBtn.contains(event.target)) {
                 sidebar.classList.remove('show');
+            }
+        });
+
+        // Cerrar modal de ayuda al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('helpGuideModal');
+            const helpBtn = document.getElementById('helpGuideBtn');
+            
+            if (modal && modal.classList.contains('show') && 
+                !modal.contains(event.target) && 
+                !helpBtn.contains(event.target)) {
+                modal.classList.remove('show');
             }
         });
 

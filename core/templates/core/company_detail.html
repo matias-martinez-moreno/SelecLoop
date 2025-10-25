@@ -16,6 +16,16 @@
 
 {% block og_description %}Descubre reseñas reales sobre {{ company.name }}. Información sobre procesos de selección, entrevistas y experiencias de candidatos.{% endblock %}
 
+{% block geo_meta %}
+<meta name="geo.region" content="CO">
+<meta name="geo.placename" content="{{ company.location }}">
+{% if company.latitude and company.longitude %}
+<meta name="geo.position" content="{{ company.latitude }};{{ company.longitude }}">
+<meta name="ICBM" content="{{ company.latitude }}, {{ company.longitude }}">
+{% endif %}
+<meta name="DC.coverage" content="{{ company.location }}, {{ company.country }}">
+{% endblock %}
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -25,10 +35,18 @@
   "description": "{{ company.description|default:'Empresa evaluada por candidatos en procesos de selección laboral' }}",
   "address": {
     "@type": "PostalAddress",
+    "streetAddress": "{{ company.location }}",
     "addressLocality": "{{ company.location }}",
     {% if company.region %}"addressRegion": "{{ company.region }}",{% endif %}
     "addressCountry": "{{ company.country }}"
   },
+  {% if company.latitude and company.longitude %}
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": {{ company.latitude }},
+    "longitude": {{ company.longitude }}
+  },
+  {% endif %}
   {% if company.website %}"url": "{{ company.website }}",{% endif %}
   "industry": "{{ company.sector|default:'Technology' }}",
   "employeeCount": "Unknown",
@@ -437,6 +455,19 @@
                         </div>
                     </div>
 
+                    <!-- Botón para ver reseñas rechazadas -->
+                    {% if role_kpis.rejected_count > 0 %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-center">
+                                <a href="{% url 'rejected_reviews' company.id %}" class="btn btn-outline-danger btn-lg">
+                                    <i class="fas fa-ban me-2"></i>Ver Reseñas Rechazadas ({{ role_kpis.rejected_count }})
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% endif %}
                 </div>
             </div>
@@ -531,21 +562,15 @@
                 </div>
                 {% endif %}
                 
-                {% if all_visible_reviews %}
+                {% if approved_reviews %}
                     <div class="row">
-                        {% for review in all_visible_reviews %}
+                        {% for review in approved_reviews %}
                         <div class="col-lg-6 mb-4">
                             <div class="card h-100 shadow-sm">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">{{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}</h6>
-                                    <span class="badge bg-{% if review.status == 'approved' %}success{% elif review.status == 'pending' %}warning{% else %}danger{% endif %}">
-                                        {% if review.status == 'approved' %}
-                                            <i class="fas fa-check me-1"></i>Aprobada
-                                        {% elif review.status == 'pending' %}
-                                            <i class="fas fa-clock me-1"></i>En Revisión
-                                        {% else %}
-                                            <i class="fas fa-times me-1"></i>Rechazada
-                                        {% endif %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Aprobada
                                     </span>
                                 </div>
                                 <div class="card-body">

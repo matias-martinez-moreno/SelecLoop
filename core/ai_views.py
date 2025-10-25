@@ -54,7 +54,10 @@ def ai_data_endpoint(request):
             "description": "Plataforma colaborativa para compartir reseñas anónimas sobre procesos de selección laboral",
             "language": "Spanish",
             "target_audience": "Job seekers, candidates, professionals",
-            "content_type": "Job selection process reviews and company feedback"
+            "content_type": "Job selection process reviews and company feedback",
+            "geo_coverage": "Colombia and Latin America",
+            "data_format": "structured-json",
+            "ai_accessible": True
         },
         "statistics": {
             "total_companies": total_companies,
@@ -68,10 +71,13 @@ def ai_data_endpoint(request):
             {
                 "name": company.name,
                 "location": company.location,
+                "region": company.region,
+                "country": company.country,
                 "sector": company.sector,
+                "latitude": float(company.latitude) if company.latitude else None,
+                "longitude": float(company.longitude) if company.longitude else None,
                 "average_rating": round(company.avg_rating, 1),
-                "review_count": company.review_count,
-                "country": company.country
+                "review_count": company.review_count
             }
             for company in top_companies
         ],
@@ -88,7 +94,8 @@ def ai_data_endpoint(request):
             {
                 "location": stat['location'] or 'Sin especificar',
                 "company_count": stat['count'],
-                "average_rating": round(stat['avg_rating'] or 0, 1)
+                "average_rating": round(stat['avg_rating'] or 0, 1),
+                "country": "Colombia"
             }
             for stat in location_stats
         ],
@@ -99,7 +106,8 @@ def ai_data_endpoint(request):
                 "interview_questions", "submission_date", "status"
             ],
             "company_fields": [
-                "name", "location", "region", "country", "sector", "description", "website"
+                "name", "location", "region", "country", "sector", "description", 
+                "website", "latitude", "longitude"
             ],
             "modality_types": ["presencial", "remoto", "híbrido"],
             "rating_scale": "1-5 stars",
@@ -154,7 +162,16 @@ def company_ai_data(request, company_id):
                 "sector": company.sector,
                 "description": company.description,
                 "website": company.website,
-                "is_active": company.is_active
+                "is_active": company.is_active,
+                "latitude": float(company.latitude) if company.latitude else None,
+                "longitude": float(company.longitude) if company.longitude else None,
+                "geo_data": {
+                    "address": f"{company.location}, {company.country}",
+                    "coordinates": {
+                        "lat": float(company.latitude) if company.latitude else None,
+                        "lng": float(company.longitude) if company.longitude else None
+                    } if company.latitude and company.longitude else None
+                }
             },
             "statistics": {
                 "total_reviews": stats['total_reviews'],
@@ -240,8 +257,11 @@ def reviews_ai_data(request):
                 "company": {
                     "name": review.company.name,
                     "location": review.company.location,
+                    "region": review.company.region,
                     "sector": review.company.sector,
-                    "country": review.company.country
+                    "country": review.company.country,
+                    "latitude": float(review.company.latitude) if review.company.latitude else None,
+                    "longitude": float(review.company.longitude) if review.company.longitude else None
                 },
                 "review": {
                     "job_title": review.job_title,

@@ -8,8 +8,19 @@
 
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
-<div class="container mt-5">
-    <div class="row">
+<div class="container-fluid">
+    <!-- ===== BOTÓN VOLVER ARRIBA ===== -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <a href="{% url 'dashboard' %}" class="btn btn-sm btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>
+                Volver a explorar empresas
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== HEADER DE MIS RESEÑAS ===== -->
+    <div class="row mb-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-header py-3" style="background: var(--primary-blue);">
@@ -200,10 +211,5 @@
         </div>
     {% endif %}
 
-    <div class="mt-4">
-        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
-        </a>
-    </div>
 </div>
 {% endblock %}

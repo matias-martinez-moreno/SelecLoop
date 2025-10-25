@@ -67,21 +67,16 @@ def company_detail_view(request, company_id):
         status='approved'
     ).select_related('user_profile__user')
     
-    pending_reviews = Review.objects.filter(
-        company=company,
-        status='pending'
-    ).select_related('user_profile__user')
-    
     rejected_reviews = Review.objects.filter(
         company=company,
         status='rejected'
     ).select_related('user_profile__user')
     
-    # Combinar según rol
+    # Combinar según rol - solo mostrar aprobadas para candidatos, todas para empresas
     if request.user.profile.role == 'company_rep' or request.user.is_staff:
-        all_visible_reviews = list(approved_reviews) + list(pending_reviews) + list(rejected_reviews)
+        all_visible_reviews = list(approved_reviews) + list(rejected_reviews)
     else:
-        all_visible_reviews = list(approved_reviews) + list(pending_reviews)
+        all_visible_reviews = list(approved_reviews)  # Solo aprobadas para candidatos
     
     # Reseña pendiente específica
     pending_review = None
@@ -94,10 +89,8 @@ def company_detail_view(request, company_id):
     
     # ===== Estadísticas y datos para gráficos =====
     # Para reputación base, por defecto usamos reseñas aprobadas.
-    # Para candidatos, incluimos también 'pending' para evitar vacíos visuales
-    # (el template ya controla acceso y no muestra a quienes tienen pendientes propias).
     if hasattr(request.user, 'profile') and request.user.profile.role == 'candidate':
-        reviews_for_stats = Review.objects.filter(company=company, status__in=['approved', 'pending'])
+        reviews_for_stats = Review.objects.filter(company=company, status='approved')
     elif request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role == 'company_rep'):
         reviews_for_stats = Review.objects.filter(company=company)
     else:
@@ -343,7 +336,6 @@ def company_detail_view(request, company_id):
         # Ratios de aprobación
         total_reviews = all_company_reviews.count()
         approved_count = all_company_reviews.filter(status='approved').count()
-        pending_count = all_company_reviews.filter(status='pending').count()
         rejected_count = all_company_reviews.filter(status='rejected').count()
 
         approval_rate = (approved_count / total_reviews) * 100 if total_reviews > 0 else 0
@@ -374,7 +366,6 @@ def company_detail_view(request, company_id):
             'avg_overall': avg_overall,
             'total_reviews': total_reviews,
             'approved_count': approved_count,
-            'pending_count': pending_count,
             'rejected_count': rejected_count,
             'approval_rate': round(approval_rate, 1),
             'rejection_rate': round(rejection_rate, 1),
@@ -388,7 +379,6 @@ def company_detail_view(request, company_id):
     context = {
         'company': company,
         'approved_reviews': approved_reviews,
-        'pending_reviews': pending_reviews,
         'rejected_reviews': rejected_reviews,
         'all_visible_reviews': all_visible_reviews,
         'user_can_access': user_can_access,

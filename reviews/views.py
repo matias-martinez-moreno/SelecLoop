@@ -8,10 +8,11 @@
 # - my_reviews_view: Ver las reseñas del usuario
 # =============================================================================
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.core.paginator import Paginator
 from .models import Review, PendingReview
 from .forms import ReviewForm
 from accounts.models import OnboardingStatus
@@ -119,8 +120,8 @@ def create_review_view(request):
                 # Crear reseña
                 review = form.save(commit=False)
                 review.user_profile = request.user.profile
-                review.status = 'pending'
                 review.is_approved = False
+                # No establecer status aquí - el método save() del modelo lo manejará con la verificación automática
                 review.save()
                 
                 # Marcar pendiente como completada (sistema anterior)
@@ -161,11 +162,13 @@ def create_review_view(request):
                 # Verificar y otorgar logros
                 new_achievements = check_and_award_achievements(request.user.profile)
                 
-                # Mensaje especial si era una reseña pendiente
-                if pending_review:
-                    messages.success(request, f'🎉 ¡Reseña completada exitosamente! Has completado tu reseña para {company.name}. Ahora puedes acceder a todas las empresas del sistema.')
+                # Mensaje según el estado de la reseña
+                if review.status == 'approved':
+                    messages.success(request, f'✅ ¡Reseña aprobada exitosamente! Tu reseña para {company.name} ha sido publicada.')
+                elif review.status == 'rejected':
+                    messages.warning(request, f'⚠️ Tu reseña para {company.name} fue rechazada. Razón: {review.verification_reason}')
                 else:
-                    messages.success(request, '¡Reseña enviada exitosamente! 🎉 Tu reseña está pendiente de aprobación y será revisada por nuestro equipo.')
+                    messages.info(request, f'ℹ️ Tu reseña para {company.name} ha sido enviada.')
                 
                 # Mostrar logros obtenidos
                 if new_achievements:
@@ -278,3 +281,39 @@ def delete_review_view(request, review_id):
         messages.error(request, '❌ La reseña no existe o no tienes permisos para eliminarla.')
     
     return redirect('my_reviews')
+
+
+@login_required
+def rejected_reviews_view(request, company_id):
+    """Vista para que las empresas vean las reseñas rechazadas"""
+    company = get_object_or_404(Company, id=company_id)
+    
+    # Verificar que el usuario es representante de la empresa o staff
+    # Cualquier company_rep o staff puede ver las reseñas rechazadas de cualquier empresa
+    if not (request.user.is_staff or request.user.profile.role == 'company_rep'):
+        messages.error(request, '❌ No tienes permisos para ver las reseñas rechazadas.')
+        return redirect('dashboard')
+    
+    # Obtener reseñas rechazadas
+    rejected_reviews = Review.objects.filter(
+        company=company,
+        status='rejected'
+    ).select_related('user_profile__user').order_by('-submission_date')
+    
+    # Paginación
+    paginator = Paginator(rejected_reviews, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Estadísticas
+    total_rejected = rejected_reviews.count()
+    total_approved = Review.objects.filter(company=company, status='approved').count()
+    
+    context = {
+        'company': company,
+        'rejected_reviews': page_obj,
+        'total_rejected': total_rejected,
+        'total_approved': total_approved,
+    }
+    
+    return render(request, 'reviews/rejected_reviews.html', context)

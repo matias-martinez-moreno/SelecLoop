@@ -74,6 +74,25 @@ class Company(models.Model):
         help_text="País donde está ubicada la empresa - usado en structured data y SEO internacional",
         default="Colombia"
     )
+
+    # Campos de coordenadas geográficas para mapas y búsqueda geo
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        verbose_name="Latitud",
+        help_text="Latitud GPS de la ubicación de la empresa",
+        blank=True,
+        null=True
+    )
+
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        verbose_name="Longitud",
+        help_text="Longitud GPS de la ubicación de la empresa",
+        blank=True,
+        null=True
+    )
     
     website = models.URLField(
         verbose_name="Sitio web",
