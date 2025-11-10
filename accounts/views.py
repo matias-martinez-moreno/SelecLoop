@@ -16,6 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.db.models import Q
 from .models import UserProfile, OnboardingStatus
 from .forms import ProfileUpdateForm
 
@@ -196,3 +197,35 @@ def update_profile_view(request):
         form = ProfileUpdateForm(initial=initial, user=user)
 
     return render(request, 'core/profile_update.html', {'form': form})
+
+
+def password_reset_request_view(request):
+    """Vista para solicitar recuperación de contraseña"""
+    if request.method == 'POST':
+        username_or_email = request.POST.get('username_or_email', '').strip()
+        
+        if not username_or_email:
+            messages.error(request, '❌ Por favor, ingresa tu nombre de usuario o correo electrónico.')
+            return render(request, 'core/password_reset_request.html')
+        
+        # Buscar usuario por username o email
+        try:
+            user = User.objects.get(
+                Q(username=username_or_email) | Q(email=username_or_email)
+            )
+            # Redirigir a la página de confirmación (sin enviar correo realmente)
+            return redirect('password_reset_confirm')
+        except User.DoesNotExist:
+            # Por seguridad, mostrar el mismo mensaje aunque el usuario no exista
+            messages.info(request, 'Si el usuario o correo existe, recibirás un correo con las instrucciones.')
+            return redirect('password_reset_confirm')
+        except User.MultipleObjectsReturned:
+            # Si hay múltiples usuarios, también redirigir a confirmación
+            return redirect('password_reset_confirm')
+    
+    return render(request, 'core/password_reset_request.html')
+
+
+def password_reset_confirm_view(request):
+    """Vista de confirmación de que se envió el correo"""
+    return render(request, 'core/password_reset_confirm.html')

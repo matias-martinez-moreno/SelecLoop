@@ -19,10 +19,6 @@
 {% block geo_meta %}
 <meta name="geo.region" content="CO">
 <meta name="geo.placename" content="{{ company.location }}">
-{% if company.latitude and company.longitude %}
-<meta name="geo.position" content="{{ company.latitude }};{{ company.longitude }}">
-<meta name="ICBM" content="{{ company.latitude }}, {{ company.longitude }}">
-{% endif %}
 <meta name="DC.coverage" content="{{ company.location }}, {{ company.country }}">
 {% endblock %}
 
@@ -40,13 +36,6 @@
     {% if company.region %}"addressRegion": "{{ company.region }}",{% endif %}
     "addressCountry": "{{ company.country }}"
   },
-  {% if company.latitude and company.longitude %}
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": {{ company.latitude }},
-    "longitude": {{ company.longitude }}
-  },
-  {% endif %}
   {% if company.website %}"url": "{{ company.website }}",{% endif %}
   "industry": "{{ company.sector|default:'Technology' }}",
   "employeeCount": "Unknown",

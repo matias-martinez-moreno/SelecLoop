@@ -74,8 +74,6 @@ def ai_data_endpoint(request):
                 "region": company.region,
                 "country": company.country,
                 "sector": company.sector,
-                "latitude": float(company.latitude) if company.latitude else None,
-                "longitude": float(company.longitude) if company.longitude else None,
                 "average_rating": round(company.avg_rating, 1),
                 "review_count": company.review_count
             }
@@ -107,7 +105,7 @@ def ai_data_endpoint(request):
             ],
             "company_fields": [
                 "name", "location", "region", "country", "sector", "description", 
-                "website", "latitude", "longitude"
+                "website"
             ],
             "modality_types": ["presencial", "remoto", "híbrido"],
             "rating_scale": "1-5 stars",
@@ -163,14 +161,8 @@ def company_ai_data(request, company_id):
                 "description": company.description,
                 "website": company.website,
                 "is_active": company.is_active,
-                "latitude": float(company.latitude) if company.latitude else None,
-                "longitude": float(company.longitude) if company.longitude else None,
                 "geo_data": {
-                    "address": f"{company.location}, {company.country}",
-                    "coordinates": {
-                        "lat": float(company.latitude) if company.latitude else None,
-                        "lng": float(company.longitude) if company.longitude else None
-                    } if company.latitude and company.longitude else None
+                    "address": f"{company.location}, {company.country}"
                 }
             },
             "statistics": {
@@ -259,9 +251,7 @@ def reviews_ai_data(request):
                     "location": review.company.location,
                     "region": review.company.region,
                     "sector": review.company.sector,
-                    "country": review.company.country,
-                    "latitude": float(review.company.latitude) if review.company.latitude else None,
-                    "longitude": float(review.company.longitude) if review.company.longitude else None
+                    "country": review.company.country
                 },
                 "review": {
                     "job_title": review.job_title,

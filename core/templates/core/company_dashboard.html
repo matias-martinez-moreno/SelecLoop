@@ -53,33 +53,6 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-/* Animación de entrada para las tarjetas admin */
-.company-card-admin {
-    animation: slideInUp 0.6s ease-out;
-    animation-fill-mode: both;
-}
-
-.company-card-admin:nth-child(1) { animation-delay: 0.1s; }
-.company-card-admin:nth-child(2) { animation-delay: 0.2s; }
-.company-card-admin:nth-child(3) { animation-delay: 0.3s; }
-.company-card-admin:nth-child(4) { animation-delay: 0.4s; }
-.company-card-admin:nth-child(5) { animation-delay: 0.5s; }
-.company-card-admin:nth-child(6) { animation-delay: 0.6s; }
-.company-card-admin:nth-child(7) { animation-delay: 0.7s; }
-.company-card-admin:nth-child(8) { animation-delay: 0.8s; }
-.company-card-admin:nth-child(9) { animation-delay: 0.9s; }
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 /* Efecto de hover simple y profesional para admin */
 .company-card-admin:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -148,27 +121,36 @@
     background-color: #2563eb !important;
     color: white !important;
     border: none !important;
+    padding: 0 !important;
 }
 
 .stats-card-blue .card-body {
     background-color: #2563eb !important;
     color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    min-height: auto !important;
 }
 
 .stats-card-blue .card-title {
     color: white !important;
-    font-size: 2.5rem !important;
+    font-size: 1.8rem !important;
     font-weight: 700 !important;
+    margin-bottom: 0.15rem !important;
+    line-height: 1.1 !important;
 }
 
 .stats-card-blue .card-text {
     color: white !important;
-    font-size: 1.1rem !important;
+    font-size: 0.8rem !important;
     font-weight: 500 !important;
+    margin-bottom: 0 !important;
+    line-height: 1.1 !important;
 }
 
 .stats-card-blue i {
     color: white !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 0.2rem !important;
 }
 </style>
 
@@ -186,29 +168,29 @@
     <!-- ===== ESTADÍSTICAS GENERALES ===== -->
     <div class="row mb-3">
         <div class="col-md-4">
-            <div class="card h-100 stats-card-blue">
-                <div class="card-body text-center py-2">
-                    <i class="fas fa-building fa-lg mb-1"></i>
-                    <h5 class="card-title mb-1">{{ total_companies }}</h5>
-                    <p class="card-text mb-0 small">Total Empresas</p>
+            <div class="card stats-card-blue">
+                <div class="card-body text-center">
+                    <i class="fas fa-building"></i>
+                    <h6 class="card-title">{{ total_companies }}</h6>
+                    <p class="card-text">Total Empresas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 stats-card-blue">
-                <div class="card-body text-center py-2">
-                    <i class="fas fa-star fa-lg mb-1"></i>
-                    <h5 class="card-title mb-1">{{ total_reviews }}</h5>
-                    <p class="card-text mb-0 small">Total Reseñas</p>
+            <div class="card stats-card-blue">
+                <div class="card-body text-center">
+                    <i class="fas fa-star"></i>
+                    <h6 class="card-title">{{ total_reviews }}</h6>
+                    <p class="card-text">Total Reseñas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 stats-card-blue">
-                <div class="card-body text-center py-2">
-                    <i class="fas fa-users fa-lg mb-1"></i>
-                    <h5 class="card-title mb-1">{{ total_candidates }}</h5>
-                    <p class="card-text mb-0 small">Total Candidatos</p>
+            <div class="card stats-card-blue">
+                <div class="card-body text-center">
+                    <i class="fas fa-users"></i>
+                    <h6 class="card-title">{{ total_candidates }}</h6>
+                    <p class="card-text">Total Candidatos</p>
                 </div>
             </div>
         </div>

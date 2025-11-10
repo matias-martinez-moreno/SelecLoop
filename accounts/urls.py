@@ -13,6 +13,10 @@ urlpatterns = [
     # Cerrar sesión
     path('logout/', views.logout_view, name='logout'),
     
+    # Recuperación de contraseña
+    path('password-reset/', views.password_reset_request_view, name='password_reset'),
+    path('password-reset/confirm/', views.password_reset_confirm_view, name='password_reset_confirm'),
+    
     # ===== GESTIÓN DE PERFIL =====
     # Ver y editar el perfil del usuario
     path('profile/', views.my_profile_view, name='my_profile'),

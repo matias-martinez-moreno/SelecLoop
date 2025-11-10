@@ -103,7 +103,7 @@
     <meta name="geo.placename" content="Colombia">
     <meta name="geo.position" content="">
     <meta name="ICBM" content="">
-    <meta name="DC.title" content="{% block title %}SelecLoop - Reseñas de Empresas{% endblock %}">
+    <meta name="DC.title" content="SelecLoop - Reseñas de Empresas">
     <meta name="DC.subject" content="Reseñas de empresas y procesos de selección">
     <meta name="DC.creator" content="SelecLoop">
     <meta name="DC.publisher" content="SelecLoop">
@@ -244,7 +244,7 @@
         .sidebar-brand img {
             width: 100%;
             height: auto;
-            max-height: 100px;
+            max-height: 150px;
             border-radius: 12px;
             object-fit: contain;
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
@@ -261,6 +261,8 @@
 
         .nav-item {
             margin-bottom: 0.3rem;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .nav-link {
@@ -276,9 +278,10 @@
             transition: all 0.2s ease;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0;
             min-height: 48px;
             box-sizing: border-box;
+            width: 100%;
         }
 
         .nav-link:hover {
@@ -422,6 +425,8 @@
         .user-details {
             flex-grow: 1;
             min-width: 0;
+            padding: 0;
+            margin: 0;
         }
 
         .user-info {
@@ -429,12 +434,14 @@
             font-size: 1rem;
             font-weight: 600;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            margin-bottom: 0.2rem;
+            margin: 0 0 0.2rem 0;
+            padding: 0;
             white-space: normal;
             overflow: visible;
             text-overflow: unset;
             word-wrap: break-word;
             line-height: 1.2;
+            text-align: left;
         }
 
         .user-role {
@@ -442,13 +449,16 @@
             font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            margin: 0;
+            padding: 0;
             white-space: normal;
             overflow: visible;
             text-overflow: unset;
             word-wrap: break-word;
             line-height: 1.2;
+            text-align: left;
         }
 
         /* Contenido principal */
@@ -543,7 +553,7 @@
         /* ===== PALETA DE COLORES SIMPLIFICADA ===== */
         :root {
             --primary-blue: #1E3A8A;        /* Azul principal */
-            --secondary-blue: #1E40AF;       /* Azul secundario */
+            --secondary-blue: #1c3d9c;       /* Azul secundario más oscuro */
             --accent-yellow: #F59E0B;        /* Amarillo para acentos */
             --neutral-gray: #6B7280;         /* Gris neutro */
             --white: #FFFFFF;
@@ -1074,6 +1084,7 @@
         }
 
         /* ===== BOTÓN TOGGLE SIDEBAR ===== */
+        /* Cuando el sidebar está DESPLEGADO (normal): botón pequeño y absoluto */
         .sidebar-toggle {
             position: absolute;
             top: 6rem;
@@ -1099,8 +1110,48 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
+        .sidebar-toggle:focus {
+            outline: 3px solid var(--accent-yellow);
+            outline-offset: 2px;
+        }
+
         .sidebar-toggle i {
             font-size: 1rem;
+        }
+
+        /* Cuando el sidebar está COLAPSADO (plegado): botón integrado en nav-main con mismo ancho */
+        .sidebar.collapsed .sidebar-toggle {
+            position: static;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem 0.5rem;
+            box-shadow: none;
+            min-height: 50px;
+            justify-content: center;
+            gap: 0;
+            font-weight: 500;
+            font-size: 1.05rem;
+            margin-bottom: 0.3rem;
+            box-sizing: border-box;
+        }
+
+        .sidebar.collapsed .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--white);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar.collapsed .sidebar-toggle i {
+            font-size: 1.5rem;
+            width: auto;
+            text-align: center;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+            display: inline-block;
+            margin: 0;
         }
 
 
@@ -1206,11 +1257,21 @@
 
         .sidebar.collapsed .nav-main {
             margin-top: 0;
-            padding-top: 8rem;
+            padding-top: 2.5rem;
+        }
+        
+        /* Cuando está colapsado, mover el botón dentro de nav-main */
+        .sidebar:not(.collapsed) .sidebar-toggle {
+            position: absolute;
         }
 
         .sidebar.collapsed .nav-item:nth-child(n+5) {
             display: none;
+        }
+
+        /* Asegurar que el botón toggle esté posicionado correctamente cuando está colapsado */
+        .sidebar.collapsed .nav-item:first-child {
+            position: static;
         }
 
         .sidebar.collapsed {
@@ -1524,14 +1585,9 @@
 
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navegación principal">
-        <!-- Botón de toggle del sidebar -->
-        <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-        
         <div class="sidebar-header">
             <a href="{% url 'dashboard' %}" class="sidebar-brand" aria-label="SelecLoop - Ir al inicio">
-                <img src="{% static 'core/logo2.png' %}" alt="SelecLoop Logo">
+                <img src="/media/avatars/logo2.png" alt="SelecLoop Logo">
             </a>
         </div>
 
@@ -1550,16 +1606,16 @@
                             {% endif %}
                         </div>
                         <div class="user-details">
-                            <div class="user-info">
-                                {{ user.get_full_name|default:user.username }}
-                            </div>
-                            <div class="user-role">
-                                <i class="fas fa-badge me-1"></i>
-                                {% if user.profile.role == 'company_rep' %}Representante de Empresa{% else %}{{ user.profile.get_role_display }}{% endif %}
-                            </div>
+                            <div class="user-info">{{ user.get_full_name|default:user.username }}</div>
+                            <div class="user-role">{% if user.profile.role == 'company_rep' %}Representante de Empresa{% else %}{{ user.profile.get_role_display }}{% endif %}</div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Botón de toggle del sidebar (fuera de nav-main cuando está desplegado) -->
+                <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
 
                 <!-- Contenedor principal de navegación -->
                 <div class="nav-main">
@@ -1889,18 +1945,62 @@
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.querySelector('.main-content');
             const toggleBtn = document.getElementById('sidebarToggle');
-            const icon = toggleBtn.querySelector('i');
+            const navMain = document.querySelector('.nav-main');
             
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
             
-            // Cambiar el icono
+            // Mover el botón dentro de nav-main cuando está colapsado
             if (sidebar.classList.contains('collapsed')) {
-                icon.className = 'fas fa-bars';
+                // Mover el botón al inicio de nav-main
+                if (navMain && !navMain.contains(toggleBtn)) {
+                    navMain.insertBefore(toggleBtn, navMain.firstChild);
+                }
             } else {
-                icon.className = 'fas fa-bars';
+                // Mover el botón fuera de nav-main cuando está desplegado
+                if (navMain && navMain.contains(toggleBtn)) {
+                    const sidebarNav = document.querySelector('.sidebar-nav');
+                    if (sidebarNav) {
+                        // Insertar después de user-section pero antes de nav-main
+                        const userSection = sidebarNav.querySelector('.user-section');
+                        if (userSection && userSection.nextSibling) {
+                            sidebarNav.insertBefore(toggleBtn, userSection.nextSibling);
+                        } else {
+                            sidebarNav.insertBefore(toggleBtn, navMain);
+                        }
+                    }
+                }
             }
         }
+        
+        // Asegurar que el botón esté en la posición correcta al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const navMain = document.querySelector('.nav-main');
+            
+            if (sidebar && toggleBtn && navMain) {
+                if (sidebar.classList.contains('collapsed')) {
+                    // Si está colapsado, mover el botón dentro de nav-main
+                    if (!navMain.contains(toggleBtn)) {
+                        navMain.insertBefore(toggleBtn, navMain.firstChild);
+                    }
+                } else {
+                    // Si está desplegado, asegurar que el botón esté fuera de nav-main
+                    if (navMain.contains(toggleBtn)) {
+                        const sidebarNav = document.querySelector('.sidebar-nav');
+                        if (sidebarNav) {
+                            const userSection = sidebarNav.querySelector('.user-section');
+                            if (userSection && userSection.nextSibling) {
+                                sidebarNav.insertBefore(toggleBtn, userSection.nextSibling);
+                            } else {
+                                sidebarNav.insertBefore(toggleBtn, navMain);
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         // Función para toggle del sidebar en móvil
         function toggleMobileSidebar() {
