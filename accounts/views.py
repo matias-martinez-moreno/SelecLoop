@@ -24,9 +24,27 @@ from .forms import ProfileUpdateForm
 def login_view(request):
     """Vista de login - autentica usuarios y redirige según rol"""
     if request.method == 'POST':
-        username = request.POST.get('username')
+        username_or_email = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
+        
+        # Intentar autenticar primero con username
+        user = authenticate(request, username=username_or_email, password=password)
+        
+        # Si falla, intentar buscar por email
+        if user is None:
+            try:
+                user_by_email = User.objects.get(email=username_or_email)
+                # Autenticar con el username real del usuario
+                user = authenticate(request, username=user_by_email.username, password=password)
+            except User.DoesNotExist:
+                user = None
+            except User.MultipleObjectsReturned:
+                # Si hay múltiples usuarios con el mismo email, intentar con el primero
+                user_by_email = User.objects.filter(email=username_or_email).first()
+                if user_by_email:
+                    user = authenticate(request, username=user_by_email.username, password=password)
+                else:
+                    user = None
         
         if user is not None:
             login(request, user)
@@ -102,10 +120,70 @@ def logout_view(request):
     return redirect('login')
 
 
+def get_user_badge(user_profile):
+    """
+    Determina el badge del usuario basado en sus logros obtenidos.
+    Retorna un diccionario con nombre, icono y color del badge.
+    """
+    if user_profile.role != 'candidate':
+        return None
+    
+    from achievements.models import UserAchievement
+    from reviews.models import Review
+    
+    achievement_count = UserAchievement.objects.filter(user_profile=user_profile).count()
+    total_reviews = Review.objects.filter(user_profile=user_profile).count()
+    
+    # Determinar badge basado en logros y reseñas
+    if achievement_count >= 10 or total_reviews >= 20:
+        return {
+            'name': 'Leyenda',
+            'icon': 'fas fa-crown',
+            'color': 'warning',
+            'bg_color': 'bg-warning',
+            'text_color': 'text-dark'
+        }
+    elif achievement_count >= 6 or total_reviews >= 10:
+        return {
+            'name': 'Maestro',
+            'icon': 'fas fa-trophy',
+            'color': 'warning',
+            'bg_color': 'bg-warning',
+            'text_color': 'text-dark'
+        }
+    elif achievement_count >= 3 or total_reviews >= 5:
+        return {
+            'name': 'Experto',
+            'icon': 'fas fa-star',
+            'color': 'info',
+            'bg_color': 'bg-info',
+            'text_color': 'text-white'
+        }
+    elif achievement_count >= 1 or total_reviews >= 1:
+        return {
+            'name': 'Novato',
+            'icon': 'fas fa-seedling',
+            'color': 'success',
+            'bg_color': 'bg-success',
+            'text_color': 'text-white'
+        }
+    else:
+        return {
+            'name': 'Principiante',
+            'icon': 'fas fa-circle',
+            'color': 'secondary',
+            'bg_color': 'bg-secondary',
+            'text_color': 'text-white'
+        }
+
+
 @login_required
 def my_profile_view(request):
     """Vista para mostrar el perfil del usuario"""
     user_profile = request.user.profile
+    
+    # Obtener badge del usuario
+    user_badge = get_user_badge(user_profile)
     
     if user_profile.role == 'candidate':
         # Importar modelos necesarios
@@ -134,6 +212,11 @@ def my_profile_view(request):
             user_profile=user_profile
         ).select_related('company').order_by('-start_date')[:3]  # Solo las 3 más recientes para el perfil
         
+        # Últimas 3 reseñas para el perfil
+        latest_reviews = Review.objects.filter(
+            user_profile=user_profile
+        ).select_related('company').order_by('-submission_date')[:3]
+        
         # Contar logros obtenidos
         achievement_count = UserAchievement.objects.filter(user_profile=user_profile).count()
         user_achievements = UserAchievement.objects.filter(user_profile=user_profile).select_related('achievement').order_by('-earned_at')
@@ -144,11 +227,13 @@ def my_profile_view(request):
         
         context = {
             'user_profile': user_profile,
+            'user_badge': user_badge,
             'total_reviews': total_reviews,
             'approved_reviews': approved_reviews,
             'pending_approval': pending_approval,
             'pending_reviews': pending_reviews,
             'work_history': work_history,
+            'latest_reviews': latest_reviews,
             'achievement_count': achievement_count,
             'user_achievements': user_achievements,
             'companies_reviewed': companies_reviewed,
@@ -158,10 +243,91 @@ def my_profile_view(request):
     else:
         context = {
             'user_profile': user_profile,
+            'user_badge': user_badge,
             'show_stats': False,
         }
     
     return render(request, 'core/profile.html', context)
+
+
+@login_required
+def view_user_profile_view(request, user_id):
+    """Vista para que cualquier usuario autenticado pueda ver el perfil de otro usuario"""
+    from django.contrib.auth.models import User
+    
+    try:
+        target_user = User.objects.get(id=user_id)
+        target_profile = target_user.profile
+        
+        # No permitir ver tu propio perfil desde esta vista (deben usar my_profile)
+        if target_user.id == request.user.id:
+            return redirect('my_profile')
+            
+    except User.DoesNotExist:
+        messages.error(request, '❌ Usuario no encontrado.')
+        return redirect('dashboard')
+    
+    # Obtener badge del usuario
+    user_badge = get_user_badge(target_profile)
+    
+    # Obtener información del usuario
+    from reviews.models import Review
+    from work_history.models import WorkHistory
+    from achievements.models import UserAchievement
+    
+    # Estadísticas del usuario
+    total_reviews = Review.objects.filter(user_profile=target_profile).count()
+    approved_reviews = Review.objects.filter(
+        user_profile=target_profile,
+        status='approved'
+    ).count()
+    rejected_reviews = Review.objects.filter(
+        user_profile=target_profile,
+        status='rejected'
+    ).count()
+    pending_reviews = Review.objects.filter(
+        user_profile=target_profile,
+        status='pending'
+    ).count()
+    
+    # Últimas reseñas
+    latest_reviews = Review.objects.filter(
+        user_profile=target_profile
+    ).select_related('company').order_by('-submission_date')[:5]
+    
+    # Historial laboral
+    work_history = WorkHistory.objects.filter(
+        user_profile=target_profile
+    ).select_related('company').order_by('-start_date')
+    
+    # Logros
+    achievement_count = UserAchievement.objects.filter(user_profile=target_profile).count()
+    user_achievements = UserAchievement.objects.filter(
+        user_profile=target_profile
+    ).select_related('achievement').order_by('-earned_at')[:10]
+    
+    # Empresas reseñadas
+    companies_reviewed = Review.objects.filter(
+        user_profile=target_profile
+    ).values('company').distinct().count()
+    
+    context = {
+        'user_profile': target_profile,
+        'target_user': target_user,
+        'user_badge': user_badge,
+        'total_reviews': total_reviews,
+        'approved_reviews': approved_reviews,
+        'rejected_reviews': rejected_reviews,
+        'pending_reviews': pending_reviews,
+        'latest_reviews': latest_reviews,
+        'work_history': work_history,
+        'achievement_count': achievement_count,
+        'user_achievements': user_achievements,
+        'companies_reviewed': companies_reviewed,
+        'is_viewing_other_profile': True,  # Flag para indicar que es perfil de otro usuario
+    }
+    
+    return render(request, 'core/view_user_profile.html', context)
 
 
 @login_required
@@ -171,7 +337,16 @@ def update_profile_view(request):
     initial = {
         'first_name': user.first_name,
         'last_name': user.last_name,
-        'display_name': getattr(user.profile, 'display_name', '')
+        'phone': getattr(user.profile, 'phone', ''),
+        'city': getattr(user.profile, 'city', ''),
+        'country': getattr(user.profile, 'country', ''),
+        'linkedin_url': getattr(user.profile, 'linkedin_url', ''),
+        'portfolio_url': getattr(user.profile, 'portfolio_url', ''),
+        'years_of_experience': getattr(user.profile, 'years_of_experience', None),
+        'specialization': getattr(user.profile, 'specialization', ''),
+        'languages': getattr(user.profile, 'languages', ''),
+        'availability_status': getattr(user.profile, 'availability_status', ''),
+        'bio': getattr(user.profile, 'bio', ''),
     }
 
     if request.method == 'POST':
@@ -185,7 +360,16 @@ def update_profile_view(request):
             error_messages = {
                 'first_name': 'El nombre debe tener entre 1 y 30 caracteres.',
                 'last_name': 'El apellido debe tener entre 1 y 30 caracteres.',
-                'display_name': 'El nombre visible debe tener máximo 100 caracteres.',
+                'phone': 'El teléfono debe ser válido.',
+                'city': 'La ciudad debe tener máximo 100 caracteres.',
+                'country': 'El país debe tener máximo 100 caracteres.',
+                'linkedin_url': 'La URL de LinkedIn debe ser válida.',
+                'portfolio_url': 'La URL del portfolio debe ser válida.',
+                'years_of_experience': 'Los años de experiencia deben ser un número entre 0 y 100.',
+                'specialization': 'La especialización debe tener máximo 200 caracteres.',
+                'languages': 'Los idiomas deben tener máximo 200 caracteres.',
+                'availability_status': 'Debes seleccionar una opción de disponibilidad válida.',
+                'bio': 'La biografía debe tener un formato válido.',
                 'avatar': 'La imagen debe ser válida (JPG, PNG). Tamaño máximo recomendado: 2MB.'
             }
             

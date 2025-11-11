@@ -17,23 +17,205 @@
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
 
+                        <!-- Información Personal -->
+                        <h6 class="text-primary mb-3 mt-2">
+                            <i class="fas fa-user me-2"></i>
+                            Información Personal
+                        </h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Nombre</label>
                                 {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Apellido</label>
                                 {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Foto de perfil (opcional)</label>
-                            {{ form.avatar }}
+                            <label class="form-label">Foto de perfil</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    {% if user.profile.avatar %}
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted">Foto actual:</label>
+                                        <div>
+                                            <img src="{{ user.profile.avatar.url }}" alt="Foto de perfil actual" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="mb-2">
+                                        <label class="form-label small">Nueva foto de perfil (opcional)</label>
+                                        {{ form.avatar }}
+                                        {% if form.avatar.help_text %}
+                                            <small class="form-text text-muted">{{ form.avatar.help_text }}</small>
+                                        {% endif %}
+                                        {% if form.avatar.errors %}
+                                            <div class="text-danger small">{{ form.avatar.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% if user.profile.avatar %}
+                                    <div class="form-check mt-2">
+                                        {{ form.remove_avatar }}
+                                        <label class="form-check-label" for="{{ form.remove_avatar.id_for_label }}">
+                                            Quitar foto de perfil
+                                        </label>
+                                        {% if form.remove_avatar.errors %}
+                                            <div class="text-danger small">{{ form.remove_avatar.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="d-flex justify-content-between">
+                        <!-- Información de Contacto -->
+                        <hr class="my-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-address-card me-2"></i>
+                            Información de Contacto
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                {{ form.phone }}
+                                {% if form.phone.help_text %}
+                                    <small class="form-text text-muted">{{ form.phone.help_text }}</small>
+                                {% endif %}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger small">{{ form.phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ciudad</label>
+                                {{ form.city }}
+                                {% if form.city.help_text %}
+                                    <small class="form-text text-muted">{{ form.city.help_text }}</small>
+                                {% endif %}
+                                {% if form.city.errors %}
+                                    <div class="text-danger small">{{ form.city.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">País</label>
+                            {{ form.country }}
+                            {% if form.country.help_text %}
+                                <small class="form-text text-muted">{{ form.country.help_text }}</small>
+                            {% endif %}
+                            {% if form.country.errors %}
+                                <div class="text-danger small">{{ form.country.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Enlaces Profesionales -->
+                        <hr class="my-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-link me-2"></i>
+                            Enlaces Profesionales
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">LinkedIn</label>
+                                {{ form.linkedin_url }}
+                                {% if form.linkedin_url.help_text %}
+                                    <small class="form-text text-muted">{{ form.linkedin_url.help_text }}</small>
+                                {% endif %}
+                                {% if form.linkedin_url.errors %}
+                                    <div class="text-danger small">{{ form.linkedin_url.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Portfolio/Website</label>
+                                {{ form.portfolio_url }}
+                                {% if form.portfolio_url.help_text %}
+                                    <small class="form-text text-muted">{{ form.portfolio_url.help_text }}</small>
+                                {% endif %}
+                                {% if form.portfolio_url.errors %}
+                                    <div class="text-danger small">{{ form.portfolio_url.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Información Profesional -->
+                        <hr class="my-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-briefcase me-2"></i>
+                            Información Profesional
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Años de experiencia</label>
+                                {{ form.years_of_experience }}
+                                {% if form.years_of_experience.help_text %}
+                                    <small class="form-text text-muted">{{ form.years_of_experience.help_text }}</small>
+                                {% endif %}
+                                {% if form.years_of_experience.errors %}
+                                    <div class="text-danger small">{{ form.years_of_experience.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Disponibilidad</label>
+                                {{ form.availability_status }}
+                                {% if form.availability_status.help_text %}
+                                    <small class="form-text text-muted">{{ form.availability_status.help_text }}</small>
+                                {% endif %}
+                                {% if form.availability_status.errors %}
+                                    <div class="text-danger small">{{ form.availability_status.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Área de especialización</label>
+                            {{ form.specialization }}
+                            {% if form.specialization.help_text %}
+                                <small class="form-text text-muted">{{ form.specialization.help_text }}</small>
+                            {% endif %}
+                            {% if form.specialization.errors %}
+                                <div class="text-danger small">{{ form.specialization.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Idiomas</label>
+                            {{ form.languages }}
+                            {% if form.languages.help_text %}
+                                <small class="form-text text-muted">{{ form.languages.help_text }}</small>
+                            {% endif %}
+                            {% if form.languages.errors %}
+                                <div class="text-danger small">{{ form.languages.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Biografía -->
+                        <hr class="my-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Biografía
+                        </h6>
+                        <div class="mb-3">
+                            <label class="form-label">Sobre ti</label>
+                            {{ form.bio }}
+                            {% if form.bio.help_text %}
+                                <small class="form-text text-muted">{{ form.bio.help_text }}</small>
+                            {% endif %}
+                            {% if form.bio.errors %}
+                                <div class="text-danger small">{{ form.bio.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
                             <a href="{% url 'my_profile' %}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>
                                 Cancelar

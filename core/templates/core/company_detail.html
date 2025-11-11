@@ -97,6 +97,8 @@
 }
 </script>
 
+{% load common_tags %}
+
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="container mt-2">
@@ -166,15 +168,142 @@
         </div>
     </div>
 
+    <!-- ===== ESTILOS PARA ESTADÍSTICAS MEJORADAS ===== -->
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+        }
+        .stat-card .stat-icon {
+            font-size: 1.8rem;
+            opacity: 0.9;
+            margin-bottom: 0.4rem;
+        }
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.4rem;
+        }
+        .stat-card .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.2rem;
+        }
+        .stat-card .stat-sublabel {
+            font-size: 0.65rem;
+            color: #6c757d;
+            opacity: 0.8;
+        }
+        /* Unified color scheme - harmonious palette */
+        .stat-card-primary,
+        .stat-card-success,
+        .stat-card-info,
+        .stat-card-warning,
+        .stat-card-danger,
+        .stat-card-secondary {
+            background: #ffffff;
+            border: 2px solid;
+            color: #1a1a1a !important;
+        }
+        
+        /* Color palette - harmonious blues and teals */
+        .stat-card-primary {
+            border-color: #2563eb; /* Blue 600 */
+        }
+        .stat-card-success {
+            border-color: #0ea5e9; /* Sky 500 */
+        }
+        .stat-card-info {
+            border-color: #06b6d4; /* Cyan 500 */
+        }
+        .stat-card-warning {
+            border-color: #14b8a6; /* Teal 500 */
+        }
+        .stat-card-danger {
+            border-color: #0891b2; /* Cyan 600 */
+        }
+        .stat-card-secondary {
+            border-color: #0284c7; /* Sky 600 */
+        }
+        
+        /* Matching text and icon colors */
+        .stat-card-primary .stat-value,
+        .stat-card-primary .stat-icon {
+            color: #2563eb !important;
+        }
+        .stat-card-success .stat-value,
+        .stat-card-success .stat-icon {
+            color: #0ea5e9 !important;
+        }
+        .stat-card-info .stat-value,
+        .stat-card-info .stat-icon {
+            color: #06b6d4 !important;
+        }
+        .stat-card-warning .stat-value,
+        .stat-card-warning .stat-icon {
+            color: #14b8a6 !important;
+        }
+        .stat-card-danger .stat-value,
+        .stat-card-danger .stat-icon {
+            color: #0891b2 !important;
+        }
+        .stat-card-secondary .stat-value,
+        .stat-card-secondary .stat-icon {
+            color: #0284c7 !important;
+        }
+        
+        .stat-card-primary .stat-label,
+        .stat-card-success .stat-label,
+        .stat-card-info .stat-label,
+        .stat-card-warning .stat-label,
+        .stat-card-danger .stat-label,
+        .stat-card-secondary .stat-label {
+            color: #374151 !important;
+        }
+        .stat-card-primary .stat-sublabel,
+        .stat-card-success .stat-sublabel,
+        .stat-card-info .stat-sublabel,
+        .stat-card-warning .stat-sublabel,
+        .stat-card-danger .stat-sublabel,
+        .stat-card-secondary .stat-sublabel {
+            color: #6b7280 !important;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        .chart-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .chart-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+
     <!-- ===== ESTADÍSTICAS DE LA EMPRESA ===== -->
     {% if user_can_access and company_stats and company_stats.total_reviews > 0 %}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="h5 mb-0"><i class="fas fa-chart-bar me-2"></i>Estadísticas de la Empresa</h3>
+            <div class="card shadow-lg border-0">
+                {% if user.profile.role == 'candidate' %}
+                <div class="card-header bg-primary text-white" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);">
+                    <h3 class="h5 mb-0"><i class="fas fa-chart-line me-2"></i>Estadísticas de la Empresa</h3>
                 </div>
-                <div class="card-body">
+                {% endif %}
+                <div class="card-body p-4">
                     {% if user.profile.role == 'candidate' %}
                     <div class="row mb-4">
                         <div class="col-12">
@@ -186,276 +315,470 @@
                         </div>
                     </div>
 
-                    <!-- 6 tarjetas principales -->
-                    <div class="row mb-4 g-3">
+                    <!-- Métricas Principales en Grid -->
+                    <div class="row g-3 mb-4">
                         <!-- Calificación General -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-primary h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-primary">{{ role_kpis.avg_overall|floatformat:1 }}</div>
-                                    <div class="h6 mb-0">Calificación</div>
-                                    <small class="text-muted">General</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Respuesta Rápida -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-success h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-success">{{ role_kpis.fast_response_rate }}</div>
-                                    <div class="h6 mb-0">% Respuesta</div>
-                                    <small class="text-muted">Rápida</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Reseñas Recientes -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-info h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-info">{{ role_kpis.last90_reviews_count }}</div>
-                                    <div class="h6 mb-0">Reseñas</div>
-                                    <small class="text-muted">Recientes</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Modalidad Más Común -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-warning h-100">
-                                <div class="card-body text-center">
-                                    <div class="h4 mb-2 text-warning">{{ role_kpis.top_modality|default:'-'|title }}</div>
-                                    <div class="h6 mb-0">Trabajo</div>
-                                    <small class="text-muted">Más común</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Nivel de Dificultad -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-danger h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-danger">
-                                        {% for item in role_kpis.difficulty_distribution %}
-                                            {% if item.difficulty_rating == 'easy' %}{{ item.count }}{% endif %}
-                                        {% empty %}0{% endfor %}
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-primary border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-primary fw-bold">{{ role_kpis.avg_overall|floatformat:1 }}</div>
+                                    <div class="small text-muted mb-1">Calificación General</div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_overall 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_overall 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
-                                    <div class="h6 mb-0">Proceso</div>
-                                    <small class="text-muted">Fácil</small>
+                                    <small class="text-muted">de 5.0</small>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Comunicación Excelente -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-secondary h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-secondary">
-                                        {% for item in role_kpis.communication_distribution %}
-                                            {% if item.communication_rating == 'excellent' %}{{ item.count }}{% endif %}
-                                        {% empty %}0{% endfor %}
+                        
+                        <!-- Total Reseñas -->
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-info border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-info fw-bold">{{ role_kpis.total_reviews }}</div>
+                                    <div class="small text-muted mb-1">Total Reseñas</div>
+                                    <div class="d-flex justify-content-center gap-2 small">
+                                        <span class="badge bg-success">{{ role_kpis.total_reviews }} aprobadas</span>
                                     </div>
-                                    <div class="h6 mb-0">Comunicación</div>
-                                    <small class="text-muted">Excelente</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tasa de Aprobación (siempre 100% para candidatos ya que solo ven aprobadas) -->
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-success border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-success fw-bold">100%</div>
+                                    <div class="small text-muted mb-1">Tasa de Aprobación</div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">{{ role_kpis.total_reviews }} de {{ role_kpis.total_reviews }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Respuestas Rápidas -->
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-warning border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-warning fw-bold">{{ role_kpis.fast_response_rate|floatformat:0 }}%</div>
+                                    <div class="small text-muted mb-1">Respuestas Rápidas</div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ role_kpis.fast_response_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.fast_response_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">SLA cumplido</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Métricas de Calidad del Proceso -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-star me-2"></i>
+                                Calidad del Proceso de Selección
+                            </h6>
+                        </div>
+                        
+                        <!-- Comunicación -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <i class="fas fa-comments text-primary me-2"></i>
+                                            <strong>Comunicación</strong>
+                                        </div>
+                                        <div class="h4 mb-0 text-primary">{{ role_kpis.avg_communication|floatformat:1 }}/5</div>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_communication 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_communication 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">Claridad en respuestas a candidatos</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dificultad -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <i class="fas fa-tasks text-warning me-2"></i>
+                                            <strong>Dificultad</strong>
+                                        </div>
+                                        <div class="h4 mb-0 text-warning">{{ role_kpis.avg_difficulty|floatformat:1 }}/5</div>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio role_kpis.avg_difficulty 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_difficulty 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">Complejidad del proceso</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Velocidad -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <i class="fas fa-clock text-info me-2"></i>
+                                            <strong>Velocidad</strong>
+                                        </div>
+                                        <div class="h4 mb-0 text-info">{{ role_kpis.avg_response_time|floatformat:1 }}/5</div>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: {% widthratio role_kpis.avg_response_time 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_response_time 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">Tiempo de respuesta</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Información adicional -->
-                    <div class="alert alert-info">
+                    <div class="alert alert-info" id="useful-info-alert">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>💡 Información útil:</strong>
-                        Basado en {{ role_kpis.total_reviews }} reseñas de candidatos.
-                        {% if role_kpis.top_modality_rating %}
-                        El trabajo {{ role_kpis.top_modality|lower }} tiene {{ role_kpis.top_modality_rating }}/5 estrellas de promedio.
-                        {% endif %}
+                        <span id="useful-info-text">
+                            Basado en {{ role_kpis.total_reviews }} reseñas de candidatos.
+                            {% if role_kpis.top_modality_rating %}
+                            El trabajo {{ role_kpis.top_modality|lower }} tiene {{ role_kpis.top_modality_rating }}/5 estrellas de promedio.
+                            {% endif %}
+                        </span>
                     </div>
+                    
+                    {% if role_kpis.modalities_data %}
+                    {{ role_kpis.modalities_data|json_script:"modalities-data" }}
+                    <script>
+                        // Datos de modalidades para rotación
+                        const modalitiesDataElement = document.getElementById('modalities-data');
+                        const modalitiesData = modalitiesDataElement ? JSON.parse(modalitiesDataElement.textContent) : [];
+                        const totalReviews = {{ role_kpis.total_reviews|default:0 }};
+                        
+                        // Función para obtener modalidad rotando cada vez que se carga la página
+                        // Usa el timestamp actual para cambiar cada vez que se recarga
+                        function getRotatingModality() {
+                            if (modalitiesData.length === 0) return null;
+                            // Usar milisegundos para que cambie más frecuentemente
+                            const index = Math.floor((Date.now() / 100) % modalitiesData.length);
+                            return modalitiesData[index];
+                        }
+                        
+                        // Actualizar el mensaje de información útil
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const usefulInfoText = document.getElementById('useful-info-text');
+                            if (usefulInfoText && modalitiesData && modalitiesData.length > 0) {
+                                const selectedModality = getRotatingModality();
+                                if (selectedModality) {
+                                    const modalityNames = {
+                                        'presencial': 'presencial',
+                                        'remoto': 'online',
+                                        'online': 'online',
+                                        'hibrido': 'híbrido',
+                                        'hybrid': 'híbrido',
+                                        'híbrido': 'híbrido'
+                                    };
+                                    const modalityName = modalityNames[selectedModality.modality.toLowerCase()] || selectedModality.modality.toLowerCase();
+                                    usefulInfoText.innerHTML = `Basado en ${totalReviews} reseñas de candidatos. El trabajo ${modalityName} tiene ${selectedModality.avg_rating}/5 estrellas de promedio.`;
+                                }
+                            }
+                        });
+                    </script>
+                    {% endif %}
     
                     {% elif user.profile.role == 'company_rep' %}
+                    <!-- Panel de Control Unificado -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h5 class="text-success mb-3">
-                                <i class="fas fa-building me-2"></i>
-                                Panel de Control de tu Empresa
-                            </h5>
-                            <p class="text-muted small">Métricas importantes para mejorar tu proceso de selección</p>
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-primary text-white" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);">
+                                    <h3 class="h5 mb-0">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        Panel de Control de tu Empresa
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Métricas Principales en Grid -->
+                                    <div class="row g-3 mb-4">
+                                        <!-- Calificación General -->
+                                        <div class="col-md-3 col-sm-6">
+                                            <div class="card h-100 border-primary border-2">
+                                                <div class="card-body text-center p-3">
+                                                    <div class="display-3 mb-2 text-primary fw-bold">{{ role_kpis.avg_overall|floatformat:1 }}</div>
+                                                    <div class="small text-muted mb-1">Calificación General</div>
+                                                    <div class="progress" style="height: 8px;">
+                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_overall 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_overall 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="text-muted">de 5.0</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Total Reseñas -->
+                                        <div class="col-md-3 col-sm-6">
+                                            <div class="card h-100 border-info border-2">
+                                                <div class="card-body text-center p-3">
+                                                    <div class="display-3 mb-2 text-info fw-bold">{{ role_kpis.total_reviews }}</div>
+                                                    <div class="small text-muted mb-1">Total Reseñas</div>
+                                                    <div class="d-flex justify-content-center gap-2 small">
+                                                        <span class="badge bg-success">{{ role_kpis.approved_count }} aprobadas</span>
+                                                        {% if role_kpis.rejected_count > 0 %}
+                                                        <span class="badge bg-danger">{{ role_kpis.rejected_count }} rechazadas</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tasa de Aprobación -->
+                                        <div class="col-md-3 col-sm-6">
+                                            <div class="card h-100 border-success border-2">
+                                                <div class="card-body text-center p-3">
+                                                    <div class="display-3 mb-2 text-success fw-bold">{{ role_kpis.approval_rate|floatformat:0 }}%</div>
+                                                    <div class="small text-muted mb-1">Tasa de Aprobación</div>
+                                                    <div class="progress" style="height: 8px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ role_kpis.approval_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.approval_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ role_kpis.approved_count }} de {{ role_kpis.total_reviews }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Respuestas Rápidas -->
+                                        <div class="col-md-3 col-sm-6">
+                                            <div class="card h-100 border-warning border-2">
+                                                <div class="card-body text-center p-3">
+                                                    <div class="display-3 mb-2 text-warning fw-bold">{{ role_kpis.compromiso_rate|floatformat:0 }}%</div>
+                                                    <div class="small text-muted mb-1">Respuestas Rápidas</div>
+                                                    <div class="progress" style="height: 8px;">
+                                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ role_kpis.compromiso_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.compromiso_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="text-muted">SLA cumplido</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Métricas de Calidad del Proceso -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-12">
+                                            <h6 class="text-muted mb-3">
+                                                <i class="fas fa-star me-2"></i>
+                                                Calidad del Proceso de Selección
+                                            </h6>
+                                        </div>
+                                        
+                                        <!-- Comunicación -->
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <div>
+                                                            <i class="fas fa-comments text-primary me-2"></i>
+                                                            <strong>Comunicación</strong>
+                                                        </div>
+                                                        <div class="h4 mb-0 text-primary">{{ role_kpis.avg_communication|floatformat:1 }}/5</div>
+                                                    </div>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_communication 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_communication 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="text-muted">Claridad en respuestas a candidatos</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Dificultad -->
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <div>
+                                                            <i class="fas fa-tasks text-warning me-2"></i>
+                                                            <strong>Dificultad</strong>
+                                                        </div>
+                                                        <div class="h4 mb-0 text-warning">{{ role_kpis.avg_difficulty|floatformat:1 }}/5</div>
+                                                    </div>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio role_kpis.avg_difficulty 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_difficulty 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="text-muted">Complejidad del proceso</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Velocidad -->
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <div>
+                                                            <i class="fas fa-clock text-info me-2"></i>
+                                                            <strong>Velocidad</strong>
+                                                        </div>
+                                                        <div class="h4 mb-0 text-info">{{ role_kpis.avg_response_time|floatformat:1 }}/5</div>
+                                                    </div>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-info" role="progressbar" style="width: {% widthratio role_kpis.avg_response_time 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_response_time 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="text-muted">Tiempo de respuesta</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 6 tarjetas principales para empresas -->
-                    <div class="row mb-4 g-3">
-                        <!-- Puntuación General -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-primary h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-primary">{{ role_kpis.avg_overall|floatformat:1 }}</div>
-                                    <div class="h6 mb-0">Puntuación</div>
-                                    <small class="text-muted">General</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Reseñas Aprobadas -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-success h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-success">{{ role_kpis.approval_rate }}</div>
-                                    <div class="h6 mb-0">% Aprobadas</div>
-                                    <small class="text-muted">reseñas</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Respuestas Rápidas -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-info h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-info">{{ role_kpis.compromiso_rate }}</div>
-                                    <div class="h6 mb-0">% Respuestas</div>
-                                    <small class="text-muted">Rápidas</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Total Reseñas -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-warning h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-warning">{{ role_kpis.total_reviews }}</div>
-                                    <div class="h6 mb-0">Total</div>
-                                    <small class="text-muted">Reseñas</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Comunicación -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-secondary h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-secondary">{{ role_kpis.avg_communication|floatformat:1 }}</div>
-                                    <div class="h6 mb-0">Comunicación</div>
-                                    <small class="text-muted">promedio</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Dificultad -->
-                        <div class="col-md-4 col-lg-2">
-                            <div class="card border-danger h-100">
-                                <div class="card-body text-center">
-                                    <div class="display-4 mb-2 text-danger">{{ role_kpis.avg_difficulty|floatformat:1 }}</div>
-                                    <div class="h6 mb-0">Dificultad</div>
-                                    <small class="text-muted">del proceso</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Estado de reseñas -->
-                    <div class="row mb-3">
+                    <!-- Recomendaciones Inteligentes -->
+                    {% if role_kpis.recommendations %}
+                    <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="text-muted mb-3">
-                                <i class="fas fa-tasks me-2"></i>
-                                Estado de las Reseñas Recibidas
-                            </h6>
-                            <div class="row g-2">
-                                <div class="col-md-4">
-                                    <div class="card border-success text-center">
-                                        <div class="card-body">
-                                            <div class="display-6 mb-1 text-success">{{ role_kpis.approved_count }}</div>
-                                            <div class="h6 mb-0">Aprobadas</div>
-                                            <small class="text-muted">publicadas</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card border-warning text-center">
-                                        <div class="card-body">
-                                            <div class="display-6 mb-1 text-warning">{{ role_kpis.pending_count }}</div>
-                                            <div class="h6 mb-0">Pendientes</div>
-                                            <small class="text-muted">esperando revisión</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card border-danger text-center">
-                                        <div class="card-body">
-                                            <div class="display-6 mb-1 text-danger">{{ role_kpis.rejected_count }}</div>
-                                            <div class="h6 mb-0">Rechazadas</div>
-                                            <small class="text-muted">no publicadas</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Áreas de mejora -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <h6 class="text-muted mb-3">
-                                <i class="fas fa-bullseye me-2"></i>
-                                Áreas donde puedes mejorar
-                            </h6>
-                            <div class="row g-2">
-                                <div class="col-md-4">
-                                    <div class="card text-center">
-                                        <div class="card-body">
-                                            <div class="h4 mb-1 text-primary">{{ role_kpis.avg_communication|floatformat:1 }}/5</div>
-                                            <div class="h6 mb-0">Comunicación</div>
-                                            <small class="text-muted">claridad en respuestas</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card text-center">
-                                        <div class="card-body">
-                                            <div class="h4 mb-1 text-orange">{{ role_kpis.avg_difficulty|floatformat:1 }}/5</div>
-                                            <div class="h6 mb-0">Complejidad</div>
-                                            <small class="text-muted">del proceso</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card text-center">
-                                        <div class="card-body">
-                                            <div class="h4 mb-1 text-info">{{ role_kpis.avg_response_time|floatformat:1 }}/5</div>
-                                            <div class="h6 mb-0">Velocidad</div>
-                                            <small class="text-muted">en dar feedback</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="alert alert-info mt-3">
                                 <i class="fas fa-lightbulb me-2"></i>
-                                <strong>💡 Consejos:</strong>
-                                {% if role_kpis.avg_communication < 4 %}
-                                Mejora la comunicación para dar mejor impresión a los candidatos.
-                                {% elif role_kpis.avg_response_time < 4 %}
-                                Los candidatos valoran respuestas rápidas.
-                                {% elif role_kpis.approval_rate < 80 %}
-                                Revisa por qué se rechazan tantas reseñas.
-                                {% else %}
-                                ¡Excelente trabajo! Tus procesos están funcionando muy bien.
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Botón para ver reseñas rechazadas -->
-                    {% if role_kpis.rejected_count > 0 %}
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-center">
-                                <a href="{% url 'rejected_reviews' company.id %}" class="btn btn-outline-danger btn-lg">
-                                    <i class="fas fa-ban me-2"></i>Ver Reseñas Rechazadas ({{ role_kpis.rejected_count }})
-                                </a>
+                                Recomendaciones Inteligentes
+                            </h6>
+                            <div class="row g-3">
+                                {% for rec in role_kpis.recommendations %}
+                                <div class="col-md-6">
+                                    <div class="card border-{{ rec.type }} h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start">
+                                                <div class="flex-shrink-0">
+                                                    <i class="{{ rec.icon }} fa-2x text-{{ rec.type }}"></i>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="card-title text-{{ rec.type }}">{{ rec.title }}</h6>
+                                                    <p class="card-text small mb-0">{{ rec.description }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
                     {% endif %}
+                    
+                    <!-- Comparación Mes a Mes -->
+                    {% if role_kpis.monthly_comparison %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Comparación Mes a Mes
+                            </h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="min-width: 120px;">Mes</th>
+                                                    <th class="text-center" style="min-width: 100px;">Calificación</th>
+                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                                    <th class="text-center" style="min-width: 100px;">Total Reseñas</th>
+                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                                    <th class="text-center" style="min-width: 100px;">Aprobadas</th>
+                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                                    <th class="text-center" style="min-width: 100px;">Rechazadas</th>
+                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for comp in role_kpis.monthly_comparison %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="fw-bold">{{ comp.month|fecha_espanol }}</div>
+                                                        <small class="text-muted">vs {{ comp.prev_month|fecha_espanol }}</small>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="fw-bold">{{ comp.curr_rating|floatformat:1 }}/5.0</div>
+                                                        <small class="text-muted">({{ comp.prev_rating|floatformat:1 }} antes)</small>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if comp.rating_change > 0 %}
+                                                            <span class="badge bg-success">+{{ comp.rating_change|floatformat:1 }}</span>
+                                                        {% elif comp.rating_change < 0 %}
+                                                            <span class="badge bg-danger">{{ comp.rating_change|floatformat:1 }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">0.0</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="fw-bold">{{ comp.curr_count }}</div>
+                                                        <small class="text-muted">({{ comp.prev_count }} antes)</small>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if comp.count_change > 0 %}
+                                                            <span class="badge bg-success">+{{ comp.count_change }}</span>
+                                                        {% elif comp.count_change < 0 %}
+                                                            <span class="badge bg-danger">{{ comp.count_change }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">0</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="fw-bold text-success">{{ comp.curr_approved }}</div>
+                                                        <small class="text-muted">({{ comp.prev_approved }} antes)</small>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if comp.approval_change > 0 %}
+                                                            <span class="badge bg-success">+{{ comp.approval_change }}</span>
+                                                        {% elif comp.approval_change < 0 %}
+                                                            <span class="badge bg-danger">{{ comp.approval_change }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">0</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="fw-bold text-danger">{{ comp.curr_rejected }}</div>
+                                                        <small class="text-muted">({{ comp.prev_rejected }} antes)</small>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if comp.rejection_change > 0 %}
+                                                            <span class="badge bg-danger">+{{ comp.rejection_change }}</span>
+                                                        {% elif comp.rejection_change < 0 %}
+                                                            <span class="badge bg-success">{{ comp.rejection_change }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">0</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Botones de Acción -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                <a href="{% url 'rejected_reviews' company.id %}" class="btn btn-outline-danger">
+                                    <i class="fas fa-ban me-2"></i>Ver Reseñas Rechazadas
+                                    {% if role_kpis.rejected_count > 0 %}
+                                    <span class="badge bg-danger ms-2">{{ role_kpis.rejected_count }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary ms-2">0</span>
+                                    {% endif %}
+                                </a>
+                                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exportExcelModal">
+                                    <i class="fas fa-file-excel me-2"></i>Descargar Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     {% endif %}
                 </div>
@@ -475,56 +798,103 @@
                         Análisis Visual de Datos
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <div class="card">
+                            <div class="card chart-card shadow-sm h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title">Distribución de Calificaciones</h6>
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-star text-warning me-2"></i>
+                                        Distribución de Calificaciones
+                                    </h6>
                                     {% if chart_data.ratings %}
-                                    <canvas id="ratingsChart" width="400" height="200"></canvas>
+                                    <div class="chart-container">
+                                        <canvas id="ratingsChart"></canvas>
+                                    </div>
                                     {% else %}
-                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <div class="card">
+                            <div class="card chart-card shadow-sm h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title">Modalidad de Trabajo</h6>
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-briefcase text-primary me-2"></i>
+                                        Modalidad de Trabajo
+                                    </h6>
                                     {% if chart_data.modality %}
-                                    <canvas id="modalityChart" width="400" height="200"></canvas>
+                                    <div class="chart-container">
+                                        <canvas id="modalityChart"></canvas>
+                                    </div>
                                     {% else %}
-                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <div class="card">
+                            <div class="card chart-card shadow-sm h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title">Fortalezas y Debilidades</h6>
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-radar text-info me-2"></i>
+                                        Fortalezas y Debilidades
+                                    </h6>
                                     {% if chart_data.strengths_weaknesses %}
-                                    <canvas id="strengthsChart" width="400" height="200"></canvas>
+                                    <div class="chart-container">
+                                        <canvas id="strengthsChart"></canvas>
+                                    </div>
                                     {% else %}
-                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-chart-area fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <div class="card">
+                            <div class="card chart-card shadow-sm h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title">Reseñas por Mes (Últimos 4 meses)</h6>
-                                    {% if chart_data.timeline %}
-                                    <canvas id="timelineChart" width="400" height="200"></canvas>
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-clock text-success me-2"></i>
+                                        Distribución de Tiempo de Respuesta
+                                    </h6>
+                                    {% if chart_data.response_time_distribution %}
+                                    <div class="chart-container">
+                                        <canvas id="responseTimeChart"></canvas>
+                                    </div>
                                     {% else %}
-                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
+                        {% if user.profile.role == 'company_rep' and role_kpis.monthly_trend %}
+                        <div class="col-md-12 mb-4">
+                            <div class="card chart-card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-chart-bar text-primary me-2"></i>
+                                        Comparación Mes a Mes - Evolución de Calificaciones
+                                    </h6>
+                                    <div class="chart-container" style="height: 350px;">
+                                        <canvas id="monthlyComparisonChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -535,10 +905,20 @@
     <!-- Contenido condicional según acceso -->
     {% if user_can_access %}
         <!-- Usuario puede acceder - mostrar reseñas -->
-        <div class="row mb-4">
+        <div id="reviews-section" class="row mb-4">
             <div class="col-12">
-                <div class="mb-3">
-                    <h2 class="h3 text-primary">Reseñas de la Empresa</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h3 text-primary mb-0">Reseñas de la Empresa</h2>
+                    {% if total_approved_reviews_count > 0 %}
+                    <span class="badge bg-primary">
+                        <i class="fas fa-comments me-1"></i>
+                        {% if has_active_filters %}
+                            {{ approved_reviews|length }} de {{ total_approved_reviews_count }} reseña{{ total_approved_reviews_count|pluralize }}
+                        {% else %}
+                            {{ total_approved_reviews_count }} reseña{{ total_approved_reviews_count|pluralize }}
+                        {% endif %}
+                    </span>
+                    {% endif %}
                 </div>
                 
                 {% if user_can_create_review and user.profile.role == 'candidate' %}
@@ -551,14 +931,82 @@
                 </div>
                 {% endif %}
                 
-                {% if approved_reviews %}
+                <!-- Filtros de reseñas - Siempre mostrar si hay reseñas aprobadas en total -->
+                {% if total_approved_reviews_count > 0 %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <form method="get" action="{% url 'company_detail' company.id %}#reviews-section" class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label for="rating" class="form-label small fw-bold">
+                                    <i class="fas fa-star text-warning me-1"></i>Calificación
+                                </label>
+                                <select name="rating" id="rating" class="form-select form-select-sm">
+                                    <option value="">Todas las calificaciones</option>
+                                    <option value="5" {% if current_filters.rating == '5' %}selected{% endif %}>5 estrellas</option>
+                                    <option value="4" {% if current_filters.rating == '4' %}selected{% endif %}>4 estrellas</option>
+                                    <option value="3" {% if current_filters.rating == '3' %}selected{% endif %}>3 estrellas</option>
+                                    <option value="2" {% if current_filters.rating == '2' %}selected{% endif %}>2 estrellas</option>
+                                    <option value="1" {% if current_filters.rating == '1' %}selected{% endif %}>1 estrella</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="modality" class="form-label small fw-bold">
+                                    <i class="fas fa-briefcase text-primary me-1"></i>Modalidad
+                                </label>
+                                <select name="modality" id="modality" class="form-select form-select-sm">
+                                    <option value="">Todas las modalidades</option>
+                                    <option value="presencial" {% if current_filters.modality == 'presencial' %}selected{% endif %}>Presencial</option>
+                                    <option value="remoto" {% if current_filters.modality == 'remoto' %}selected{% endif %}>Remoto</option>
+                                    <option value="hibrido" {% if current_filters.modality == 'hibrido' %}selected{% endif %}>Híbrido</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sort" class="form-label small fw-bold">
+                                    <i class="fas fa-sort text-info me-1"></i>Ordenar por
+                                </label>
+                                <select name="sort" id="sort" class="form-select form-select-sm">
+                                    <option value="recent" {% if current_filters.sort == 'recent' or not current_filters.sort %}selected{% endif %}>Más recientes</option>
+                                    <option value="oldest" {% if current_filters.sort == 'oldest' %}selected{% endif %}>Más antiguas</option>
+                                    <option value="highest" {% if current_filters.sort == 'highest' %}selected{% endif %}>Mejor calificadas</option>
+                                    <option value="lowest" {% if current_filters.sort == 'lowest' %}selected{% endif %}>Peor calificadas</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="fas fa-filter me-1"></i>Filtrar
+                                </button>
+                                {% if current_filters.rating or current_filters.modality or current_filters.sort %}
+                                <a href="{% url 'company_detail' company.id %}#reviews-section" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                                    <i class="fas fa-times me-1"></i>Limpiar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Mostrar reseñas si hay resultados -->
+                {% if approved_reviews|length > 0 %}
                     <div class="row">
                         {% for review in approved_reviews %}
-                        <div class="col-lg-6 mb-4">
+                        <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card h-100 shadow-sm">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">{{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}</h6>
-                                    <span class="badge bg-success">
+                                    <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0;">
+                                        <h6 class="mb-0 text-truncate" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}">
+                                            {{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}
+                                        </h6>
+                                        {% if user.is_authenticated %}
+                                        <a href="{% url 'view_user_profile' review.user_profile.user.id %}" 
+                                           class="btn btn-sm btn-secondary flex-shrink-0" 
+                                           title="Ver perfil del usuario"
+                                           style="background-color: #6c757d; border-color: #6c757d; color: #ffffff;">
+                                            <i class="fas fa-user me-1"></i>Ver Perfil
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge bg-success flex-shrink-0">
                                         <i class="fas fa-check me-1"></i>Aprobada
                                     </span>
                                 </div>
@@ -607,7 +1055,18 @@
                         </div>
                         {% endfor %}
                     </div>
-                {% else %}
+                {% elif has_active_filters %}
+                    <!-- Mensaje cuando hay filtros activos pero no hay resultados -->
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>No se encontraron reseñas</strong> que coincidan con los filtros aplicados.
+                        <a href="{% url 'company_detail' company.id %}#reviews-section" class="alert-link ms-2">
+                            <i class="fas fa-times me-1"></i>Limpiar filtros
+                        </a>
+                        para ver todas las {{ total_approved_reviews_count }} reseña{{ total_approved_reviews_count|pluralize }} disponibles.
+                    </div>
+                {% elif total_approved_reviews_count == 0 %}
+                    <!-- Solo mostrar este mensaje si realmente NO hay reseñas aprobadas en total (sin filtrar) -->
                     <div class="text-center py-5">
                         <i class="fas fa-comments fa-4x text-muted mb-3"></i>
                         <h4 class="text-muted">No hay reseñas aún</h4>
@@ -699,6 +1158,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 {{ chart_data|json_script:"chart-data" }}
+{% if user.profile.role == 'company_rep' and role_kpis.monthly_trend %}
+{{ role_kpis.monthly_trend|json_script:"monthly-trend-data" }}
+{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -729,27 +1191,130 @@ document.addEventListener('DOMContentLoaded', function() {
         secondary: '#6B7280'
     };
     
-    // Gráfico de distribución de calificaciones
+    // Gráfico de distribución de calificaciones - Diagrama de barras mejorado
     if (chartData.ratings && Object.keys(chartData.ratings).length > 0) {
         const ratingsCtx = document.getElementById('ratingsChart');
         if (ratingsCtx) {
+            const ratingValues = Object.values(chartData.ratings);
+            const ratingLabels = Object.keys(chartData.ratings);
+            const ratingColors = [
+                '#DC2626',   // Rojo intenso para 1 estrella
+                '#F59E0B',   // Naranja para 2 estrellas
+                '#6B7280',   // Gris medio para 3 estrellas
+                '#2563EB',   // Azul para 4 estrellas
+                '#059669'    // Verde para 5 estrellas
+            ];
+            
+            // Encontrar el valor máximo para destacarlo
+            const maxValue = Math.max(...ratingValues);
+            const maxIndex = ratingValues.indexOf(maxValue);
+            
+            // Crear colores con la barra más alta destacada
+            const barColors = ratingValues.map((value, index) => {
+                if (index === maxIndex) {
+                    // Barra más alta con color más intenso y borde más grueso
+                    return ratingColors[index];
+                }
+                return ratingColors[index] + 'CC'; // Más transparente para las demás
+            });
+            
+            const borderColors = ratingValues.map((value, index) => {
+                if (index === maxIndex) {
+                    // Borde más oscuro para la barra más alta
+                    if (ratingColors[index] === '#DC2626') return '#991B1B';
+                    if (ratingColors[index] === '#F59E0B') return '#D97706';
+                    if (ratingColors[index] === '#6B7280') return '#4B5563';
+                    if (ratingColors[index] === '#2563EB') return '#1E40AF';
+                    if (ratingColors[index] === '#059669') return '#047857';
+                }
+                return ratingColors[index];
+            });
+            
             new Chart(ratingsCtx, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(chartData.ratings),
+                    labels: ratingLabels,
                     datasets: [{
                         label: 'Número de Reseñas',
-                        data: Object.values(chartData.ratings),
-                        backgroundColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
-                        borderColor: [colors.warning, colors.warning, colors.warning, colors.warning, colors.warning],
-                        borderWidth: 1
+                        data: ratingValues,
+                        backgroundColor: barColors,
+                        borderColor: borderColors,
+                        borderWidth: ratingValues.map((value, index) => index === maxIndex ? 5 : 3),
+                        borderRadius: 8,
+                        borderSkipped: false
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1200,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                            padding: 16,
+                            titleFont: { size: 15, weight: 'bold', family: "'Segoe UI', sans-serif" },
+                            bodyFont: { size: 14, family: "'Segoe UI', sans-serif", weight: '500' },
+                            cornerRadius: 12,
+                            displayColors: true,
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = ratingValues.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((context.parsed.y / total) * 100).toFixed(1) : 0;
+                                    const isMax = context.dataIndex === maxIndex;
+                                    let label = context.label + ': ' + context.parsed.y + ' reseña' + (context.parsed.y !== 1 ? 's' : '') + ' (' + percentage + '%)';
+                                    if (isMax) {
+                                        label += ' ⭐ (Más común)';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
+                                color: '#1F2937',
+                                precision: 0,
+                                padding: 10
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.08)',
+                                drawBorder: true,
+                                borderColor: '#E5E7EB',
+                                borderWidth: 2,
+                                lineWidth: 1
+                            },
+                            border: {
+                                display: true,
+                                color: '#E5E7EB',
+                                width: 2
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
+                                color: '#1F2937',
+                                padding: 12
+                            },
+                            grid: {
+                                display: false
+                            },
+                            border: {
+                                display: true,
+                                color: '#E5E7EB',
+                                width: 2
+                            }
                         }
                     }
                 }
@@ -757,28 +1322,74 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Gráfico de modalidad de trabajo
+    // Gráfico de modalidad de trabajo mejorado
     if (chartData.modality && Object.keys(chartData.modality).length > 0) {
         const modalityCtx = document.getElementById('modalityChart');
         if (modalityCtx) {
+            const modalityValues = Object.values(chartData.modality);
+            const modalityLabels = Object.keys(chartData.modality);
+            const modalityColors = [
+                '#1E3A8A',   // Azul oscuro
+                '#10B981',   // Verde
+                '#3B82F6',   // Azul claro
+                '#F59E0B',   // Naranja
+                '#8B5CF6'    // Púrpura
+            ];
+            
             new Chart(modalityCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(chartData.modality),
+                    labels: modalityLabels,
                     datasets: [{
-                        data: Object.values(chartData.modality),
-                        backgroundColor: [colors.primary, colors.success, colors.info],
-                        borderWidth: 2
+                        data: modalityValues,
+                        backgroundColor: modalityColors.slice(0, modalityValues.length),
+                        borderColor: '#ffffff',
+                        borderWidth: 4,
+                        hoverBorderWidth: 5
                     }]
                 },
                 options: {
-                    responsive: true
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1200,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 18,
+                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '500' },
+                                color: '#374151',
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                            padding: 14,
+                            titleFont: { size: 14, weight: 'bold', family: "'Segoe UI', sans-serif" },
+                            bodyFont: { size: 13, family: "'Segoe UI', sans-serif" },
+                            cornerRadius: 10,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + context.parsed + ' reseña' + (context.parsed !== 1 ? 's' : '') + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
     }
     
-    // Gráfico de fortalezas y debilidades (Radar Chart)
+    // Gráfico de fortalezas y debilidades mejorado (Radar Chart)
     if (chartData.strengths_weaknesses && Object.keys(chartData.strengths_weaknesses).length > 0) {
         const strengthsCtx = document.getElementById('strengthsChart');
         if (strengthsCtx) {
@@ -789,28 +1400,59 @@ document.addEventListener('DOMContentLoaded', function() {
                     datasets: [{
                         label: 'Calificación Promedio',
                         data: Object.values(chartData.strengths_weaknesses),
-                        backgroundColor: 'rgba(30, 58, 138, 0.2)',
+                        backgroundColor: 'rgba(30, 58, 138, 0.3)',
                         borderColor: colors.primary,
-                        borderWidth: 2,
+                        borderWidth: 3,
                         pointBackgroundColor: colors.primary,
-                        pointBorderColor: colors.primaryDark,
-                        pointRadius: 4
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: colors.primary,
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
                     scales: {
                         r: {
                             beginAtZero: true,
                             max: 5,
+                            min: 0,
                             ticks: {
-                                stepSize: 1
+                                stepSize: 1,
+                                font: { size: 11 },
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: { size: 12, weight: 'bold' },
+                                color: '#374151'
                             }
                         }
                     },
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed.r.toFixed(1) + ' / 5.0';
+                                }
+                            }
                         }
                     }
                 }
@@ -818,48 +1460,422 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Gráfico de timeline de reseñas
-    if (chartData.timeline && Object.keys(chartData.timeline).length > 0) {
-        const timelineCtx = document.getElementById('timelineChart');
-        if (timelineCtx) {
-            new Chart(timelineCtx, {
-                type: 'line',
+    // Gráfico de distribución de tiempo de respuesta
+    if (chartData.response_time_distribution && Object.keys(chartData.response_time_distribution).length > 0) {
+        const responseTimeCtx = document.getElementById('responseTimeChart');
+        if (responseTimeCtx) {
+            const responseTimeValues = Object.values(chartData.response_time_distribution);
+            const responseTimeLabels = Object.keys(chartData.response_time_distribution);
+            
+            // Colores según el tipo de respuesta (verde para rápido, rojo para lento)
+            const responseTimeColors = responseTimeLabels.map(label => {
+                if (label.includes('Inmediata')) return '#10B981'; // Verde
+                if (label.includes('Mismo día')) return '#34D399'; // Verde claro
+                if (label.includes('siguiente')) return '#FBBF24'; // Amarillo
+                if (label.includes('pocos días')) return '#F59E0B'; // Naranja
+                if (label.includes('Lenta')) return '#EF4444'; // Rojo
+                return '#6B7280'; // Gris por defecto
+            });
+            
+            // Encontrar el valor más común
+            const maxValue = Math.max(...responseTimeValues);
+            const maxIndex = responseTimeValues.indexOf(maxValue);
+            
+            new Chart(responseTimeCtx, {
+                type: 'bar',
                 data: {
-                    labels: Object.keys(chartData.timeline),
+                    labels: responseTimeLabels,
                     datasets: [{
-                        label: 'Cantidad de Reseñas',
-                        data: Object.values(chartData.timeline),
-                        borderColor: colors.primary,
-                        backgroundColor: colors.primary + '20',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: colors.primary,
-                        pointBorderColor: colors.primary,
-                        pointRadius: 4
+                        label: 'Número de Reseñas',
+                        data: responseTimeValues,
+                        backgroundColor: responseTimeColors.map((color, index) => 
+                            index === maxIndex ? color : color + 'CC'
+                        ),
+                        borderColor: responseTimeColors,
+                        borderWidth: responseTimeValues.map((value, index) => index === maxIndex ? 4 : 2),
+                        borderRadius: 8,
+                        borderSkipped: false
                     }]
                 },
                 options: {
+                    indexAxis: 'y', // Barras horizontales
                     responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
                     },
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                            padding: 16,
+                            titleFont: { size: 15, weight: 'bold', family: "'Segoe UI', sans-serif" },
+                            bodyFont: { size: 14, family: "'Segoe UI', sans-serif", weight: '500' },
+                            cornerRadius: 12,
+                            displayColors: true,
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = responseTimeValues.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((context.parsed.x / total) * 100).toFixed(1) : 0;
+                                    const isMax = context.dataIndex === maxIndex;
+                                    let label = context.label + ': ' + context.parsed.x + ' reseña' + (context.parsed.x !== 1 ? 's' : '') + ' (' + percentage + '%)';
+                                    if (isMax) {
+                                        label += ' ⚡ (Más común)';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
+                                color: '#1F2937',
+                                precision: 0,
+                                padding: 10
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.08)',
+                                drawBorder: true,
+                                borderColor: '#E5E7EB',
+                                borderWidth: 2,
+                                lineWidth: 1
+                            },
+                            border: {
+                                display: true,
+                                color: '#E5E7EB',
+                                width: 2
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
+                                color: '#1F2937',
+                                padding: 12
+                            },
+                            grid: {
+                                display: false
+                            },
+                            border: {
+                                display: true,
+                                color: '#E5E7EB',
+                                width: 2
+                            }
                         }
                     }
                 }
             });
         }
     }
+    
+    // Gráfico de comparación mes a mes (solo para company_rep)
+    {% if user.profile.role == 'company_rep' and role_kpis.monthly_trend %}
+    const monthlyComparisonCtx = document.getElementById('monthlyComparisonChart');
+    if (monthlyComparisonCtx) {
+        const monthlyTrendElement = document.getElementById('monthly-trend-data');
+        let monthlyData = null;
+        if (monthlyTrendElement) {
+            try {
+                monthlyData = JSON.parse(monthlyTrendElement.textContent);
+            } catch (e) {
+                console.error('Error parsing monthly trend data:', e);
+            }
+        }
+        
+        if (monthlyData && monthlyData.length > 0) {
+            const months = monthlyData.map(item => {
+                const date = new Date(item.month);
+                return date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+            });
+            const ratings = monthlyData.map(item => parseFloat(item.avg_rating) || 0);
+            const counts = monthlyData.map(item => item.count || 0);
+            
+            new Chart(monthlyComparisonCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Calificación Promedio',
+                            data: ratings,
+                            borderColor: colors.primary,
+                            backgroundColor: 'rgba(30, 58, 138, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Total Reseñas',
+                            data: counts,
+                            borderColor: colors.info,
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y1',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { size: 12, family: "'Segoe UI', sans-serif" },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                            padding: 14,
+                            titleFont: { size: 14, weight: 'bold', family: "'Segoe UI', sans-serif" },
+                            bodyFont: { size: 13, family: "'Segoe UI', sans-serif" },
+                            cornerRadius: 10
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Calificación Promedio',
+                                font: { size: 12, weight: 'bold' },
+                                color: colors.primary
+                            },
+                            min: 0,
+                            max: 5,
+                            ticks: {
+                                stepSize: 0.5,
+                                font: { size: 11 },
+                                color: colors.primary
+                            },
+                            grid: {
+                                color: 'rgba(30, 58, 138, 0.1)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Cantidad de Reseñas',
+                                font: { size: 12, weight: 'bold' },
+                                color: colors.info
+                            },
+                            min: 0,
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 11 },
+                                color: colors.info
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 11 },
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    {% endif %}
+});
+
+// Scroll suave a la sección de reseñas si hay filtros activos o si hay un hash en la URL
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si hay filtros activos o si la URL tiene el hash #reviews-section
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasFilters = urlParams.get('rating') || urlParams.get('modality') || urlParams.get('sort');
+    const hasHash = window.location.hash === '#reviews-section';
+    
+    if (hasFilters || hasHash) {
+        // Esperar un momento para que la página se cargue completamente
+        setTimeout(function() {
+            const reviewsSection = document.getElementById('reviews-section');
+            if (reviewsSection) {
+                // Calcular la posición con un offset para el header/navbar
+                const offset = 80; // Ajustar según el tamaño de tu navbar
+                const elementPosition = reviewsSection.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - offset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }, 100);
+    }
 });
 </script>
+
+<!-- Modal para exportar Excel -->
+{% if user.profile.role == 'company_rep' %}
+<div class="modal fade" id="exportExcelModal" tabindex="-1" aria-labelledby="exportExcelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportExcelModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>Exportar Reporte a Excel
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get" action="{% url 'export_company_report_excel' company.id %}">
+                    <div class="mb-3">
+                        <label for="exportPeriod" class="form-label">Seleccionar Período:</label>
+                        <select class="form-select" id="exportPeriod" name="period" required>
+                            <option value="all">En General (Todas las reseñas)</option>
+                            {% if role_kpis.monthly_trend %}
+                                {% for month_data in role_kpis.monthly_trend %}
+                                <option value="{{ month_data.month|date:'Y-m' }}">
+                                    {{ month_data.month|fecha_espanol }} ({{ month_data.count }} reseña{{ month_data.count|pluralize }})
+                                </option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exportRating" class="form-label">Filtrar por Calificación:</label>
+                        <select class="form-select" id="exportRating" name="rating">
+                            <option value="">Todas las calificaciones</option>
+                            <option value="5">5 estrellas</option>
+                            <option value="4">4 estrellas</option>
+                            <option value="3">3 estrellas</option>
+                            <option value="2">2 estrellas</option>
+                            <option value="1">1 estrella</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar Columnas a Incluir:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="colAll" checked onchange="toggleAllColumns(this)">
+                            <label class="form-check-label" for="colAll">
+                                <strong>Todas las columnas</strong>
+                            </label>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="fecha" id="colFecha" checked>
+                                    <label class="form-check-label" for="colFecha">Fecha</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="usuario" id="colUsuario" checked>
+                                    <label class="form-check-label" for="colUsuario">Usuario</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="cargo" id="colCargo" checked>
+                                    <label class="form-check-label" for="colCargo">Cargo</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="modalidad" id="colModalidad" checked>
+                                    <label class="form-check-label" for="colModalidad">Modalidad</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="calificacion" id="colCalificacion" checked>
+                                    <label class="form-check-label" for="colCalificacion">Calificación</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="comunicacion" id="colComunicacion" checked>
+                                    <label class="form-check-label" for="colComunicacion">Comunicación</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="dificultad" id="colDificultad" checked>
+                                    <label class="form-check-label" for="colDificultad">Dificultad</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="tiempo_respuesta" id="colTiempo" checked>
+                                    <label class="form-check-label" for="colTiempo">Tiempo Respuesta</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="pros" id="colPros" checked>
+                                    <label class="form-check-label" for="colPros">Pros</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="contras" id="colContras" checked>
+                                    <label class="form-check-label" for="colContras">Contras</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input column-check" type="checkbox" name="columns" value="preguntas" id="colPreguntas" checked>
+                                    <label class="form-check-label" for="colPreguntas">Preguntas Entrevista</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Selecciona período, calificación y columnas a incluir en el reporte.
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-download me-2"></i>Descargar Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <script>
+            function toggleAllColumns(checkbox) {
+                const columnChecks = document.querySelectorAll('.column-check');
+                columnChecks.forEach(check => {
+                    check.checked = checkbox.checked;
+                });
+            }
+            
+            // Si se desmarca una columna individual, desmarcar "Todas"
+            document.querySelectorAll('.column-check').forEach(check => {
+                check.addEventListener('change', function() {
+                    const allChecked = Array.from(document.querySelectorAll('.column-check')).every(c => c.checked);
+                    document.getElementById('colAll').checked = allChecked;
+                });
+            });
+            </script>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Datos estructurados adicionales para AEO -->
 <script type="application/ld+json">

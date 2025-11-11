@@ -80,7 +80,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'accounts.context_processors.user_badge',  # Badge del usuario
             ],
+            'libraries': {
+                'common_tags': 'common.templatetags.common_tags',
+            },
         },
     },
 ]

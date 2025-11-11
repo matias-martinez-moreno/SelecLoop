@@ -61,6 +61,76 @@ class UserProfile(models.Model):
         null=True
     )
     
+    city = models.CharField(
+        max_length=100,
+        verbose_name="Ciudad",
+        help_text="Ciudad donde resides",
+        blank=True,
+        null=True
+    )
+    
+    country = models.CharField(
+        max_length=100,
+        verbose_name="País",
+        help_text="País donde resides",
+        blank=True,
+        null=True
+    )
+    
+    linkedin_url = models.URLField(
+        max_length=200,
+        verbose_name="LinkedIn",
+        help_text="URL de tu perfil de LinkedIn",
+        blank=True,
+        null=True
+    )
+    
+    portfolio_url = models.URLField(
+        max_length=200,
+        verbose_name="Portfolio/Website",
+        help_text="URL de tu portfolio o sitio web personal",
+        blank=True,
+        null=True
+    )
+    
+    years_of_experience = models.PositiveIntegerField(
+        verbose_name="Años de experiencia",
+        help_text="Años de experiencia profesional",
+        blank=True,
+        null=True
+    )
+    
+    specialization = models.CharField(
+        max_length=200,
+        verbose_name="Área de especialización",
+        help_text="Tu área de especialización profesional (ej: Desarrollo Web, Marketing Digital)",
+        blank=True,
+        null=True
+    )
+    
+    languages = models.CharField(
+        max_length=200,
+        verbose_name="Idiomas",
+        help_text="Idiomas que manejas (ej: Español, Inglés, Francés)",
+        blank=True,
+        null=True
+    )
+    
+    AVAILABILITY_CHOICES = [
+        ('available', 'Disponible'),
+        ('not_available', 'No disponible'),
+        ('actively_looking', 'Buscando activamente'),
+    ]
+    
+    availability_status = models.CharField(
+        max_length=20,
+        choices=AVAILABILITY_CHOICES,
+        verbose_name="Disponibilidad",
+        help_text="Tu disponibilidad laboral actual",
+        blank=True,
+        null=True
+    )
+    
     bio = models.TextField(
         verbose_name="Biografía",
         help_text="Información personal del usuario",

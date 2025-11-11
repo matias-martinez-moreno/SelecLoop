@@ -1,0 +1,299 @@
+<!-- ===== TEMPLATE: PERFIL DE USUARIO (VISTA PARA COMPANY_REP) ===== -->
+<!-- Muestra información de otro usuario para representantes de empresa -->
+<!-- core/templates/core/view_user_profile.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Perfil de {{ user_profile.user.get_full_name|default:user_profile.user.username }} - SelecLoop{% endblock %}
+
+{% block content %}
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<div class="container-fluid">
+    <!-- ===== BOTÓN VOLVER ===== -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="javascript:history.back()" class="btn btn-sm btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>
+                Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== HEADER DEL PERFIL ===== -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header py-3" style="background: var(--primary-blue);">
+                    <h3 class="mb-0 text-white">
+                        <i class="fas fa-user me-2"></i>
+                        Perfil de Usuario
+                    </h3>
+                </div>
+                <div class="card-body py-4">
+                    <div class="row">
+                        <!-- ===== INFORMACIÓN PERSONAL ===== -->
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <h4 class="mb-0 text-dark">{{ user_profile.user.get_full_name|default:user_profile.user.username }}</h4>
+                                {% if user_badge %}
+                                <span class="badge {{ user_badge.bg_color }} {{ user_badge.text_color }} px-2 py-1" style="font-size: 0.85rem;">
+                                    <i class="{{ user_badge.icon }} me-1"></i>
+                                    {{ user_badge.name }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-envelope me-2"></i>
+                                {{ user_profile.user.email }}
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user-tag me-2"></i>
+                                Rol: {{ user_profile.get_role_display }}
+                            </p>
+                            {% comment %} Solo mostrar teléfono y ubicación si el usuario que está viendo es company_rep o staff {% endcomment %}
+                            {% if user.profile.role == 'company_rep' or user.is_staff %}
+                                {% if user_profile.phone %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    {{ user_profile.phone }}
+                                </p>
+                                {% endif %}
+                                {% if user_profile.city or user_profile.country %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    {% if user_profile.city %}{{ user_profile.city }}{% endif %}{% if user_profile.city and user_profile.country %}, {% endif %}{% if user_profile.country %}{{ user_profile.country }}{% endif %}
+                                </p>
+                                {% endif %}
+                            {% endif %}
+                            {% if user_profile.linkedin_url %}
+                            <p class="text-muted mb-2">
+                                <i class="fab fa-linkedin me-2"></i>
+                                <a href="{{ user_profile.linkedin_url }}" target="_blank" class="text-decoration-none">LinkedIn</a>
+                            </p>
+                            {% endif %}
+                            {% if user_profile.portfolio_url %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-globe me-2"></i>
+                                <a href="{{ user_profile.portfolio_url }}" target="_blank" class="text-decoration-none">Portfolio/Website</a>
+                            </p>
+                            {% endif %}
+                            {% if user_profile.years_of_experience %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-briefcase me-2"></i>
+                                {{ user_profile.years_of_experience }} año{{ user_profile.years_of_experience|pluralize }} de experiencia
+                            </p>
+                            {% endif %}
+                            {% if user_profile.specialization %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-tools me-2"></i>
+                                Especialización: {{ user_profile.specialization }}
+                            </p>
+                            {% endif %}
+                            {% if user_profile.languages %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-language me-2"></i>
+                                Idiomas: {{ user_profile.languages }}
+                            </p>
+                            {% endif %}
+                            {% if user_profile.availability_status %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                Disponibilidad: {{ user_profile.get_availability_status_display }}
+                            </p>
+                            {% endif %}
+                            {% if user_profile.bio %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-info-circle me-2"></i>
+                                {{ user_profile.bio }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <!-- ===== FOTO DE PERFIL ===== -->
+                        <div class="col-md-4 text-center">
+                            {% if user_profile.avatar %}
+                                <img src="{{ user_profile.avatar.url }}" 
+                                     alt="Foto de perfil" 
+                                     class="img-thumbnail rounded-circle" 
+                                     style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 120px; height: 120px; font-size: 3rem;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                            <p class="text-muted mt-2 small">Miembro desde {{ user_profile.created_at|date:"M Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ESTADÍSTICAS ===== -->
+    {% if user_profile.role == 'candidate' %}
+    <div class="row mb-3">
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-primary border-2">
+                <div class="card-body text-center p-3">
+                    <div class="h4 mb-1 text-primary">{{ total_reviews }}</div>
+                    <small class="text-muted">Total Reseñas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-success border-2">
+                <div class="card-body text-center p-3">
+                    <div class="h4 mb-1 text-success">{{ approved_reviews }}</div>
+                    <small class="text-muted">Aprobadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-danger border-2">
+                <div class="card-body text-center p-3">
+                    <div class="h4 mb-1 text-danger">{{ rejected_reviews }}</div>
+                    <small class="text-muted">Rechazadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-info border-2">
+                <div class="card-body text-center p-3">
+                    <div class="h4 mb-1 text-info">{{ companies_reviewed }}</div>
+                    <small class="text-muted">Empresas Reseñadas</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ÚLTIMAS RESEÑAS ===== -->
+    {% if latest_reviews %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Últimas Reseñas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for review in latest_reviews %}
+                        <div class="col-md-6">
+                            <div class="card h-100 {% if review.status == 'approved' %}border-success{% elif review.status == 'rejected' %}border-danger{% else %}border-warning{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">{{ review.company.name }}</h6>
+                                        <span class="badge {% if review.status == 'approved' %}bg-success{% elif review.status == 'rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ review.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <p class="card-text small mb-1">
+                                        <strong>Cargo:</strong> {{ review.job_title }}
+                                    </p>
+                                    <p class="card-text small mb-1">
+                                        <strong>Calificación:</strong> 
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.overall_rating %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        ({{ review.overall_rating }}/5)
+                                    </p>
+                                    <p class="card-text small text-muted mb-0">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ review.submission_date|date:"d/m/Y" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== HISTORIAL LABORAL ===== -->
+    {% if work_history %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-briefcase me-2"></i>
+                        Historial Laboral
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for work in work_history %}
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ work.company.name }}</h6>
+                                    <p class="card-text small mb-1">
+                                        <strong>Cargo:</strong> {{ work.job_title }}
+                                    </p>
+                                    <p class="card-text small mb-1">
+                                        <strong>Período:</strong> 
+                                        {{ work.start_date|date:"M Y" }} - 
+                                        {% if work.end_date %}{{ work.end_date|date:"M Y" }}{% else %}Presente{% endif %}
+                                    </p>
+                                    {% comment %} Solo mostrar ubicación de la empresa si el usuario que está viendo es company_rep o staff {% endcomment %}
+                                    {% if user.profile.role == 'company_rep' or user.is_staff %}
+                                    {% if work.company.location %}
+                                    <p class="card-text small text-muted mb-0">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ work.company.location }}
+                                    </p>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== LOGROS ===== -->
+    {% if user_achievements %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        Logros Obtenidos ({{ achievement_count }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {% for achievement in user_achievements %}
+                        <div class="col-md-4 col-6">
+                            <div class="card border-warning">
+                                <div class="card-body p-2 text-center">
+                                    <i class="{{ achievement.achievement.icon }} fa-2x text-warning mb-1"></i>
+                                    <p class="small mb-0 fw-bold">{{ achievement.achievement.name }}</p>
+                                    <p class="small text-muted mb-0">{{ achievement.earned_at|date:"M Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -266,22 +266,26 @@ class ProfileUpdateForm(forms.Form):
         label="Apellido"
     )
 
-    display_name = forms.CharField(
-        max_length=100,
-        required=False,
-        label="Nombre visible"
-    )
-
     avatar = forms.ImageField(
         required=False,
         label="Foto de perfil (opcional)"
+    )
+    
+    remove_avatar = forms.BooleanField(
+        required=False,
+        label="Quitar foto de perfil"
     )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update({'class': 'form-control'})
+        for field_name, field in self.fields.items():
+            if field_name == 'remove_avatar':
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif field_name == 'avatar':
+                field.widget.attrs.update({'class': 'form-control', 'accept': 'image/*'})
+            else:
+                field.widget.attrs.update({'class': 'form-control'})
 
     def save(self):
         if not self.user:
@@ -293,10 +297,17 @@ class ProfileUpdateForm(forms.Form):
 
         # Asegurar profile
         profile: UserProfile = self.user.profile
-        profile.display_name = self.cleaned_data.get('display_name', '')
-        avatar_file = self.cleaned_data.get('avatar')
-        if avatar_file:
-            profile.avatar = avatar_file
+        
+        # Manejar la foto de perfil
+        remove_avatar = self.cleaned_data.get('remove_avatar', False)
+        if remove_avatar:
+            profile.avatar.delete(save=False)
+            profile.avatar = None
+        else:
+            avatar_file = self.cleaned_data.get('avatar')
+            if avatar_file:
+                profile.avatar = avatar_file
+        
         profile.save()
 
 # ===== FORMULARIO: ASIGNACIÓN DE EMPRESAS POR STAFF =====

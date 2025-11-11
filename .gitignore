@@ -1,18 +1,60 @@
 # Entorno Virtual
 venv_selecloop/
 .venv/
+venv/
+env/
+ENV/
 
 # Archivos de Python compilados
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
 
 # Archivos de configuración local
 *.env
+.env
 local_settings.py
+settings_local.py
+
+# Base de datos
+*.db
+*.sqlite3
+db.sqlite3
 
 # Archivos de medios (subidos por usuarios)
 media/
+staticfiles/
 
-# Archivos de IDEs (ej. PyCharm, VS Code)
+# Archivos de IDEs
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Archivos de migraciones (opcional - descomentar si no quieres versionar migraciones)
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# Archivos de logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.bak
+*.cache
+
+# Modelos de Hugging Face (se descargan automáticamente)
+.cache/
+.huggingface/
+transformers_cache/
+
+# Archivos de Python
+*.egg-info/
+dist/
+build/
+*.egg

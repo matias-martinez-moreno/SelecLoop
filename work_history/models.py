@@ -8,6 +8,8 @@
 # =============================================================================
 
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 
 # ===== MODELO: HISTORIAL LABORAL =====
@@ -103,3 +105,24 @@ class WorkHistory(models.Model):
         verbose_name_plural = "Historiales Laborales"
         ordering = ['-start_date']  # Ordenar por fecha de inicio (más reciente primero)
         unique_together = ['user_profile', 'company', 'job_title']  # Evitar duplicados
+
+
+# ===== SEÑAL: ELIMINAR RESEÑA PENDIENTE AL ELIMINAR WORK HISTORY =====
+@receiver(pre_delete, sender=WorkHistory)
+def delete_pending_review_on_work_history_delete(sender, instance, **kwargs):
+    """
+    Señal que elimina automáticamente la reseña pendiente asociada
+    cuando se elimina un WorkHistory.
+    """
+    from reviews.models import PendingReview
+    
+    # Buscar y eliminar la reseña pendiente asociada
+    pending_review = PendingReview.objects.filter(
+        user_profile=instance.user_profile,
+        company=instance.company,
+        job_title=instance.job_title,
+        is_reviewed=False  # Solo eliminar si no ha sido completada
+    ).first()
+    
+    if pending_review:
+        pending_review.delete()

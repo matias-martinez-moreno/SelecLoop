@@ -9,13 +9,19 @@
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="container-fluid">
-    <!-- ===== BOTÓN VOLVER ARRIBA ===== -->
+    <!-- ===== BOTÓN VOLVER ARRIBA Y BADGE ===== -->
     <div class="row mb-2">
-        <div class="col-12">
+        <div class="col-12 d-flex justify-content-between align-items-center">
             <a href="{% url 'dashboard' %}" class="btn btn-sm btn-secondary">
                 <i class="fas fa-arrow-left me-1"></i>
                 Volver a explorar empresas
             </a>
+            {% if user_badge %}
+            <span class="badge {{ user_badge.bg_color }} {{ user_badge.text_color }} px-3 py-2" style="font-size: 0.9rem;">
+                <i class="{{ user_badge.icon }} me-1"></i>
+                {{ user_badge.name }}
+            </span>
+            {% endif %}
         </div>
     </div>
 
@@ -33,7 +39,15 @@
                     <div class="row">
                         <!-- ===== INFORMACIÓN PERSONAL ===== -->
                         <div class="col-md-8">
-                            <h3 class="mb-3 text-dark">{{ user_profile.user.get_full_name|default:user_profile.user.username }}</h3>
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <h3 class="mb-0 text-dark">{{ user_profile.user.get_full_name|default:user_profile.user.username }}</h3>
+                                {% if user_badge %}
+                                <span class="badge {{ user_badge.bg_color }} {{ user_badge.text_color }} px-2 py-1" style="font-size: 0.85rem;">
+                                    <i class="{{ user_badge.icon }} me-1"></i>
+                                    {{ user_badge.name }}
+                                </span>
+                                {% endif %}
+                            </div>
                             <p class="text-muted mb-2">
                                 <i class="fas fa-envelope me-2"></i>
                                 {{ user_profile.user.email }}
@@ -46,6 +60,48 @@
                                 <p class="text-muted mb-2">
                                     <i class="fas fa-phone me-2"></i>
                                     {{ user_profile.phone }}
+                                </p>
+                            {% endif %}
+                            {% if user_profile.city or user_profile.country %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    {% if user_profile.city %}{{ user_profile.city }}{% endif %}{% if user_profile.city and user_profile.country %}, {% endif %}{% if user_profile.country %}{{ user_profile.country }}{% endif %}
+                                </p>
+                            {% endif %}
+                            {% if user_profile.linkedin_url %}
+                                <p class="text-muted mb-2">
+                                    <i class="fab fa-linkedin me-2"></i>
+                                    <a href="{{ user_profile.linkedin_url }}" target="_blank" class="text-decoration-none">LinkedIn</a>
+                                </p>
+                            {% endif %}
+                            {% if user_profile.portfolio_url %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-globe me-2"></i>
+                                    <a href="{{ user_profile.portfolio_url }}" target="_blank" class="text-decoration-none">Portfolio/Website</a>
+                                </p>
+                            {% endif %}
+                            {% if user_profile.years_of_experience %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-briefcase me-2"></i>
+                                    {{ user_profile.years_of_experience }} año{{ user_profile.years_of_experience|pluralize }} de experiencia
+                                </p>
+                            {% endif %}
+                            {% if user_profile.specialization %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-tools me-2"></i>
+                                    Especialización: {{ user_profile.specialization }}
+                                </p>
+                            {% endif %}
+                            {% if user_profile.languages %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-language me-2"></i>
+                                    Idiomas: {{ user_profile.languages }}
+                                </p>
+                            {% endif %}
+                            {% if user_profile.availability_status %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-calendar-check me-2"></i>
+                                    Disponibilidad: {{ user_profile.get_availability_status_display }}
                                 </p>
                             {% endif %}
                             {% if user_profile.bio %}
@@ -79,60 +135,6 @@
             </div>
         </div>
     </div>
-
-
-
-
-    <!-- ===== HISTORIAL LABORAL (SOLO PARA CANDIDATOS) ===== -->
-    {% if work_history %}
-    <div class="row mb-2">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header py-2">
-                    <h6 class="mb-0">
-                        <i class="fas fa-briefcase me-2"></i>
-                        Mi Historial Laboral
-                    </h6>
-                </div>
-                <div class="card-body py-2">
-                    <div class="row">
-                        {% for work in work_history %}
-                        <div class="col-md-6 mb-2">
-                            <div class="card h-100">
-                                <div class="card-body py-2">
-                                    <h6 class="card-title text-primary mb-1">
-                                        <i class="fas fa-building me-1"></i>
-                                        {{ work.company.name }}
-                                    </h6>
-                                    <p class="card-text small text-muted mb-1">
-                                        <i class="fas fa-briefcase me-1"></i>
-                                        <strong>Cargo:</strong> {{ work.job_title }}
-                                    </p>
-                                    <p class="card-text small text-muted mb-1">
-                                        <i class="fas fa-calendar me-1"></i>
-                                        <strong>Período:</strong> {{ work.start_date|date:"M Y" }} - 
-                                        {% if work.end_date %}{{ work.end_date|date:"M Y" }}{% else %}Presente{% endif %}
-                                    </p>
-                                    {% if work.has_review_pending %}
-                                    <span class="badge bg-warning">Reseña pendiente</span>
-                                    {% else %}
-                                    <span class="badge bg-success">Reseña completada</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'work_history' %}" class="btn btn-primary">
-                            <i class="fas fa-eye me-2"></i>Ver Historial Completo
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- ===== RESEÑAS PENDIENTES (SOLO PARA CANDIDATOS) ===== -->
     {% if pending_reviews %}
@@ -243,7 +245,7 @@
                     </div>
                     {% endif %}
 
-                    <!-- Información sobre niveles de reseñador -->
+                    <!-- Información sobre niveles de progresión -->
                     <div class="mt-3">
                         <div class="card border-info">
                             <div class="card-header bg-info text-white py-2">
@@ -254,45 +256,150 @@
                             </div>
                             <div class="card-body py-2">
                                 <div class="row">
-                                    <div class="col-md-6 col-lg-4 mb-1">
+                                    <div class="col-md-6 col-lg-4 mb-2">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-star text-warning me-2"></i>
-                                            <span class="small"><strong>Primera Reseña:</strong> 1 reseña</span>
+                                            <i class="fas fa-circle text-secondary me-2"></i>
+                                            <span class="small"><strong>Principiante:</strong> 0 reseñas</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-6 col-lg-4 mb-1">
+                                    <div class="col-md-6 col-lg-4 mb-2">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-star text-secondary me-2"></i>
-                                            <span class="small"><strong>Novato:</strong> 3 reseñas</span>
+                                            <i class="fas fa-seedling text-success me-2"></i>
+                                            <span class="small"><strong>Novato:</strong> 1+ reseñas</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-6 col-lg-4 mb-1">
+                                    <div class="col-md-6 col-lg-4 mb-2">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-star text-warning me-2"></i>
-                                            <span class="small"><strong>Experto:</strong> 5 reseñas</span>
+                                            <i class="fas fa-star text-info me-2"></i>
+                                            <span class="small"><strong>Experto:</strong> 5+ reseñas</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-6 col-lg-4 mb-1">
+                                    <div class="col-md-6 col-lg-4 mb-2">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-trophy text-warning me-2"></i>
-                                            <span class="small"><strong>Avanzado:</strong> 10 reseñas</span>
+                                            <span class="small"><strong>Maestro:</strong> 10+ reseñas</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-6 col-lg-4 mb-1">
+                                    <div class="col-md-6 col-lg-4 mb-2">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-crown text-warning me-2"></i>
-                                            <span class="small"><strong>Maestro:</strong> 20 reseñas</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-lg-4 mb-1">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-compass text-info me-2"></i>
-                                            <span class="small"><strong>Explorador:</strong> 3 empresas</span>
+                                            <span class="small"><strong>Leyenda:</strong> 20+ reseñas</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== MIS RESEÑAS (SOLO PARA CANDIDATOS) ===== -->
+    {% if show_stats and latest_reviews %}
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Mis Reseñas
+                    </h6>
+                </div>
+                <div class="card-body py-2">
+                    <div class="row">
+                        {% for review in latest_reviews %}
+                        <div class="col-md-4 mb-2">
+                            <div class="card h-100">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title text-primary mb-1">
+                                        <i class="fas fa-building me-1"></i>
+                                        {{ review.company.name }}
+                                    </h6>
+                                    <p class="card-text small text-muted mb-1">
+                                        <i class="fas fa-star me-1"></i>
+                                        <strong>Calificación:</strong> 
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.overall_rating %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        ({{ review.overall_rating }}/5)
+                                    </p>
+                                    <p class="card-text small text-muted mb-1">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <strong>Fecha:</strong> {{ review.submission_date|date:"d M Y" }}
+                                    </p>
+                                    {% if review.status == 'approved' %}
+                                    <span class="badge bg-success">Aprobada</span>
+                                    {% elif review.status == 'pending' %}
+                                    <span class="badge bg-warning">Pendiente</span>
+                                    {% elif review.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rechazada</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'my_reviews' %}" class="btn btn-primary">
+                            <i class="fas fa-eye me-2"></i>Ver Historial Completo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== HISTORIAL LABORAL (SOLO PARA CANDIDATOS) ===== -->
+    {% if work_history %}
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-briefcase me-2"></i>
+                        Mi Historial Laboral
+                    </h6>
+                </div>
+                <div class="card-body py-2">
+                    <div class="row">
+                        {% for work in work_history %}
+                        <div class="col-md-6 mb-2">
+                            <div class="card h-100">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title text-primary mb-1">
+                                        <i class="fas fa-building me-1"></i>
+                                        {{ work.company.name }}
+                                    </h6>
+                                    <p class="card-text small text-muted mb-1">
+                                        <i class="fas fa-briefcase me-1"></i>
+                                        <strong>Cargo:</strong> {{ work.job_title }}
+                                    </p>
+                                    <p class="card-text small text-muted mb-1">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <strong>Período:</strong> {{ work.start_date|date:"M Y" }} - 
+                                        {% if work.end_date %}{{ work.end_date|date:"M Y" }}{% else %}Presente{% endif %}
+                                    </p>
+                                    {% if work.has_review_pending %}
+                                    <span class="badge bg-warning">Reseña pendiente</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Reseña completada</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'work_history' %}" class="btn btn-primary">
+                            <i class="fas fa-eye me-2"></i>Ver Historial Completo
+                        </a>
                     </div>
                 </div>
             </div>

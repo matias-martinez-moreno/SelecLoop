@@ -59,8 +59,7 @@
             align-items: center;
             justify-content: center;
             padding: 3rem 2rem;
-            background: radial-gradient(1000px 700px at -10% -20%, #314e7d, #1f3a68 50%, #1b335c 70%),
-                        linear-gradient(180deg, #1e3a8a 0%, #183058 100%);
+            background: #1c3d9c; /* Mismo azul que el título de login */
             color: #eaf1ff;
             overflow: hidden;
         }
@@ -87,7 +86,7 @@
             font-size: 2.6rem;
             line-height: 1.2;
             margin: 1rem 0 0.5rem 0;
-            color: #1c3d9c; /* Azul oscuro para mejor contraste */
+            color: #ffffff; /* Blanco para contraste sobre fondo azul */
         }
 
         .brand-subtitle {
@@ -383,7 +382,7 @@
                         {% csrf_token %}
 
                         <div class="mb-2 input-with-icon">
-                            <label for="username" class="form-label">Nombre de usuario</label>
+                            <label for="username" class="form-label">Nombre de usuario o email</label>
                             <div class="icon-field">
                                 <i class="fas fa-user"></i>
                                 <input type="text"
@@ -391,7 +390,7 @@
                                        id="username"
                                        name="username"
                                        required
-                                       placeholder="Ingresa tu nombre de usuario">
+                                       placeholder="Ingresa tu nombre de usuario o email">
                             </div>
                         </div>
 

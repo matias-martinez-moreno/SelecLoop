@@ -27,26 +27,45 @@ class ReviewVerificationService:
             return
             
         try:
+            logger.info("Loading Hugging Face models... This may take a few minutes on first run.")
+            
             # Modelo para toxicidad y odio
-            self.toxicity_pipeline = pipeline(
-                "text-classification",
-                model="unitary/toxic-bert",
-                device=-1  # CPU para evitar problemas de GPU
-            )
+            # Usar device=-1 para CPU (más compatible) o 0 para GPU si está disponible
+            try:
+                self.toxicity_pipeline = pipeline(
+                    "text-classification",
+                    model="unitary/toxic-bert",
+                    device=-1  # CPU para evitar problemas de GPU
+                )
+                logger.info("Toxicity model loaded successfully")
+            except Exception as e:
+                logger.error(f"Error loading toxicity model: {e}")
+                self.toxicity_pipeline = None
             
             # Modelo para sentimiento extremo
-            self.sentiment_pipeline = pipeline(
-                "sentiment-analysis",
-                model="cardiffnlp/twitter-roberta-base-sentiment-latest",
-                device=-1
-            )
+            try:
+                self.sentiment_pipeline = pipeline(
+                    "sentiment-analysis",
+                    model="cardiffnlp/twitter-roberta-base-sentiment-latest",
+                    device=-1  # CPU para evitar problemas de GPU
+                )
+                logger.info("Sentiment model loaded successfully")
+            except Exception as e:
+                logger.error(f"Error loading sentiment model: {e}")
+                self.sentiment_pipeline = None
             
-            self.models_loaded = True
-            logger.info("Models loaded successfully")
+            # Verificar que al menos uno de los modelos se cargó
+            if self.toxicity_pipeline is not None or self.sentiment_pipeline is not None:
+                self.models_loaded = True
+                logger.info("Hugging Face models loaded successfully. ML verification is now active.")
+            else:
+                self.models_loaded = False
+                logger.warning("Failed to load any ML models. Using basic checks only.")
             
         except Exception as e:
-            logger.error(f"Error loading models: {e}")
+            logger.error(f"Error loading models: {e}", exc_info=True)
             self.models_loaded = False
+            logger.warning("Falling back to basic content checks only.")
     
     def verify_review(self, text):
         """
@@ -79,19 +98,64 @@ class ReviewVerificationService:
             
             # Verificar toxicidad y odio con el modelo
             try:
-                toxicity_result = self.toxicity_pipeline(text)
                 toxicity_score = 0
                 toxic_categories = []
+                sentiment_score = 0
+                sentiment_label = 'NEUTRAL'
                 
-                for result in toxicity_result:
-                    if result['label'] in ['TOXIC', 'SEVERE_TOXIC', 'THREAT', 'INSULT', 'IDENTITY_ATTACK']:
-                        toxicity_score = max(toxicity_score, result['score'])
-                        toxic_categories.append(result['label'])
+                # Verificar toxicidad si el modelo está disponible
+                if self.toxicity_pipeline is not None:
+                    try:
+                        toxicity_result = self.toxicity_pipeline(text)
+                        
+                        # El modelo unitary/toxic-bert devuelve una lista de diccionarios
+                        # Cada diccionario tiene 'label' y 'score'
+                        if toxicity_result:
+                            # Normalizar a lista si es necesario
+                            if not isinstance(toxicity_result, list):
+                                toxicity_result = [toxicity_result]
+                            
+                            # Procesar todos los resultados
+                            for result in toxicity_result:
+                                if isinstance(result, dict):
+                                    label = result.get('label', '').upper()
+                                    score = result.get('score', 0)
+                                    
+                                    # Categorías tóxicas que queremos detectar
+                                    toxic_labels = ['TOXIC', 'SEVERE_TOXIC', 'THREAT', 'INSULT', 'IDENTITY_ATTACK', 'OBSCENE']
+                                    
+                                    # Verificar si el label contiene alguna categoría tóxica
+                                    for toxic_label in toxic_labels:
+                                        if toxic_label in label:
+                                            if score > toxicity_score:
+                                                toxicity_score = score
+                                            if label not in toxic_categories:
+                                                toxic_categories.append(label)
+                                            break
+                                    
+                                    # También verificar scores altos independientemente del label
+                                    if score > 0.7 and label not in toxic_categories:
+                                        toxicity_score = max(toxicity_score, score)
+                                        toxic_categories.append(label)
+                                        
+                    except Exception as tox_error:
+                        logger.warning(f"Error in toxicity detection: {tox_error}", exc_info=True)
+                        # Continuar con otros checks
                 
-                # Verificar sentimiento extremo
-                sentiment_result = self.sentiment_pipeline(text)
-                sentiment_score = sentiment_result[0]['score']
-                sentiment_label = sentiment_result[0]['label']
+                # Verificar sentimiento extremo si el modelo está disponible
+                if self.sentiment_pipeline is not None:
+                    try:
+                        sentiment_result = self.sentiment_pipeline(text)
+                        if sentiment_result and len(sentiment_result) > 0:
+                            if isinstance(sentiment_result, list):
+                                sentiment_score = sentiment_result[0].get('score', 0)
+                                sentiment_label = sentiment_result[0].get('label', 'NEUTRAL')
+                            else:
+                                sentiment_score = sentiment_result.get('score', 0)
+                                sentiment_label = sentiment_result.get('label', 'NEUTRAL')
+                    except Exception as sent_error:
+                        logger.warning(f"Error in sentiment analysis: {sent_error}")
+                        # Continuar con otros checks
                 
                 # Lógica de decisión más estricta
                 is_appropriate = True
@@ -100,17 +164,25 @@ class ReviewVerificationService:
                 category = 'appropriate'
                 
                 # Detectar odio y contenido ofensivo
-                if toxicity_score > 0.6:  # Umbral más bajo para ser más estricto
+                # Prioridad 1: Toxicidad alta
+                if toxicity_score > 0.6:  # Umbral para detectar toxicidad
                     is_appropriate = False
-                    reason = f"Contenido tóxico detectado: {', '.join(toxic_categories)}"
-                    confidence = toxicity_score
+                    reason = f"Contenido tóxico detectado: {', '.join(toxic_categories) if toxic_categories else 'contenido ofensivo'}"
+                    confidence = min(toxicity_score, 0.99)  # Limitar a 0.99 máximo
                     category = 'toxic'
-                elif sentiment_score > 0.75 and sentiment_label == 'NEGATIVE':
-                    # Umbral reducido para detectar sentimiento negativo extremo más agresivo
+                # Prioridad 2: Sentimiento extremadamente negativo
+                elif sentiment_score > 0.75 and sentiment_label in ['NEGATIVE', 'LABEL_2']:
+                    # El modelo de sentimiento puede usar diferentes etiquetas
                     is_appropriate = False
-                    reason = "Sentimiento extremadamente negativo y agresivo"
-                    confidence = sentiment_score
+                    reason = "Sentimiento extremadamente negativo y agresivo detectado"
+                    confidence = min(sentiment_score, 0.99)
                     category = 'hate_speech'
+                # Prioridad 3: Toxicidad moderada pero con sentimiento negativo
+                elif toxicity_score > 0.4 and sentiment_label in ['NEGATIVE', 'LABEL_2']:
+                    is_appropriate = False
+                    reason = "Contenido potencialmente ofensivo detectado"
+                    confidence = (toxicity_score + sentiment_score) / 2
+                    category = 'toxic'
                 
                 return {
                     'is_appropriate': is_appropriate,
@@ -119,12 +191,13 @@ class ReviewVerificationService:
                     'category': category,
                     'toxicity_score': toxicity_score,
                     'sentiment_score': sentiment_score,
-                    'sentiment_label': sentiment_label,
-                    'toxic_categories': toxic_categories
+                    'sentiment_label': str(sentiment_label),
+                    'toxic_categories': toxic_categories,
+                    'ml_models_used': self.models_loaded
                 }
                 
             except Exception as model_error:
-                logger.error(f"Error using ML models: {model_error}")
+                logger.error(f"Error using ML models: {model_error}", exc_info=True)
                 # Fallback a verificaciones básicas
                 return basic_check
             

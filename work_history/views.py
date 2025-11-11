@@ -134,11 +134,26 @@ def delete_work_history_view(request, work_id):
             user_profile=request.user.profile
         )
         
-        # Eliminar la experiencia laboral
+        # Guardar información para el mensaje
         company_name = work_history.company.name
+        job_title = work_history.job_title
+        
+        # Eliminar la reseña pendiente asociada si existe
+        from reviews.models import PendingReview
+        pending_review = PendingReview.objects.filter(
+            user_profile=work_history.user_profile,
+            company=work_history.company,
+            job_title=work_history.job_title,
+            is_reviewed=False  # Solo eliminar si no ha sido completada
+        ).first()
+        
+        if pending_review:
+            pending_review.delete()
+        
+        # Eliminar la experiencia laboral
         work_history.delete()
         
-        messages.success(request, f'✅ Experiencia laboral en {company_name} eliminada exitosamente.')
+        messages.success(request, f'✅ Experiencia laboral en {company_name} ({job_title}) eliminada exitosamente. La reseña pendiente asociada también ha sido eliminada.')
         
     except WorkHistory.DoesNotExist:
         messages.error(request, '❌ La experiencia laboral no existe o no tienes permisos para eliminarla.')

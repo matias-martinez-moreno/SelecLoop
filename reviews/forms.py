@@ -71,6 +71,7 @@ class ReviewForm(forms.ModelForm):
     # ===== CAMPOS DE CALIFICACIÓN =====
     communication_rating = forms.ChoiceField(
         choices=[
+            ('', '--- Selecciona una opción ---'),
             ('excellent', 'Excelente'),
             ('good', 'Buena'),
             ('regular', 'Regular'),
@@ -78,11 +79,13 @@ class ReviewForm(forms.ModelForm):
         ],
         label="Calificación de comunicación",
         help_text="¿Qué tan clara fue la comunicación durante el proceso?",
-        widget=forms.Select(attrs={'class': 'form-select'})
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
     )
     
     difficulty_rating = forms.ChoiceField(
         choices=[
+            ('', '--- Selecciona una opción ---'),
             ('very_easy', 'Muy Fácil'),
             ('easy', 'Fácil'),
             ('moderate', 'Moderada'),
@@ -91,11 +94,13 @@ class ReviewForm(forms.ModelForm):
         ],
         label="Calificación de dificultad",
         help_text="¿Qué tan desafiante fue el proceso de selección?",
-        widget=forms.Select(attrs={'class': 'form-select'})
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
     )
     
     response_time_rating = forms.ChoiceField(
         choices=[
+            ('', '--- Selecciona una opción ---'),
             ('immediate', 'Inmediata'),
             ('same_day', 'Mismo día'),
             ('next_day', 'Al día siguiente'),
@@ -104,16 +109,18 @@ class ReviewForm(forms.ModelForm):
         ],
         label="Calificación de tiempo de respuesta",
         help_text="¿Qué tan rápido respondieron a tus consultas?",
-        widget=forms.Select(attrs={'class': 'form-select'})
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
     )
     
     # ===== CAMPOS DE CALIFICACIÓN =====
     OVERALL_RATING_CHOICES = [
-        (1, '1 - Muy Malo'),
-        (2, '2 - Malo'),
-        (3, '3 - Regular'),
-        (4, '4 - Bueno'),
-        (5, '5 - Excelente'),
+        ('', '--- Selecciona una opción ---'),
+        ('1', '1 - Muy Malo'),
+        ('2', '2 - Malo'),
+        ('3', '3 - Regular'),
+        ('4', '4 - Bueno'),
+        ('5', '5 - Excelente'),
     ]
     
     overall_rating = forms.ChoiceField(
@@ -122,7 +129,8 @@ class ReviewForm(forms.ModelForm):
         help_text="Califica tu experiencia general del proceso de selección (1 = Muy malo, 5 = Excelente)",
         widget=forms.Select(attrs={
             'class': 'form-control'
-        })
+        }),
+        required=True
     )
     
     # ===== CAMPOS DE CONTENIDO =====
@@ -149,7 +157,7 @@ class ReviewForm(forms.ModelForm):
     interview_questions = forms.CharField(
         label="Preguntas de entrevista",
         help_text="¿Qué preguntas te hicieron? Esto ayudará a otros candidatos a prepararse.",
-        required=False,  # Campo opcional
+        required=True,  # Campo obligatorio
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 4,
@@ -182,19 +190,42 @@ class ReviewForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field_name not in ['modality']:  # Excluir campos de radio
                 field.widget.attrs.update({'class': 'form-control'})
+        
+        # Asegurar que los campos de calificación no tengan valor inicial
+        # Esto evita que se preseleccione una opción
+        if not self.is_bound:  # Solo si no es un POST
+            self.fields['communication_rating'].initial = None
+            self.fields['difficulty_rating'].initial = None
+            self.fields['response_time_rating'].initial = None
+            self.fields['overall_rating'].initial = None
+    
+    def clean_overall_rating(self):
+        """Validación específica para overall_rating"""
+        overall_rating = self.cleaned_data.get('overall_rating')
+        if not overall_rating or overall_rating == '':
+            raise forms.ValidationError('Debes seleccionar una calificación general.')
+        try:
+            rating_value = int(overall_rating)
+            if rating_value < 1 or rating_value > 5:
+                raise forms.ValidationError('La calificación general debe estar entre 1 y 5.')
+            return rating_value
+        except (ValueError, TypeError):
+            raise forms.ValidationError('La calificación general debe ser un número válido.')
     
     def clean(self):
         """Validación personalizada del formulario"""
         cleaned_data = super().clean()
         
-        # Validar que la calificación general esté en el rango correcto
-        overall_rating = cleaned_data.get('overall_rating')
-        if overall_rating:
-            try:
-                rating_value = int(overall_rating)
-                if rating_value < 1 or rating_value > 5:
-                    raise forms.ValidationError('La calificación general debe estar entre 1 y 5.')
-            except (ValueError, TypeError):
-                raise forms.ValidationError('La calificación general debe ser un número válido.')
+        # Validación de campos de calificación requeridos
+        rating_fields = ['communication_rating', 'difficulty_rating', 'response_time_rating']
+        for field in rating_fields:
+            value = cleaned_data.get(field)
+            if not value or value == '':
+                self.add_error(field, 'Debes seleccionar una opción para este campo.')
+        
+        # Validación de interview_questions (ahora es obligatorio)
+        interview_questions = cleaned_data.get('interview_questions')
+        if not interview_questions or interview_questions.strip() == '':
+            self.add_error('interview_questions', 'Debes proporcionar las preguntas de la entrevista.')
         
         return cleaned_data

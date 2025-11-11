@@ -102,7 +102,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center gap-2">
                                 {% if work.has_review_pending %}
-                                    <a href="{% url 'create_review' %}?company={{ work.company.id }}" 
+                                    <a href="{% url 'create_review' %}?company={{ work.company.id }}&job_title={{ work.job_title|urlencode }}" 
                                        class="btn btn-warning btn-sm"
                                        title="Crear reseña">
                                         <i class="fas fa-edit"></i>

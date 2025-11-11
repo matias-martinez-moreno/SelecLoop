@@ -15,4 +15,7 @@ urlpatterns = [
     
     # Editar empresa (solo para company_rep)
     path('company/<int:company_id>/edit/', views.edit_company_view, name='edit_company'),
+    
+    # Exportar reportes
+    path('company/<int:company_id>/export/excel/', views.export_company_report_excel, name='export_company_report_excel'),
 ]
