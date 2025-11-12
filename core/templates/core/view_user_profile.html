@@ -42,15 +42,34 @@
                                 {% endif %}
                             </div>
                             <p class="text-muted mb-2">
-                                <i class="fas fa-envelope me-2"></i>
-                                {{ user_profile.user.email }}
-                            </p>
-                            <p class="text-muted mb-2">
                                 <i class="fas fa-user-tag me-2"></i>
                                 Rol: {{ user_profile.get_role_display }}
                             </p>
-                            {% comment %} Solo mostrar teléfono y ubicación si el usuario que está viendo es company_rep o staff {% endcomment %}
-                            {% if user.profile.role == 'company_rep' or user.is_staff %}
+                            
+                            {% comment %} 
+                            Si es candidato viendo otro candidato: solo mostrar nombre, especialización, años de experiencia
+                            Si es empresa/staff viendo candidato: mostrar perfil completo
+                            {% endcomment %}
+                            {% if user.profile.role == 'candidate' and user_profile.role == 'candidate' and user.id != user_profile.user.id %}
+                                {# Candidato viendo otro candidato - solo datos limitados #}
+                                {% if user_profile.specialization %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-tools me-2"></i>
+                                    Especialización: {{ user_profile.specialization }}
+                                </p>
+                                {% endif %}
+                                {% if user_profile.years_of_experience %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-briefcase me-2"></i>
+                                    {{ user_profile.years_of_experience }} año{{ user_profile.years_of_experience|pluralize }} de experiencia
+                                </p>
+                                {% endif %}
+                            {% else %}
+                                {# Empresa/staff viendo candidato - perfil completo #}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    {{ user_profile.user.email }}
+                                </p>
                                 {% if user_profile.phone %}
                                 <p class="text-muted mb-2">
                                     <i class="fas fa-phone me-2"></i>
@@ -63,48 +82,48 @@
                                     {% if user_profile.city %}{{ user_profile.city }}{% endif %}{% if user_profile.city and user_profile.country %}, {% endif %}{% if user_profile.country %}{{ user_profile.country }}{% endif %}
                                 </p>
                                 {% endif %}
-                            {% endif %}
-                            {% if user_profile.linkedin_url %}
-                            <p class="text-muted mb-2">
-                                <i class="fab fa-linkedin me-2"></i>
-                                <a href="{{ user_profile.linkedin_url }}" target="_blank" class="text-decoration-none">LinkedIn</a>
-                            </p>
-                            {% endif %}
-                            {% if user_profile.portfolio_url %}
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-globe me-2"></i>
-                                <a href="{{ user_profile.portfolio_url }}" target="_blank" class="text-decoration-none">Portfolio/Website</a>
-                            </p>
-                            {% endif %}
-                            {% if user_profile.years_of_experience %}
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-briefcase me-2"></i>
-                                {{ user_profile.years_of_experience }} año{{ user_profile.years_of_experience|pluralize }} de experiencia
-                            </p>
-                            {% endif %}
-                            {% if user_profile.specialization %}
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-tools me-2"></i>
-                                Especialización: {{ user_profile.specialization }}
-                            </p>
-                            {% endif %}
-                            {% if user_profile.languages %}
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-language me-2"></i>
-                                Idiomas: {{ user_profile.languages }}
-                            </p>
-                            {% endif %}
-                            {% if user_profile.availability_status %}
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-calendar-check me-2"></i>
-                                Disponibilidad: {{ user_profile.get_availability_status_display }}
-                            </p>
-                            {% endif %}
-                            {% if user_profile.bio %}
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-info-circle me-2"></i>
-                                {{ user_profile.bio }}
-                            </p>
+                                {% if user_profile.years_of_experience %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-briefcase me-2"></i>
+                                    Experiencia: {{ user_profile.years_of_experience }} año{{ user_profile.years_of_experience|pluralize }}
+                                </p>
+                                {% endif %}
+                                {% if user_profile.specialization %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-tools me-2"></i>
+                                    Especialización: {{ user_profile.specialization }}
+                                </p>
+                                {% endif %}
+                                {% if user_profile.languages %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-language me-2"></i>
+                                    Idiomas: {{ user_profile.languages }}
+                                </p>
+                                {% endif %}
+                                {% if user_profile.availability_status %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-calendar-check me-2"></i>
+                                    Disponibilidad: {{ user_profile.get_availability_status_display }}
+                                </p>
+                                {% endif %}
+                                {% if user_profile.linkedin_url %}
+                                <p class="text-muted mb-2">
+                                    <i class="fab fa-linkedin me-2"></i>
+                                    <a href="{{ user_profile.linkedin_url }}" target="_blank" class="text-decoration-none">LinkedIn</a>
+                                </p>
+                                {% endif %}
+                                {% if user_profile.portfolio_url %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-globe me-2"></i>
+                                    <a href="{{ user_profile.portfolio_url }}" target="_blank" class="text-decoration-none">Portfolio/Website</a>
+                                </p>
+                                {% endif %}
+                                {% if user_profile.bio %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    {{ user_profile.bio }}
+                                </p>
+                                {% endif %}
                             {% endif %}
                         </div>
                         <!-- ===== FOTO DE PERFIL ===== -->
@@ -132,7 +151,7 @@
     {% if user_profile.role == 'candidate' %}
     <div class="row mb-3">
         <div class="col-md-3 col-6 mb-2">
-            <div class="card border-primary border-2">
+            <div class="card" style="border: 1px solid #dee2e6;">
                 <div class="card-body text-center p-3">
                     <div class="h4 mb-1 text-primary">{{ total_reviews }}</div>
                     <small class="text-muted">Total Reseñas</small>
@@ -140,7 +159,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6 mb-2">
-            <div class="card border-success border-2">
+            <div class="card" style="border: 1px solid #dee2e6;">
                 <div class="card-body text-center p-3">
                     <div class="h4 mb-1 text-success">{{ approved_reviews }}</div>
                     <small class="text-muted">Aprobadas</small>
@@ -148,7 +167,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6 mb-2">
-            <div class="card border-danger border-2">
+            <div class="card" style="border: 1px solid #dee2e6;">
                 <div class="card-body text-center p-3">
                     <div class="h4 mb-1 text-danger">{{ rejected_reviews }}</div>
                     <small class="text-muted">Rechazadas</small>
@@ -156,7 +175,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6 mb-2">
-            <div class="card border-info border-2">
+            <div class="card" style="border: 1px solid #dee2e6;">
                 <div class="card-body text-center p-3">
                     <div class="h4 mb-1 text-info">{{ companies_reviewed }}</div>
                     <small class="text-muted">Empresas Reseñadas</small>

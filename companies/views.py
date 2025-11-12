@@ -24,7 +24,11 @@ from .forms import CompanyEditForm
 @login_required
 def company_detail_view(request, company_id):
     """Vista detallada de una empresa"""
-    company = get_object_or_404(Company, id=company_id, is_active=True)
+    # Staff puede ver empresas inactivas, otros usuarios solo activas
+    if request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role == 'staff'):
+        company = get_object_or_404(Company, id=company_id)
+    else:
+        company = get_object_or_404(Company, id=company_id, is_active=True)
     
     # Importar modelos necesarios
     from reviews.models import Review, PendingReview
@@ -36,7 +40,11 @@ def company_detail_view(request, company_id):
     user_has_pending_review = False
     user_can_create_review = False
     
-    if request.user.profile.role == 'company_rep':
+    # Staff puede ver todo sin restricciones
+    if request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role == 'staff'):
+        user_can_access = True
+        user_can_create_review = False  # Los staff no pueden crear reseñas
+    elif request.user.profile.role == 'company_rep':
         user_can_access = True
         user_can_create_review = False  # Los company_rep no pueden crear reseñas
     elif request.user.profile.role == 'candidate':
@@ -106,8 +114,8 @@ def company_detail_view(request, company_id):
         status='rejected'
     ).select_related('user_profile__user')
     
-    # Combinar según rol - solo mostrar aprobadas para candidatos, todas para empresas
-    if request.user.profile.role == 'company_rep' or request.user.is_staff:
+    # Combinar según rol - solo mostrar aprobadas para candidatos, todas para empresas y staff
+    if request.user.profile.role == 'company_rep' or request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role == 'staff'):
         all_visible_reviews = list(approved_reviews) + list(rejected_reviews)
     else:
         all_visible_reviews = list(approved_reviews)  # Solo aprobadas para candidatos
@@ -637,21 +645,54 @@ def export_company_report_excel(request, company_id):
     }
     
     if period != 'all':
-        try:
-            year, month = period.split('-')
-            year_int = int(year)
-            month_int = int(month)
-            # Formatear en español
-            month_name = meses_espanol.get(month_int, '')
-            period_label = f'{month_name.capitalize()} {year_int}'
-            all_reviews = Review.objects.filter(
-                company=company,
-                submission_date__year=year,
-                submission_date__month=month
-            ).select_related('user_profile__user')
-        except (ValueError, AttributeError):
-            period = 'all'
-            all_reviews = Review.objects.filter(company=company).select_related('user_profile__user')
+        # Verificar si es un trimestre (formato: Q1-2025, Q2-2025, etc.)
+        if period.startswith('Q') and '-' in period:
+            try:
+                quarter_str, year_str = period.split('-')
+                quarter = int(quarter_str[1:])  # Extraer el número del trimestre (1-4)
+                year_int = int(year_str)
+                
+                # Determinar los meses del trimestre
+                if quarter == 1:
+                    months = [1, 2, 3]
+                    period_label = f'Q1 {year_int} (Ene-Mar)'
+                elif quarter == 2:
+                    months = [4, 5, 6]
+                    period_label = f'Q2 {year_int} (Abr-Jun)'
+                elif quarter == 3:
+                    months = [7, 8, 9]
+                    period_label = f'Q3 {year_int} (Jul-Sep)'
+                elif quarter == 4:
+                    months = [10, 11, 12]
+                    period_label = f'Q4 {year_int} (Oct-Dic)'
+                else:
+                    raise ValueError("Trimestre inválido")
+                
+                all_reviews = Review.objects.filter(
+                    company=company,
+                    submission_date__year=year_int,
+                    submission_date__month__in=months
+                ).select_related('user_profile__user')
+            except (ValueError, AttributeError):
+                period = 'all'
+                all_reviews = Review.objects.filter(company=company).select_related('user_profile__user')
+        else:
+            # Es un mes individual (formato: 2025-07)
+            try:
+                year, month = period.split('-')
+                year_int = int(year)
+                month_int = int(month)
+                # Formatear en español
+                month_name = meses_espanol.get(month_int, '')
+                period_label = f'{month_name.capitalize()} {year_int}'
+                all_reviews = Review.objects.filter(
+                    company=company,
+                    submission_date__year=year,
+                    submission_date__month=month
+                ).select_related('user_profile__user')
+            except (ValueError, AttributeError):
+                period = 'all'
+                all_reviews = Review.objects.filter(company=company).select_related('user_profile__user')
     else:
         all_reviews = Review.objects.filter(company=company).select_related('user_profile__user')
     
@@ -1196,17 +1237,499 @@ def export_company_report_excel(request, company_id):
 
 @login_required
 def company_dashboard_view(request):
-    """Dashboard para representantes de empresa"""
+    """Dashboard para representantes de empresa - Muestra solo estadísticas y gráficos (sin reseñas)"""
     if request.user.profile.role != 'company_rep':
         messages.error(request, 'Acceso no autorizado.')
         return redirect('login')
+    
+    # Obtener la empresa asociada al usuario
+    user_profile = request.user.profile
+    if not user_profile.company:
+        # Intentar asociar automáticamente la empresa solo si el usuario es "magneto"
+        username_lower = request.user.username.lower()
+        if username_lower == 'magneto':
+            try:
+                from companies.models import Company
+                company = Company.objects.filter(name__icontains='Magneto Empleos').first()
+                if company:
+                    user_profile.company = company
+                    user_profile.save()
+                    messages.success(request, f'✅ Empresa "{company.name}" asociada correctamente.')
+                else:
+                    messages.error(request, 'No tienes una empresa asociada y no se encontró "Magneto Empleos". Contacta al administrador.')
+                    return redirect('my_profile')
+            except Exception as e:
+                messages.error(request, f'Error al asociar empresa: {str(e)}')
+                return redirect('my_profile')
+        else:
+            messages.error(request, 'No tienes una empresa asociada. Contacta al administrador.')
+            return redirect('my_profile')
+    
+    company = user_profile.company
+    
+    # Importar modelos necesarios
+    from reviews.models import Review
+    
+    # Obtener todas las reseñas de la empresa (para estadísticas)
+    all_company_reviews = Review.objects.filter(company=company)
+    
+    # Estadísticas para company_rep (siempre calcular, incluso si no hay reseñas)
+    total_reviews = all_company_reviews.count()
+    approved_count = all_company_reviews.filter(status='approved').count()
+    rejected_count = all_company_reviews.filter(status='rejected').count()
+    
+    approval_rate = (approved_count / total_reviews) * 100 if total_reviews > 0 else 0
+    rejection_rate = (rejected_count / total_reviews) * 100 if total_reviews > 0 else 0
+    
+    # Compromiso de tiempo de respuesta (aprobadas con respuesta rápida)
+    compromiso_compliant = all_company_reviews.filter(
+        status='approved',
+        response_time_rating__in=['immediate', 'same_day']
+    ).count()
+    compromiso_rate = (compromiso_compliant / approved_count) * 100 if approved_count > 0 else 0
+    
+    # Calcular promedios (solo si hay reseñas)
+    if all_company_reviews.exists():
+        avg_overall = all_company_reviews.aggregate(avg=Avg('overall_rating'))['avg'] or 0
+    else:
+        avg_overall = 0
+    
+    # Mapear categorías a valores para promediar
+    COMM_SCORES = {
+        'excellent': 5, 'good': 4, 'regular': 3, 'poor': 2,
+    }
+    DIFF_SCORES = {
+        'very_easy': 1, 'easy': 2, 'moderate': 3, 'difficult': 4, 'very_difficult': 5,
+    }
+    RESP_SCORES = {
+        'immediate': 5, 'same_day': 4, 'next_day': 3, 'few_days': 2, 'slow': 1,
+    }
+    
+    def avg_from_choices(qs, field, scores):
+        total = 0
+        count = 0
+        for val in qs.values_list(field, flat=True).distinct():
+            if val in scores:
+                val_count = qs.filter(**{field: val}).count()
+                total += scores[val] * val_count
+                count += val_count
+        return (total / count) if count else 0
+    
+    # Calcular promedios solo si hay reseñas
+    if all_company_reviews.exists():
+        avg_communication = avg_from_choices(all_company_reviews, 'communication_rating', COMM_SCORES)
+        avg_difficulty = avg_from_choices(all_company_reviews, 'difficulty_rating', DIFF_SCORES)
+        avg_response_time = avg_from_choices(all_company_reviews, 'response_time_rating', RESP_SCORES)
+    else:
+        avg_communication = 0
+        avg_difficulty = 0
+        avg_response_time = 0
+    
+    # Tendencia mensual
+    monthly_trend = all_company_reviews.annotate(
+        month=TruncMonth('submission_date')
+    ).values('month').annotate(
+        count=Count('id'),
+        approved=Count('id', filter=Q(status='approved')),
+        avg_rating=Avg('overall_rating')
+    ).order_by('month')
+    
+    monthly_ratings = list(monthly_trend)
+    
+    # Calcular trimestres disponibles basados en los meses con reseñas
+    quarters = []
+    if monthly_ratings:
+        from collections import defaultdict
+        quarters_dict = defaultdict(set)
+        for item in monthly_ratings:
+            month_date = item['month']
+            year = month_date.year
+            month = month_date.month
+            # Determinar trimestre (1-4)
+            if month in [1, 2, 3]:
+                quarter = 1
+                label = f'Q1 {year} (Ene-Mar)'
+            elif month in [4, 5, 6]:
+                quarter = 2
+                label = f'Q2 {year} (Abr-Jun)'
+            elif month in [7, 8, 9]:
+                quarter = 3
+                label = f'Q3 {year} (Jul-Sep)'
+            else:  # 10, 11, 12
+                quarter = 4
+                label = f'Q4 {year} (Oct-Dic)'
+            quarters_dict[(year, quarter)] = label
+        
+        # Convertir a lista ordenada
+        for (year, quarter), label in sorted(quarters_dict.items()):
+            quarters.append({
+                'year': year,
+                'quarter': quarter,
+                'label': label
+            })
+    
+    # Datos para gráficos
+    chart_data = {
+        'ratings': {},
+        'modality': {},
+        'response_time_distribution': {},
+        'monthly_comparison': {},
+        'strengths_weaknesses': {}
+    }
+    
+    if all_company_reviews.exists():
+        # Distribución de calificaciones
+        for i in range(1, 6):
+            count = all_company_reviews.filter(overall_rating=i).count()
+            chart_data['ratings'][f'{i} estrella{"s" if i > 1 else ""}'] = count
+        
+        # Distribución por modalidad
+        for modality, _ in Review.MODALITY_CHOICES:
+            count = all_company_reviews.filter(modality=modality).count()
+            if count > 0:
+                chart_data['modality'][modality.title()] = count
+        
+        # Distribución de tiempo de respuesta
+        response_time_labels = {
+            'immediate': 'Inmediata',
+            'same_day': 'Mismo día',
+            'next_day': 'Al día siguiente',
+            'few_days': 'En pocos días',
+            'slow': 'Lenta'
+        }
+        for response_time, _ in Review.RESPONSE_TIME_CHOICES:
+            count = all_company_reviews.filter(response_time_rating=response_time).count()
+            if count > 0:
+                chart_data['response_time_distribution'][response_time_labels[response_time]] = count
+        
+        # Comparación mensual
+        if monthly_ratings:
+            chart_data['monthly_comparison'] = {
+                str(item['month']): {
+                    'count': item['count'],
+                    'approved': item['approved'],
+                    'avg_rating': float(item['avg_rating']) if item['avg_rating'] else 0
+                }
+                for item in monthly_ratings
+            }
+        
+        # Gráfico de Fortalezas y Debilidades
+        strengths_weaknesses = {}
+        aspects = {
+            'communication_rating': 'Comunicación',
+            'difficulty_rating': 'Dificultad del Proceso', 
+            'response_time_rating': 'Tiempo de Respuesta',
+            'overall_rating': 'Calificación General'
+        }
+        
+        for field, label in aspects.items():
+            if field == 'overall_rating':
+                avg_rating = all_company_reviews.aggregate(avg=Avg(field))['avg']
+                if avg_rating is not None:
+                    strengths_weaknesses[label] = round(avg_rating, 1)
+            else:
+                rating_mapping = {
+                    'communication_rating': {
+                        'excellent': 5, 'good': 4, 'regular': 3, 'poor': 2
+                    },
+                    'difficulty_rating': {
+                        'very_easy': 1, 'easy': 2, 'moderate': 3, 'difficult': 4, 'very_difficult': 5
+                    },
+                    'response_time_rating': {
+                        'immediate': 5, 'same_day': 4, 'next_day': 3, 'few_days': 2, 'slow': 1
+                    }
+                }
+                
+                total_score = 0
+                count = 0
+                for review in all_company_reviews:
+                    rating_value = rating_mapping[field].get(getattr(review, field), 0)
+                    if rating_value > 0:
+                        total_score += rating_value
+                        count += 1
+                
+                if count > 0:
+                    avg_rating = total_score / count
+                    strengths_weaknesses[label] = round(avg_rating, 1)
+        
+        chart_data['strengths_weaknesses'] = strengths_weaknesses
+    
+    # Generar recomendaciones inteligentes (solo si hay reseñas)
+    # Siempre mostrar máximo 2 recomendaciones
+    recommendations = []
+    
+    if total_reviews > 0:
+        # Priorizar recomendaciones según importancia
+        if avg_overall < 3.5:
+            recommendations.append({
+                'type': 'danger',
+                'icon': 'fas fa-star',
+                'title': 'Calificación General Baja',
+                'description': f'Tu calificación promedio es {avg_overall:.1f}/5. Necesitas mejorar varios aspectos.',
+            })
+        
+        if rejection_rate > 30:
+            recommendations.append({
+                'type': 'danger',
+                'icon': 'fas fa-exclamation-triangle',
+                'title': 'Alta Tasa de Rechazo',
+                'description': f'El {rejection_rate:.1f}% de tus reseñas son rechazadas. Esto puede indicar problemas en tu proceso.',
+            })
+        
+        if avg_communication < 4 and len(recommendations) < 2:
+            recommendations.append({
+                'type': 'warning',
+                'icon': 'fas fa-comments',
+                'title': 'Mejorar Comunicación',
+                'description': f'Tu calificación de comunicación es {avg_communication:.1f}/5. Considera ser más claro y transparente en tus respuestas a los candidatos.',
+            })
+        
+        if avg_response_time < 4 and len(recommendations) < 2:
+            recommendations.append({
+                'type': 'info',
+                'icon': 'fas fa-clock',
+                'title': 'Acelerar Respuestas',
+                'description': f'Tu tiempo de respuesta promedio es {avg_response_time:.1f}/5. Los candidatos valoran respuestas rápidas.',
+            })
+        
+        if approval_rate < 70 and len(recommendations) < 2:
+            recommendations.append({
+                'type': 'warning',
+                'icon': 'fas fa-chart-line',
+                'title': 'Baja Tasa de Aprobación',
+                'description': f'Solo el {approval_rate:.1f}% de tus reseñas son aprobadas. Mejora la calidad de tus procesos.',
+            })
+        
+        if compromiso_rate < 50 and len(recommendations) < 2:
+            recommendations.append({
+                'type': 'info',
+                'icon': 'fas fa-bolt',
+                'title': 'Mejorar Velocidad de Respuesta',
+                'description': f'Solo el {compromiso_rate:.1f}% de tus reseñas aprobadas tienen respuesta rápida.',
+            })
+        
+        # Si no hay recomendaciones críticas, mostrar positivas
+        if not recommendations:
+            recommendations.append({
+                'type': 'success',
+                'icon': 'fas fa-check-circle',
+                'title': '¡Excelente Trabajo!',
+                'description': 'Tus métricas están en buen nivel. Sigue así y continúa mejorando.',
+            })
+            recommendations.append({
+                'type': 'info',
+                'icon': 'fas fa-chart-line',
+                'title': 'Mantén el Buen Rendimiento',
+                'description': 'Continúa monitoreando tus métricas y busca oportunidades de mejora continua.',
+            })
+        # Si solo hay 1 recomendación, agregar una segunda positiva o informativa
+        elif len(recommendations) == 1:
+            if avg_overall >= 4.0:
+                recommendations.append({
+                    'type': 'success',
+                    'icon': 'fas fa-check-circle',
+                    'title': '¡Buen Rendimiento!',
+                    'description': 'Tus calificaciones están por encima del promedio. Continúa mejorando.',
+                })
+            elif avg_communication >= 4.0:
+                recommendations.append({
+                    'type': 'info',
+                    'icon': 'fas fa-comments',
+                    'title': 'Buena Comunicación',
+                    'description': 'Tu comunicación es valorada positivamente por los candidatos.',
+                })
+            elif avg_response_time >= 4.0:
+                recommendations.append({
+                    'type': 'info',
+                    'icon': 'fas fa-clock',
+                    'title': 'Respuestas Rápidas',
+                    'description': 'Estás respondiendo rápidamente a los candidatos. ¡Sigue así!',
+                })
+            else:
+                recommendations.append({
+                    'type': 'info',
+                    'icon': 'fas fa-chart-line',
+                    'title': 'Continúa Mejorando',
+                    'description': 'Monitorea tus métricas regularmente y busca oportunidades de mejora continua.',
+                })
+    else:
+        # Si no hay reseñas, mostrar 2 recomendaciones iniciales
+        recommendations.append({
+            'type': 'info',
+            'icon': 'fas fa-info-circle',
+            'title': 'Comienza a recibir reseñas',
+            'description': 'Aún no hay reseñas para tu empresa. Cuando los candidatos compartan sus experiencias, verás estadísticas aquí.',
+        })
+        recommendations.append({
+            'type': 'success',
+            'icon': 'fas fa-rocket',
+            'title': 'Prepara tu proceso',
+            'description': 'Asegúrate de tener un proceso de selección claro y transparente para recibir buenas calificaciones.',
+        })
+    
+    # Limitar a exactamente 2 recomendaciones
+    recommendations = recommendations[:2]
+    
+    # Datos para comparación mes a mes
+    monthly_comparison = []
+    if len(monthly_ratings) >= 2:
+        for i in range(1, len(monthly_ratings)):
+            prev_month = monthly_ratings[i-1]
+            curr_month = monthly_ratings[i]
+            
+            # Calcular rechazadas para cada mes
+            prev_rejected = prev_month['count'] - prev_month['approved']
+            curr_rejected = curr_month['count'] - curr_month['approved']
+            
+            rating_change = curr_month['avg_rating'] - prev_month['avg_rating']
+            count_change = curr_month['count'] - prev_month['count']
+            approval_change = curr_month['approved'] - prev_month['approved']
+            rejection_change = curr_rejected - prev_rejected
+            
+            monthly_comparison.append({
+                'month': curr_month['month'],
+                'prev_month': prev_month['month'],
+                'prev_rating': prev_month['avg_rating'],
+                'curr_rating': curr_month['avg_rating'],
+                'rating_change': rating_change,
+                'prev_count': prev_month['count'],
+                'curr_count': curr_month['count'],
+                'count_change': count_change,
+                'prev_approved': prev_month['approved'],
+                'curr_approved': curr_month['approved'],
+                'approval_change': approval_change,
+                'prev_rejected': prev_rejected,
+                'curr_rejected': curr_rejected,
+                'rejection_change': rejection_change,
+            })
+    
+    role_kpis = {
+        'role': 'company_rep',
+        'avg_overall': avg_overall,
+        'total_reviews': total_reviews,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'approval_rate': round(approval_rate, 1),
+        'rejection_rate': round(rejection_rate, 1),
+        'compromiso_rate': round(compromiso_rate, 1),
+        'monthly_trend': monthly_ratings,
+        'monthly_comparison': monthly_comparison,
+        'avg_communication': avg_communication,
+        'avg_difficulty': avg_difficulty,
+        'avg_response_time': avg_response_time,
+        'recommendations': recommendations,
+        'quarters': quarters,
+    }
+    
+    context = {
+        'company': company,
+        'chart_data': chart_data,
+        'role_kpis': role_kpis,
+    }
+    
+    return render(request, 'companies/company_dashboard.html', context)
+
+
+@login_required
+def company_reviews_view(request):
+    """Vista para que company_rep vea las reseñas de su empresa"""
+    if request.user.profile.role != 'company_rep':
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('login')
+    
+    # Obtener la empresa asociada al usuario
+    user_profile = request.user.profile
+    if not user_profile.company:
+        messages.error(request, 'No tienes una empresa asociada. Contacta al administrador.')
+        return redirect('login')
+    
+    company = user_profile.company
+    
+    # Importar modelos necesarios
+    from reviews.models import Review
+    
+    # Obtener todas las reseñas aprobadas SIN filtrar (para contar el total)
+    all_approved_reviews = Review.objects.filter(
+        company=company,
+        status='approved'
+    ).select_related('user_profile__user')
+    
+    # Obtener reseñas con filtros
+    approved_reviews = all_approved_reviews
+    
+    # Aplicar filtros desde parámetros GET
+    rating_filter = request.GET.get('rating')
+    modality_filter = request.GET.get('modality')
+    sort_by = request.GET.get('sort', 'recent')
+    
+    if rating_filter:
+        try:
+            rating_value = int(rating_filter)
+            if 1 <= rating_value <= 5:
+                approved_reviews = approved_reviews.filter(overall_rating=rating_value)
+        except ValueError:
+            pass
+    
+    if modality_filter:
+        approved_reviews = approved_reviews.filter(modality=modality_filter)
+    
+    # Aplicar ordenamiento
+    if sort_by == 'recent':
+        approved_reviews = approved_reviews.order_by('-submission_date')
+    elif sort_by == 'oldest':
+        approved_reviews = approved_reviews.order_by('submission_date')
+    elif sort_by == 'highest':
+        approved_reviews = approved_reviews.order_by('-overall_rating', '-submission_date')
+    elif sort_by == 'lowest':
+        approved_reviews = approved_reviews.order_by('overall_rating', '-submission_date')
+    else:
+        approved_reviews = approved_reviews.order_by('-submission_date')
+    
+    rejected_reviews = Review.objects.filter(
+        company=company,
+        status='rejected'
+    ).select_related('user_profile__user')
+    
+    # Contar el total de reseñas aprobadas SIN filtrar
+    total_approved_reviews_count = all_approved_reviews.count()
+    rejected_reviews_count = rejected_reviews.count()
+    
+    # Verificar si hay filtros activos
+    has_active_filters = bool(rating_filter or modality_filter)
+    
+    # Pasar filtros actuales al contexto
+    current_filters = {
+        'rating': rating_filter,
+        'modality': modality_filter,
+        'sort': sort_by,
+    }
+    
+    context = {
+        'company': company,
+        'approved_reviews': approved_reviews,
+        'rejected_reviews': rejected_reviews,
+        'rejected_reviews_count': rejected_reviews_count,
+        'total_approved_reviews_count': total_approved_reviews_count,
+        'has_active_filters': has_active_filters,
+        'current_filters': current_filters,
+    }
+    
+    return render(request, 'companies/company_reviews.html', context)
+
+
+@login_required
+def staff_dashboard_view(request):
+    """Dashboard para staff - Muestra todas las empresas con opciones de administración"""
+    if not (request.user.is_staff or request.user.profile.role == 'staff'):
+        messages.error(request, 'Acceso no autorizado. Solo el staff puede acceder.')
+        return redirect('dashboard')
     
     # Importar modelos necesarios
     from reviews.models import Review
     
     # Búsqueda
     search_query = request.GET.get('search', '')
-    companies = Company.objects.filter(is_active=True).prefetch_related('reviews').order_by('name')
+    companies = Company.objects.all().prefetch_related('reviews').order_by('name')
     
     if search_query:
         companies = companies.filter(
@@ -1216,7 +1739,9 @@ def company_dashboard_view(request):
         )
     
     # Estadísticas
-    total_companies = companies.count()
+    total_companies = Company.objects.count()
+    active_companies = Company.objects.filter(is_active=True).count()
+    inactive_companies = Company.objects.filter(is_active=False).count()
     total_reviews = Review.objects.count()
     total_candidates = UserProfile.objects.filter(role='candidate').count()
     
@@ -1234,38 +1759,122 @@ def company_dashboard_view(request):
     context = {
         'companies': companies,
         'total_companies': total_companies,
+        'active_companies': active_companies,
+        'inactive_companies': inactive_companies,
         'total_reviews': total_reviews,
         'total_candidates': total_candidates,
         'search_query': search_query,
     }
     
-    return render(request, 'core/company_dashboard.html', context)
+    return render(request, 'companies/staff_dashboard.html', context)
 
 
 @login_required
 def edit_company_view(request, company_id):
-    """Vista para editar información de empresa (solo para company_rep)"""
+    """Vista para editar información de empresa (para company_rep y staff)"""
     company = get_object_or_404(Company, id=company_id)
     
-    # Verificar que el usuario es company_rep
-    if request.user.profile.role != 'company_rep':
+    # Verificar permisos
+    is_staff = request.user.is_staff or request.user.profile.role == 'staff'
+    is_company_rep = request.user.profile.role == 'company_rep' and request.user.profile.company and request.user.profile.company.id == company.id
+    
+    if not (is_staff or is_company_rep):
         messages.error(request, 'No tienes permisos para editar empresas.')
         return redirect('company_detail', company_id=company.id)
     
     if request.method == 'POST':
-        form = CompanyEditForm(request.POST, request.FILES, instance=company)
+        form = CompanyEditForm(request.POST, request.FILES, instance=company, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Información de la empresa actualizada exitosamente.')
+            if is_staff:
+                return redirect('staff_dashboard')
+            elif request.user.profile.role == 'company_rep':
+                return redirect('company_dashboard')
             return redirect('company_detail', company_id=company.id)
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
-        form = CompanyEditForm(instance=company)
+        form = CompanyEditForm(instance=company, user=request.user)
     
     context = {
         'form': form,
         'company': company,
+        'is_staff': is_staff,
     }
     
     return render(request, 'companies/edit_company.html', context)
+
+
+@login_required
+def toggle_company_status_view(request, company_id):
+    """Activar/desactivar empresa (solo staff)"""
+    if not (request.user.is_staff or request.user.profile.role == 'staff'):
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('dashboard')
+    
+    company = get_object_or_404(Company, id=company_id)
+    company.is_active = not company.is_active
+    company.save()
+    
+    status = 'activada' if company.is_active else 'desactivada'
+    messages.success(request, f'Empresa {company.name} {status} exitosamente.')
+    
+    return redirect('staff_dashboard')
+
+
+@login_required
+def delete_company_view(request, company_id):
+    """Borrar empresa (solo staff)"""
+    if not (request.user.is_staff or request.user.profile.role == 'staff'):
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('dashboard')
+    
+    company = get_object_or_404(Company, id=company_id)
+    company_name = company.name
+    company.delete()
+    
+    messages.success(request, f'Empresa {company_name} borrada exitosamente.')
+    return redirect('staff_dashboard')
+
+
+@login_required
+def create_company_view(request):
+    """Crear nueva empresa (solo staff)"""
+    if not (request.user.is_staff or request.user.profile.role == 'staff'):
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = CompanyEditForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            company = form.save()
+            messages.success(request, f'Empresa {company.name} creada exitosamente.')
+            return redirect('staff_dashboard')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = CompanyEditForm(user=request.user)
+    
+    context = {
+        'form': form,
+        'is_new': True,
+    }
+    
+    return render(request, 'companies/edit_company.html', context)
+
+
+@login_required
+def delete_review_view(request, review_id):
+    """Borrar reseña (solo staff)"""
+    if not (request.user.is_staff or request.user.profile.role == 'staff'):
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('dashboard')
+    
+    from reviews.models import Review
+    review = get_object_or_404(Review, id=review_id)
+    company_id = review.company.id
+    review.delete()
+    
+    messages.success(request, 'Reseña borrada exitosamente.')
+    return redirect('company_detail', company_id=company_id)

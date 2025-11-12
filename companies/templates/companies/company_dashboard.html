@@ -1,0 +1,829 @@
+<!-- ===== TEMPLATE: DASHBOARD DE EMPRESA (COMPANY_REP) ===== -->
+<!-- Panel para representantes de empresa - Solo estadísticas y gráficos (sin reseñas) -->
+{% extends 'core/base.html' %}
+{% load common_tags %}
+
+{% block title %}Panel de Control - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-2">
+    <!-- ===== ESTADÍSTICAS DE LA EMPRESA ===== -->
+    {% if role_kpis %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Panel de Control de tu Empresa
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if role_kpis.total_reviews > 0 %}
+                    <!-- Métricas Principales en Grid -->
+                    <div class="row g-3 mb-4">
+                        <!-- Calificación General -->
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-primary border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-primary fw-bold">{{ role_kpis.avg_overall|floatformat:1 }}</div>
+                                    <div class="small text-muted mb-1">Calificación General</div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_overall 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_overall 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">de 5.0</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Total Reseñas -->
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-info border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-info fw-bold">{{ role_kpis.total_reviews }}</div>
+                                    <div class="small text-muted mb-1">Total Reseñas</div>
+                                    <div class="d-flex justify-content-center gap-2 small">
+                                        <span class="badge bg-success">{{ role_kpis.approved_count }} aprobadas</span>
+                                        {% if role_kpis.rejected_count > 0 %}
+                                        <span class="badge bg-danger">{{ role_kpis.rejected_count }} rechazadas</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tasa de Aprobación -->
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-success border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-success fw-bold">{{ role_kpis.approval_rate|floatformat:0 }}%</div>
+                                    <div class="small text-muted mb-1">Tasa de Aprobación</div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ role_kpis.approval_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.approval_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">{{ role_kpis.approved_count }} de {{ role_kpis.total_reviews }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Respuestas Rápidas -->
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 border-warning border-2">
+                                <div class="card-body text-center p-3">
+                                    <div class="display-3 mb-2 text-warning fw-bold">{{ role_kpis.compromiso_rate|floatformat:0 }}%</div>
+                                    <div class="small text-muted mb-1">Respuestas Rápidas</div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ role_kpis.compromiso_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.compromiso_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Métricas de Calidad del Proceso -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-star me-2"></i>
+                                Calidad del Proceso de Selección
+                            </h6>
+                        </div>
+                        
+                        <!-- Comunicación -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <i class="fas fa-comments text-primary me-2"></i>
+                                            <strong>Comunicación</strong>
+                                        </div>
+                                        <div class="h4 mb-0 text-primary">{{ role_kpis.avg_communication|floatformat:1 }}/5</div>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_communication 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_communication 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">Claridad en respuestas a candidatos</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dificultad -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <i class="fas fa-tasks text-warning me-2"></i>
+                                            <strong>Dificultad</strong>
+                                        </div>
+                                        <div class="h4 mb-0 text-warning">{{ role_kpis.avg_difficulty|floatformat:1 }}/5</div>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio role_kpis.avg_difficulty 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_difficulty 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">Complejidad del proceso</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Velocidad -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <i class="fas fa-clock text-info me-2"></i>
+                                            <strong>Velocidad</strong>
+                                        </div>
+                                        <div class="h4 mb-0 text-info">{{ role_kpis.avg_response_time|floatformat:1 }}/5</div>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: {% widthratio role_kpis.avg_response_time 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_response_time 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">Tiempo de respuesta</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Mensaje cuando no hay reseñas -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Aún no hay reseñas para tu empresa.</strong>
+                        <p class="mb-0 mt-2">Cuando los candidatos compartan sus experiencias, verás estadísticas y gráficos aquí.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Comparación Mes a Mes -->
+    {% if role_kpis and role_kpis.monthly_comparison %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h6 class="text-muted mb-3">
+                <i class="fas fa-chart-line me-2"></i>
+                Comparación Mes a Mes
+            </h6>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="min-width: 120px;">Mes</th>
+                                    <th class="text-center" style="min-width: 100px;">Calificación</th>
+                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                    <th class="text-center" style="min-width: 100px;">Total Reseñas</th>
+                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                    <th class="text-center" style="min-width: 100px;">Aprobadas</th>
+                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                    <th class="text-center" style="min-width: 100px;">Rechazadas</th>
+                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for comp in role_kpis.monthly_comparison %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ comp.month|fecha_espanol }}</div>
+                                        <small class="text-muted">vs {{ comp.prev_month|fecha_espanol }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="fw-bold">{{ comp.curr_rating|floatformat:1 }}/5.0</div>
+                                        <small class="text-muted">({{ comp.prev_rating|floatformat:1 }} antes)</small>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if comp.rating_change > 0 %}
+                                            <span class="badge bg-success">+{{ comp.rating_change|floatformat:1 }}</span>
+                                        {% elif comp.rating_change < 0 %}
+                                            <span class="badge bg-danger">{{ comp.rating_change|floatformat:1 }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">0.0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="fw-bold">{{ comp.curr_count }}</div>
+                                        <small class="text-muted">({{ comp.prev_count }} antes)</small>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if comp.count_change > 0 %}
+                                            <span class="badge bg-success">+{{ comp.count_change }}</span>
+                                        {% elif comp.count_change < 0 %}
+                                            <span class="badge bg-danger">{{ comp.count_change }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="fw-bold text-success">{{ comp.curr_approved }}</div>
+                                        <small class="text-muted">({{ comp.prev_approved }} antes)</small>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if comp.approval_change > 0 %}
+                                            <span class="badge bg-success">+{{ comp.approval_change }}</span>
+                                        {% elif comp.approval_change < 0 %}
+                                            <span class="badge bg-danger">{{ comp.approval_change }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="fw-bold text-danger">{{ comp.curr_rejected }}</div>
+                                        <small class="text-muted">({{ comp.prev_rejected }} antes)</small>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if comp.rejection_change > 0 %}
+                                            <span class="badge bg-danger">+{{ comp.rejection_change }}</span>
+                                        {% elif comp.rejection_change < 0 %}
+                                            <span class="badge bg-success">{{ comp.rejection_change }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">0</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Botones de Acción -->
+    {% if role_kpis %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="{% url 'company_reviews' %}" class="btn btn-primary">
+                    <i class="fas fa-comments me-2"></i>Ver Reseñas de la Empresa
+                </a>
+                <a href="{% url 'rejected_reviews' company.id %}" class="btn btn-danger" style="background-color: #dc3545; border-color: #dc3545; color: #ffffff;" onmouseover="this.style.backgroundColor='#dc3545'; this.style.borderColor='#dc3545'; this.style.color='#ffffff';" onmouseout="this.style.backgroundColor='#dc3545'; this.style.borderColor='#dc3545'; this.style.color='#ffffff';">
+                    <i class="fas fa-ban me-2"></i>Ver Reseñas Rechazadas
+                    {% if role_kpis.rejected_count > 0 %}
+                    <span class="badge bg-light text-dark ms-2">{{ role_kpis.rejected_count }}</span>
+                    {% else %}
+                    <span class="badge bg-light text-dark ms-2">0</span>
+                    {% endif %}
+                </a>
+                {% if role_kpis.total_reviews > 0 %}
+                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exportExcelModal">
+                    <i class="fas fa-file-excel me-2"></i>Descargar Excel
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- ===== GRÁFICOS DE ANÁLISIS ===== -->
+    {% if chart_data and role_kpis and role_kpis.total_reviews > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Análisis Visual de Datos
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card chart-card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-star text-warning me-2"></i>
+                                        Distribución de Calificaciones
+                                    </h6>
+                                    {% if chart_data.ratings %}
+                                    <div class="chart-container">
+                                        <canvas id="ratingsChart"></canvas>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card chart-card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-briefcase text-primary me-2"></i>
+                                        Modalidad de Trabajo
+                                    </h6>
+                                    {% if chart_data.modality %}
+                                    <div class="chart-container">
+                                        <canvas id="modalityChart"></canvas>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card chart-card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-radar text-success me-2"></i>
+                                        Fortalezas y Debilidades
+                                    </h6>
+                                    {% if chart_data.strengths_weaknesses %}
+                                    <div class="chart-container">
+                                        <canvas id="strengthsWeaknessesChart"></canvas>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-radar fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card chart-card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-clock text-info me-2"></i>
+                                        Distribución de Tiempo de Respuesta
+                                    </h6>
+                                    {% if chart_data.response_time_distribution %}
+                                    <div class="chart-container">
+                                        <canvas id="responseTimeChart"></canvas>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-4">
+                            <div class="card chart-card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="fas fa-chart-line text-primary me-2"></i>
+                                        Comparación Mes a Mes - Evolución de Calificaciones
+                                    </h6>
+                                    <div class="chart-container" style="height: 350px; position: relative;">
+                                        <canvas id="monthlyComparisonChart"></canvas>
+                                        <div id="monthlyComparisonNoData" class="text-center py-5" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;">
+                                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted small">Se necesitan al menos 2 meses de datos para mostrar la comparación</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal para exportar Excel -->
+<div class="modal fade" id="exportExcelModal" tabindex="-1" aria-labelledby="exportExcelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportExcelModalLabel">
+                    <i class="fas fa-file-excel me-2"></i>
+                    Exportar Reporte a Excel
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get" action="{% url 'export_company_report_excel' company.id %}">
+                    <div class="mb-3">
+                        <label for="period" class="form-label">Seleccionar Período</label>
+                        <select name="period" id="period" class="form-select">
+                            <option value="all">Todos los datos</option>
+                            {% if role_kpis.monthly_trend %}
+                            {% for month_item in role_kpis.monthly_trend %}
+                            <option value="{{ month_item.month|date:'Y-m' }}">{{ month_item.month|fecha_espanol }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rating_filter" class="form-label">Filtrar por Calificación (Opcional)</label>
+                        <select name="rating" id="rating_filter" class="form-select">
+                            <option value="">Todas las calificaciones</option>
+                            <option value="5">5 estrellas</option>
+                            <option value="4">4 estrellas</option>
+                            <option value="3">3 estrellas</option>
+                            <option value="2">2 estrellas</option>
+                            <option value="1">1 estrella</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar Columnas</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="fecha" id="col_fecha" checked>
+                                    <label class="form-check-label" for="col_fecha">Fecha</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="usuario" id="col_usuario" checked>
+                                    <label class="form-check-label" for="col_usuario">Usuario</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="cargo" id="col_cargo" checked>
+                                    <label class="form-check-label" for="col_cargo">Cargo</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="modalidad" id="col_modalidad" checked>
+                                    <label class="form-check-label" for="col_modalidad">Modalidad</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="calificacion" id="col_calificacion" checked>
+                                    <label class="form-check-label" for="col_calificacion">Calificación</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="comunicacion" id="col_comunicacion" checked>
+                                    <label class="form-check-label" for="col_comunicacion">Comunicación</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="dificultad" id="col_dificultad" checked>
+                                    <label class="form-check-label" for="col_dificultad">Dificultad</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="tiempo_respuesta" id="col_tiempo_respuesta" checked>
+                                    <label class="form-check-label" for="col_tiempo_respuesta">Tiempo Respuesta</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="pros" id="col_pros" checked>
+                                    <label class="form-check-label" for="col_pros">Pros</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="contras" id="col_contras" checked>
+                                    <label class="form-check-label" for="col_contras">Contras</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns" value="preguntas" id="col_preguntas" checked>
+                                    <label class="form-check-label" for="col_preguntas">Preguntas Entrevista</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="selectAllColumns()">Seleccionar Todas</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllColumns()">Deseleccionar Todas</button>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-download me-2"></i>
+                            Descargar Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if chart_data %}
+{{ chart_data|json_script:"chart-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartDataElement = document.getElementById('chart-data');
+    if (!chartDataElement) {
+        return;
+    }
+    const chartData = JSON.parse(chartDataElement.textContent);
+    const colors = {
+        primary: '#1E3A8A',
+        secondary: '#3B82F6',
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger: '#EF4444',
+        info: '#3B82F6',
+    };
+
+    // Gráfico de distribución de calificaciones
+    if (chartData.ratings && Object.keys(chartData.ratings).length > 0) {
+        const ratingsCtx = document.getElementById('ratingsChart');
+        if (ratingsCtx) {
+            const labels = Object.keys(chartData.ratings);
+            const data = Object.values(chartData.ratings);
+            const maxValue = Math.max(...data);
+            const maxIndex = data.indexOf(maxValue);
+            
+            new Chart(ratingsCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Número de Reseñas',
+                        data: data,
+                        backgroundColor: data.map((val, idx) => idx === maxIndex ? colors.warning : colors.primary),
+                        borderColor: data.map((val, idx) => idx === maxIndex ? colors.danger : colors.primary),
+                        borderWidth: 3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                                    return `${context.parsed.y} reseñas (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    }
+
+    // Gráfico de modalidad
+    if (chartData.modality && Object.keys(chartData.modality).length > 0) {
+        const modalityCtx = document.getElementById('modalityChart');
+        if (modalityCtx) {
+            new Chart(modalityCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(chartData.modality),
+                    datasets: [{
+                        data: Object.values(chartData.modality),
+                        backgroundColor: [colors.primary, colors.success, colors.warning, colors.info, colors.danger],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+    }
+
+    // Gráfico de Fortalezas y Debilidades (Radar Chart)
+    if (chartData.strengths_weaknesses && Object.keys(chartData.strengths_weaknesses).length > 0) {
+        const swCtx = document.getElementById('strengthsWeaknessesChart');
+        if (swCtx) {
+            const labels = Object.keys(chartData.strengths_weaknesses);
+            const data = Object.values(chartData.strengths_weaknesses);
+            
+            new Chart(swCtx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Calificación Promedio',
+                        data: data,
+                        backgroundColor: 'rgba(30, 58, 138, 0.3)',
+                        borderColor: colors.primary,
+                        borderWidth: 3,
+                        pointBackgroundColor: colors.primary,
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: colors.primary,
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 5,
+                            min: 0,
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 11 },
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: { size: 12, weight: 'bold' },
+                                color: '#374151'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed.r.toFixed(1) + ' / 5.0';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Gráfico de tiempo de respuesta
+    if (chartData.response_time_distribution && Object.keys(chartData.response_time_distribution).length > 0) {
+        const responseTimeCtx = document.getElementById('responseTimeChart');
+        if (responseTimeCtx) {
+            const labels = Object.keys(chartData.response_time_distribution);
+            const data = Object.values(chartData.response_time_distribution);
+            const maxValue = Math.max(...data);
+            const maxIndex = data.indexOf(maxValue);
+            
+            new Chart(responseTimeCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Número de Reseñas',
+                        data: data,
+                        backgroundColor: data.map((val, idx) => idx === maxIndex ? colors.success : colors.info),
+                        borderColor: data.map((val, idx) => idx === maxIndex ? colors.warning : colors.info),
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    }
+
+    // Gráfico de comparación mensual - siempre se muestra el canvas
+    const monthlyComparisonCtx = document.getElementById('monthlyComparisonChart');
+    const monthlyComparisonNoData = document.getElementById('monthlyComparisonNoData');
+    if (monthlyComparisonCtx) {
+        if (chartData.monthly_comparison && Object.keys(chartData.monthly_comparison).length >= 2) {
+            // Ocultar mensaje de "no data" si está visible
+            if (monthlyComparisonNoData) {
+                monthlyComparisonNoData.style.display = 'none';
+            }
+            // Asegurar que el canvas esté visible
+            monthlyComparisonCtx.style.display = 'block';
+            
+            const monthlyData = Object.values(chartData.monthly_comparison);
+            const months = Object.keys(chartData.monthly_comparison).map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+            });
+            const ratings = monthlyData.map(item => parseFloat(item.avg_rating) || 0);
+            const counts = monthlyData.map(item => item.count || 0);
+            
+            new Chart(monthlyComparisonCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Calificación Promedio',
+                            data: ratings,
+                            borderColor: colors.primary,
+                            backgroundColor: 'rgba(30, 58, 138, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Total Reseñas',
+                            data: counts,
+                            borderColor: colors.success,
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y1',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            min: 0,
+                            max: 5,
+                            title: {
+                                display: true,
+                                text: 'Calificación Promedio'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Total Reseñas'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            // Mostrar mensaje cuando no hay datos suficientes, pero mantener el canvas
+            if (monthlyComparisonNoData) {
+                monthlyComparisonNoData.style.display = 'block';
+            }
+            // Ocultar el canvas visualmente pero mantenerlo en el DOM
+            monthlyComparisonCtx.style.display = 'none';
+        }
+    }
+});
+
+// Funciones para seleccionar/deseleccionar todas las columnas
+function selectAllColumns() {
+    document.querySelectorAll('input[name="columns"]').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+function deselectAllColumns() {
+    document.querySelectorAll('input[name="columns"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+</script>
+{% endif %}
+
+{% endblock %}
+
+
+

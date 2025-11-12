@@ -69,4 +69,10 @@ class CompanyEditForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        
+        # Solo staff puede cambiar el estado is_active
+        if user and not (user.is_staff or (hasattr(user, 'profile') and user.profile.role == 'staff')):
+            if 'is_active' in self.fields:
+                self.fields['is_active'].widget = forms.HiddenInput()

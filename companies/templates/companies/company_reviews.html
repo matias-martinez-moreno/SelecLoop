@@ -1,0 +1,221 @@
+<!-- ===== TEMPLATE: RESEÑAS DE LA EMPRESA (COMPANY_REP) ===== -->
+<!-- Vista para que company_rep vea las reseñas de su empresa -->
+{% extends 'core/base.html' %}
+{% load common_tags %}
+
+{% block title %}Reseñas de la Empresa - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-2">
+    <!-- ===== HEADER ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="text-primary mb-0">
+                    <i class="fas fa-comments me-2"></i>
+                    Reseñas de {{ company.name }}
+                </h3>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'rejected_reviews' company.id %}" class="btn btn-sm btn-danger" style="background-color: #dc3545; border-color: #dc3545; color: #ffffff;" onmouseover="this.style.backgroundColor='#dc3545'; this.style.borderColor='#dc3545'; this.style.color='#ffffff';" onmouseout="this.style.backgroundColor='#dc3545'; this.style.borderColor='#dc3545'; this.style.color='#ffffff';">
+                        <i class="fas fa-ban me-1"></i>Ver Reseñas Rechazadas
+                        {% if rejected_reviews_count > 0 %}
+                        <span class="badge bg-light text-dark ms-1">{{ rejected_reviews_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'company_dashboard' %}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Volver al Panel
+                    </a>
+                </div>
+            </div>
+            {% if total_approved_reviews_count > 0 %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-primary">
+                    <i class="fas fa-comments me-1"></i>
+                    {% if has_active_filters %}
+                        {{ approved_reviews|length }} de {{ total_approved_reviews_count }} reseña{{ total_approved_reviews_count|pluralize }} aprobada{{ total_approved_reviews_count|pluralize }}
+                    {% else %}
+                        {{ total_approved_reviews_count }} reseña{{ total_approved_reviews_count|pluralize }} aprobada{{ total_approved_reviews_count|pluralize }}
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ===== RESEÑAS ===== -->
+    <div id="reviews-section" class="row mb-4">
+        <div class="col-12">
+            
+            <!-- Filtros de reseñas -->
+            {% if total_approved_reviews_count > 0 %}
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-body">
+                    <form method="get" action="{% url 'company_reviews' %}#reviews-section" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="rating" class="form-label small fw-bold">
+                                <i class="fas fa-star text-warning me-1"></i>Calificación
+                            </label>
+                            <select name="rating" id="rating" class="form-select form-select-sm">
+                                <option value="">Todas las calificaciones</option>
+                                <option value="5" {% if current_filters.rating == '5' %}selected{% endif %}>5 estrellas</option>
+                                <option value="4" {% if current_filters.rating == '4' %}selected{% endif %}>4 estrellas</option>
+                                <option value="3" {% if current_filters.rating == '3' %}selected{% endif %}>3 estrellas</option>
+                                <option value="2" {% if current_filters.rating == '2' %}selected{% endif %}>2 estrellas</option>
+                                <option value="1" {% if current_filters.rating == '1' %}selected{% endif %}>1 estrella</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="modality" class="form-label small fw-bold">
+                                <i class="fas fa-briefcase text-primary me-1"></i>Modalidad
+                            </label>
+                            <select name="modality" id="modality" class="form-select form-select-sm">
+                                <option value="">Todas las modalidades</option>
+                                <option value="presencial" {% if current_filters.modality == 'presencial' %}selected{% endif %}>Presencial</option>
+                                <option value="remoto" {% if current_filters.modality == 'remoto' %}selected{% endif %}>Remoto</option>
+                                <option value="hibrido" {% if current_filters.modality == 'hibrido' %}selected{% endif %}>Híbrido</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sort" class="form-label small fw-bold">
+                                <i class="fas fa-sort text-info me-1"></i>Ordenar por
+                            </label>
+                            <select name="sort" id="sort" class="form-select form-select-sm">
+                                <option value="recent" {% if current_filters.sort == 'recent' or not current_filters.sort %}selected{% endif %}>Más recientes</option>
+                                <option value="oldest" {% if current_filters.sort == 'oldest' %}selected{% endif %}>Más antiguas</option>
+                                <option value="highest" {% if current_filters.sort == 'highest' %}selected{% endif %}>Mejor calificadas</option>
+                                <option value="lowest" {% if current_filters.sort == 'lowest' %}selected{% endif %}>Peor calificadas</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-filter me-1"></i>Filtrar
+                            </button>
+                            {% if current_filters.rating or current_filters.modality or current_filters.sort %}
+                            <a href="{% url 'company_reviews' %}#reviews-section" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                                <i class="fas fa-times me-1"></i>Limpiar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Mostrar reseñas si hay resultados -->
+            {% if approved_reviews|length > 0 %}
+                <div class="row">
+                    {% for review in approved_reviews %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0;">
+                                    <h6 class="mb-0 text-truncate text-white" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}">
+                                        <i class="fas fa-user me-1"></i>
+                                        {{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}
+                                    </h6>
+                                    <a href="{% url 'view_user_profile' review.user_profile.user.id %}" 
+                                       class="btn btn-xs flex-shrink-0" 
+                                       title="Ver perfil del usuario"
+                                       style="background-color: #6c757d; border-color: #6c757d; color: #ffffff; font-size: 0.7rem; padding: 0.2em 0.7em;">
+                                        <i class="fas fa-user me-1"></i>Ver Perfil
+                                    </a>
+                                </div>
+                                <span class="badge bg-success flex-shrink-0">
+                                    <i class="fas fa-check me-1"></i>Aprobada
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text small text-muted mb-1">
+                                    <i class="fas fa-briefcase me-1"></i>
+                                    <strong>Cargo:</strong> {{ review.job_title }}
+                                </p>
+                                <p class="card-text small text-muted mb-1">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    <strong>Modalidad:</strong> {{ review.get_modality_display }}
+                                </p>
+                                {% if review.image %}
+                                <div class="mb-3">
+                                    <img src="{{ review.image.url }}" alt="Imagen reseña" class="img-fluid rounded" style="max-height: 160px; object-fit: cover;">
+                                </div>
+                                {% endif %}
+                                
+                                <div class="mb-3">
+                                    <strong class="text-success small">Pros:</strong>
+                                    <p class="mb-2 small">{{ review.pros }}</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <strong class="text-danger small">Contras:</strong>
+                                    <p class="mb-2 small">{{ review.cons }}</p>
+                                </div>
+
+                                {% if review.interview_questions %}
+                                <div class="mb-3">
+                                    <strong class="small">Preguntas de la Entrevista:</strong>
+                                    <p class="mb-2 small">{{ review.interview_questions }}</p>
+                                </div>
+                                {% endif %}
+
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ review.submission_date|date:"d/m/Y H:i" }}
+                                </small>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary">Calificación: {{ review.overall_rating }}/5</span>
+                                    <div class="d-flex gap-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-comments me-1"></i>{{ review.get_communication_rating_display }}
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-tasks me-1"></i>{{ review.get_difficulty_rating_display }}
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>{{ review.get_response_time_rating_display }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% elif has_active_filters %}
+                <!-- Mensaje cuando hay filtros activos pero no hay resultados -->
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>No se encontraron reseñas</strong> que coincidan con los filtros aplicados.
+                    <a href="{% url 'company_reviews' %}#reviews-section" class="alert-link ms-2">
+                        <i class="fas fa-times me-1"></i>Limpiar filtros
+                    </a>
+                    para ver todas las {{ total_approved_reviews_count }} reseña{{ total_approved_reviews_count|pluralize }} disponibles.
+                </div>
+            {% elif total_approved_reviews_count == 0 %}
+                <!-- Solo mostrar este mensaje si realmente NO hay reseñas aprobadas en total -->
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay reseñas aún</h4>
+                    <p class="text-muted">Aún no hay reseñas aprobadas para tu empresa.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Scroll suave a la sección de reseñas cuando hay filtros
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('rating') || urlParams.has('modality') || urlParams.has('sort')) {
+        const reviewsSection = document.getElementById('reviews-section');
+        if (reviewsSection) {
+            reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+});
+</script>
+
+{% endblock %}
+

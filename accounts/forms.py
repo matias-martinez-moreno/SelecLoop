@@ -94,7 +94,35 @@ class ProfileUpdateForm(forms.Form):
         max_length=20,
         required=False,
         label="Teléfono",
-        help_text="Número de teléfono de contacto"
+        help_text="Número de contacto"
+    )
+    
+    email = forms.EmailField(
+        required=False,
+        label="Correo electrónico",
+        help_text="Correo electrónico de contacto"
+    )
+    
+    linkedin_url = forms.URLField(
+        max_length=200,
+        required=False,
+        label="LinkedIn",
+        help_text="URL de tu perfil de LinkedIn (ej: https://linkedin.com/in/tu-perfil)",
+        widget=forms.URLInput(attrs={'placeholder': 'https://linkedin.com/in/tu-perfil'})
+    )
+    
+    availability_status = forms.ChoiceField(
+        choices=UserProfile.AVAILABILITY_CHOICES,
+        required=False,
+        label="¿Estás buscando empleo?",
+        help_text="Tu disponibilidad laboral actual"
+    )
+    
+    bio = forms.CharField(
+        required=False,
+        label="Biografía",
+        help_text="Información sobre ti, tu experiencia y objetivos profesionales",
+        widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Cuéntanos sobre ti...'})
     )
     
     city = forms.CharField(
@@ -111,64 +139,85 @@ class ProfileUpdateForm(forms.Form):
         help_text="País donde resides"
     )
     
-    linkedin_url = forms.URLField(
-        max_length=200,
-        required=False,
-        label="LinkedIn",
-        help_text="URL de tu perfil de LinkedIn (ej: https://linkedin.com/in/tu-perfil)",
-        widget=forms.URLInput(attrs={'placeholder': 'https://linkedin.com/in/tu-perfil'})
-    )
-    
-    portfolio_url = forms.URLField(
-        max_length=200,
-        required=False,
-        label="Portfolio/Website",
-        help_text="URL de tu portfolio o sitio web personal",
-        widget=forms.URLInput(attrs={'placeholder': 'https://tu-portfolio.com'})
-    )
-    
     years_of_experience = forms.IntegerField(
         required=False,
         label="Años de experiencia",
         help_text="Años de experiencia profesional",
         min_value=0,
-        max_value=100,
-        widget=forms.NumberInput(attrs={'min': '0', 'max': '100'})
+        max_value=100
     )
     
     specialization = forms.CharField(
         max_length=200,
         required=False,
-        label="Área de especialización",
-        help_text="Tu área de especialización profesional (ej: Desarrollo Web, Marketing Digital)",
-        widget=forms.TextInput(attrs={'placeholder': 'Ej: Desarrollo Web, Marketing Digital'})
+        label="Especialización",
+        help_text="Tu área de especialización profesional (ej: Desarrollo Web, Marketing Digital)"
     )
     
     languages = forms.CharField(
         max_length=200,
         required=False,
         label="Idiomas",
-        help_text="Idiomas que manejas separados por comas (ej: Español, Inglés, Francés)",
-        widget=forms.TextInput(attrs={'placeholder': 'Ej: Español, Inglés, Francés'})
-    )
-    
-    availability_status = forms.ChoiceField(
-        choices=UserProfile.AVAILABILITY_CHOICES,
-        required=False,
-        label="Disponibilidad",
-        help_text="Tu disponibilidad laboral actual"
-    )
-    
-    bio = forms.CharField(
-        required=False,
-        label="Biografía",
-        help_text="Información sobre ti, tu experiencia y objetivos profesionales",
-        widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Cuéntanos sobre ti...'})
+        help_text="Idiomas que manejas (ej: Español, Inglés, Francés)"
     )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
+        # Extraer initial de kwargs ANTES de llamar a super()
+        initial_data = kwargs.pop('initial', {})
+        
+        # Si no hay datos POST (args está vacío) y hay usuario, precargar desde el usuario
+        if not args and self.user:
+            profile = self.user.profile
+            # Si no hay initial_data, crear uno desde el usuario
+            if not initial_data:
+                initial_data = {}
+            # Solo precargar si el campo no está ya en initial_data
+            if 'first_name' not in initial_data:
+                initial_data['first_name'] = self.user.first_name or ''
+            if 'last_name' not in initial_data:
+                initial_data['last_name'] = self.user.last_name or ''
+            if 'phone' not in initial_data:
+                initial_data['phone'] = profile.phone or ''
+            if 'email' not in initial_data:
+                initial_data['email'] = self.user.email or ''
+            if 'linkedin_url' not in initial_data:
+                initial_data['linkedin_url'] = profile.linkedin_url or ''
+            if 'availability_status' not in initial_data:
+                initial_data['availability_status'] = profile.availability_status or ''
+            if 'bio' not in initial_data:
+                initial_data['bio'] = profile.bio or ''
+            if 'city' not in initial_data:
+                initial_data['city'] = profile.city or ''
+            if 'country' not in initial_data:
+                initial_data['country'] = profile.country or ''
+            if 'years_of_experience' not in initial_data:
+                initial_data['years_of_experience'] = profile.years_of_experience or ''
+            if 'specialization' not in initial_data:
+                initial_data['specialization'] = profile.specialization or ''
+            if 'languages' not in initial_data:
+                initial_data['languages'] = profile.languages or ''
+        
+        # Agregar initial_data a kwargs
+        if initial_data:
+            kwargs['initial'] = initial_data
+        
+        # Llamar a super() PRIMERO para que self.fields esté disponible
         super().__init__(*args, **kwargs)
+        
+        # Para company_rep y staff, ocultar campos que no necesita
+        # Los candidatos pueden editar todos los campos
+        if self.user and hasattr(self.user, 'profile') and self.user.profile.role in ['company_rep', 'staff']:
+            # Ocultar campos que no son necesarios para company_rep y staff
+            self.fields.pop('linkedin_url', None)
+            self.fields.pop('availability_status', None)
+            self.fields.pop('bio', None)
+            self.fields.pop('city', None)
+            self.fields.pop('country', None)
+            self.fields.pop('years_of_experience', None)
+            self.fields.pop('specialization', None)
+            self.fields.pop('languages', None)
+            # Para company_rep y staff, mantener phone y email visibles
         
         # Estilos para campos de formulario
         for field_name, field in self.fields.items():
@@ -177,7 +226,7 @@ class ProfileUpdateForm(forms.Form):
             elif field_name == 'remove_avatar':
                 field.widget.attrs.update({'class': 'form-check-input'})
             elif field_name == 'bio':
-                field.widget.attrs.update({'class': 'form-control'})
+                field.widget.attrs.update({'class': 'form-control', 'rows': '4'})
             elif field_name == 'availability_status':
                 field.widget.attrs.update({'class': 'form-select'})
             else:
@@ -189,20 +238,28 @@ class ProfileUpdateForm(forms.Form):
         # Actualizar datos del usuario
         self.user.first_name = self.cleaned_data.get('first_name', '')
         self.user.last_name = self.cleaned_data.get('last_name', '')
+        email = self.cleaned_data.get('email', '')
+        if email:
+            self.user.email = email
         self.user.save()
 
-        # Asegurar profile y actualizar todos los campos
+        # Asegurar profile y actualizar campos
         profile: UserProfile = self.user.profile
-        profile.phone = self.cleaned_data.get('phone', '') or None
-        profile.city = self.cleaned_data.get('city', '') or None
-        profile.country = self.cleaned_data.get('country', '') or None
-        profile.linkedin_url = self.cleaned_data.get('linkedin_url', '') or None
-        profile.portfolio_url = self.cleaned_data.get('portfolio_url', '') or None
-        profile.years_of_experience = self.cleaned_data.get('years_of_experience') or None
-        profile.specialization = self.cleaned_data.get('specialization', '') or None
-        profile.languages = self.cleaned_data.get('languages', '') or None
-        profile.availability_status = self.cleaned_data.get('availability_status', '') or None
-        profile.bio = self.cleaned_data.get('bio', '') or None
+        phone = self.cleaned_data.get('phone', '')
+        if phone:
+            profile.phone = phone
+        
+        # Solo actualizar estos campos si el usuario no es company_rep ni staff
+        if not (hasattr(self.user, 'profile') and self.user.profile.role in ['company_rep', 'staff']):
+            profile.linkedin_url = self.cleaned_data.get('linkedin_url', '') or None
+            profile.availability_status = self.cleaned_data.get('availability_status', '') or None
+            profile.bio = self.cleaned_data.get('bio', '') or None
+            profile.city = self.cleaned_data.get('city', '') or None
+            profile.country = self.cleaned_data.get('country', '') or None
+            years_exp = self.cleaned_data.get('years_of_experience')
+            profile.years_of_experience = years_exp if years_exp is not None and years_exp != '' else None
+            profile.specialization = self.cleaned_data.get('specialization', '') or None
+            profile.languages = self.cleaned_data.get('languages', '') or None
         
         # Manejar la foto de perfil
         remove_avatar = self.cleaned_data.get('remove_avatar', False)

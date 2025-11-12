@@ -9,126 +9,223 @@
 {% block content %}
 <!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="container-fluid">
-    <!-- ===== BOTÓN VOLVER ARRIBA Y BADGE ===== -->
-    <div class="row mb-2">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <a href="{% url 'dashboard' %}" class="btn btn-sm btn-secondary">
-                <i class="fas fa-arrow-left me-1"></i>
-                Volver a explorar empresas
-            </a>
-            {% if user_badge %}
-            <span class="badge {{ user_badge.bg_color }} {{ user_badge.text_color }} px-3 py-2" style="font-size: 0.9rem;">
-                <i class="{{ user_badge.icon }} me-1"></i>
-                {{ user_badge.name }}
-            </span>
-            {% endif %}
-        </div>
-    </div>
-
     <!-- ===== HEADER DEL PERFIL ===== -->
     <div class="row mb-3">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header py-3" style="background: var(--primary-blue);">
-                    <h3 class="mb-0 text-white">
-                        <i class="fas fa-user me-2"></i>
-                        Mi Perfil
-                    </h3>
+            <div class="card shadow-lg border-0">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0 text-white">
+                            <i class="fas fa-user me-2"></i>
+                            Mi Perfil
+                        </h3>
+                        <a href="{% if user.profile.role == 'candidate' %}{% url 'dashboard' %}{% elif user.profile.role == 'company_rep' %}{% url 'company_dashboard' %}{% elif user.profile.role == 'staff' %}{% url 'staff_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Volver
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body py-4">
                     <div class="row">
-                        <!-- ===== INFORMACIÓN PERSONAL ===== -->
-                        <div class="col-md-8">
-                            <div class="d-flex align-items-center gap-2 mb-3">
-                                <h3 class="mb-0 text-dark">{{ user_profile.user.get_full_name|default:user_profile.user.username }}</h3>
-                                {% if user_badge %}
-                                <span class="badge {{ user_badge.bg_color }} {{ user_badge.text_color }} px-2 py-1" style="font-size: 0.85rem;">
+                        <!-- ===== AVATAR Y BADGE ===== -->
+                        <div class="col-md-3 text-center mb-4 mb-md-0">
+                            <div class="mb-3">
+                                {% if user_profile.avatar %}
+                                <img src="{{ user_profile.avatar.url }}" class="rounded-circle border border-3 border-primary" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
+                                {% else %}
+                                <div class="bg-primary text-white rounded-circle border border-3 border-primary d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                    <i class="fas fa-user fa-3x"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if user_badge %}
+                            <div class="mb-3">
+                                <span class="badge {{ user_badge.bg_color }} {{ user_badge.text_color }} px-3 py-2" style="font-size: 1rem;">
                                     <i class="{{ user_badge.icon }} me-1"></i>
                                     {{ user_badge.name }}
                                 </span>
-                                {% endif %}
                             </div>
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-envelope me-2"></i>
-                                {{ user_profile.user.email }}
+                            {% endif %}
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-calendar me-1"></i>
+                                Miembro desde {{ user_profile.created_at|date:"d/m/Y" }}
                             </p>
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-user-tag me-2"></i>
-                                Rol: {{ user_profile.get_role_display }}
-                            </p>
-                            {% if user_profile.phone %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-phone me-2"></i>
-                                    {{ user_profile.phone }}
-                                </p>
-                            {% endif %}
-                            {% if user_profile.city or user_profile.country %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-map-marker-alt me-2"></i>
-                                    {% if user_profile.city %}{{ user_profile.city }}{% endif %}{% if user_profile.city and user_profile.country %}, {% endif %}{% if user_profile.country %}{{ user_profile.country }}{% endif %}
-                                </p>
-                            {% endif %}
-                            {% if user_profile.linkedin_url %}
-                                <p class="text-muted mb-2">
-                                    <i class="fab fa-linkedin me-2"></i>
-                                    <a href="{{ user_profile.linkedin_url }}" target="_blank" class="text-decoration-none">LinkedIn</a>
-                                </p>
-                            {% endif %}
-                            {% if user_profile.portfolio_url %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-globe me-2"></i>
-                                    <a href="{{ user_profile.portfolio_url }}" target="_blank" class="text-decoration-none">Portfolio/Website</a>
-                                </p>
-                            {% endif %}
-                            {% if user_profile.years_of_experience %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-briefcase me-2"></i>
-                                    {{ user_profile.years_of_experience }} año{{ user_profile.years_of_experience|pluralize }} de experiencia
-                                </p>
-                            {% endif %}
-                            {% if user_profile.specialization %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-tools me-2"></i>
-                                    Especialización: {{ user_profile.specialization }}
-                                </p>
-                            {% endif %}
-                            {% if user_profile.languages %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-language me-2"></i>
-                                    Idiomas: {{ user_profile.languages }}
-                                </p>
-                            {% endif %}
-                            {% if user_profile.availability_status %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-calendar-check me-2"></i>
-                                    Disponibilidad: {{ user_profile.get_availability_status_display }}
-                                </p>
-                            {% endif %}
-                            {% if user_profile.bio %}
-                                <p class="text-muted mb-2">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    {{ user_profile.bio }}
-                                </p>
-                            {% endif %}
-                            <div class="mt-3">
+                        </div>
+                        
+                        <!-- ===== INFORMACIÓN PERSONAL ===== -->
+                        <div class="col-md-9">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h2 class="mb-1 text-dark">{{ user_profile.user.get_full_name|default:user_profile.user.username }}</h2>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-user-tag me-2"></i>
+                                        {{ user_profile.get_role_display }}
+                                    </p>
+                                </div>
                                 <a href="{% url 'update_profile' %}" class="btn btn-primary">
                                     <i class="fas fa-edit me-2"></i>
                                     Editar Perfil
                                 </a>
                             </div>
-                        </div>
-                        <!-- ===== AVATAR Y FECHA ===== -->
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                {% if user_profile.avatar %}
-                                <img src="{{ user_profile.avatar.url }}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;" alt="Avatar">
-                                {% else %}
-                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                    <i class="fas fa-user fa-2x"></i>
+                            
+                            <hr class="my-3">
+                            
+                            <!-- Información de Contacto -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <i class="fas fa-envelope me-2 text-primary"></i>
+                                        <strong>Email:</strong>
+                                        <a href="mailto:{{ user_profile.user.email }}" class="text-decoration-none">{{ user_profile.user.email }}</a>
+                                    </p>
+                                    {% if user_profile.phone %}
+                                    <p class="mb-2">
+                                        <i class="fas fa-phone me-2 text-success"></i>
+                                        <strong>Teléfono:</strong> {{ user_profile.phone }}
+                                    </p>
+                                    {% endif %}
+                                    {% if user_profile.role != 'company_rep' and user_profile.role != 'staff' %}
+                                        {% if user_profile.city or user_profile.country %}
+                                        <p class="mb-2">
+                                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                                            <strong>Ubicación:</strong>
+                                            {% if user_profile.city %}{{ user_profile.city }}{% endif %}{% if user_profile.city and user_profile.country %}, {% endif %}{% if user_profile.country %}{{ user_profile.country }}{% endif %}
+                                        </p>
+                                        {% endif %}
+                                        {% if user_profile.years_of_experience %}
+                                        <p class="mb-2">
+                                            <i class="fas fa-briefcase me-2 text-warning"></i>
+                                            <strong>Experiencia:</strong> {{ user_profile.years_of_experience }} año{{ user_profile.years_of_experience|pluralize }}
+                                        </p>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {% if user_profile.role != 'company_rep' and user_profile.role != 'staff' %}
+                                        {% if user_profile.linkedin_url %}
+                                        <p class="mb-2">
+                                            <i class="fab fa-linkedin me-2 text-info"></i>
+                                            <strong>LinkedIn:</strong>
+                                            <a href="{{ user_profile.linkedin_url }}" target="_blank" class="text-decoration-none">Ver perfil</a>
+                                        </p>
+                                        {% endif %}
+                                        {% if user_profile.portfolio_url %}
+                                        <p class="mb-2">
+                                            <i class="fas fa-globe me-2 text-primary"></i>
+                                            <strong>Portfolio:</strong>
+                                            <a href="{{ user_profile.portfolio_url }}" target="_blank" class="text-decoration-none">Ver sitio</a>
+                                        </p>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Información Profesional (solo para candidatos) -->
+                            {% if user_profile.role != 'company_rep' and user_profile.role != 'staff' %}
+                                {% if user_profile.specialization or user_profile.languages or user_profile.availability_status %}
+                                <hr class="my-3">
+                                <div class="row mb-3">
+                                    {% if user_profile.specialization %}
+                                    <div class="col-md-4 mb-2">
+                                        <p class="mb-1">
+                                            <i class="fas fa-tools me-2 text-info"></i>
+                                            <strong>Especialización:</strong>
+                                        </p>
+                                        <p class="text-muted">{{ user_profile.specialization }}</p>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.languages %}
+                                    <div class="col-md-4 mb-2">
+                                        <p class="mb-1">
+                                            <i class="fas fa-language me-2 text-success"></i>
+                                            <strong>Idiomas:</strong>
+                                        </p>
+                                        <p class="text-muted">{{ user_profile.languages }}</p>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.availability_status %}
+                                    <div class="col-md-4 mb-2">
+                                        <p class="mb-1">
+                                            <i class="fas fa-calendar-check me-2 text-warning"></i>
+                                            <strong>Disponibilidad:</strong>
+                                        </p>
+                                        <p class="text-muted">{{ user_profile.get_availability_status_display }}</p>
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 {% endif %}
-                                <p class="text-muted">Miembro desde {{ user_profile.created_at|date:"d/m/Y" }}</p>
+                            {% endif %}
+                            
+                            <!-- Biografía (solo para candidatos) -->
+                            {% if user_profile.bio and user_profile.role != 'company_rep' and user_profile.role != 'staff' %}
+                            <hr class="my-3">
+                            <div class="mb-3">
+                                <p class="mb-1">
+                                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                                    <strong>Acerca de mí:</strong>
+                                </p>
+                                <p class="text-muted">{{ user_profile.bio }}</p>
                             </div>
+                            {% endif %}
+                            
+                            <!-- Información de la empresa para company_rep -->
+                            {% if user_profile.role == 'company_rep' and company %}
+                            <hr class="my-3">
+                            <div class="mt-3">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-building me-2 text-primary"></i>
+                                    Empresa Asociada
+                                </h5>
+                                <div class="card border-primary shadow-sm">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-2 text-center mb-3 mb-md-0">
+                                                {% if company.logo %}
+                                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="img-fluid rounded" style="max-height: 60px; object-fit: contain;">
+                                                {% else %}
+                                                <div class="bg-light rounded d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                    <i class="fas fa-building fa-2x text-muted"></i>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h6 class="mb-2">
+                                                    <strong>{{ company.name }}</strong>
+                                                </h6>
+                                                {% if company.description %}
+                                                <p class="small text-muted mb-2">{{ company.description|truncatewords:15 }}</p>
+                                                {% endif %}
+                                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                                    {% if company.sector %}
+                                                    <span class="badge bg-info">
+                                                        <i class="fas fa-industry me-1"></i>{{ company.sector }}
+                                                    </span>
+                                                    {% endif %}
+                                                    {% if company.location %}
+                                                    <span class="badge bg-secondary">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>{{ company.location }}
+                                                    </span>
+                                                    {% endif %}
+                                                    {% if company.website %}
+                                                    <a href="{{ company.website }}" target="_blank" class="badge bg-primary text-decoration-none">
+                                                        <i class="fas fa-globe me-1"></i>Sitio Web
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    <a href="{% url 'company_dashboard' %}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-chart-line me-1"></i>Panel de Control
+                                                    </a>
+                                                    <a href="{% url 'edit_company' company.id %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-edit me-1"></i>Editar Empresa
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

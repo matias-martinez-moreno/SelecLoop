@@ -53,24 +53,50 @@ def login_view(request):
                 profile = getattr(user, 'profile', None)
                 if profile is None:
                     # Determinar rol por defecto
-                    if user.is_staff:
+                    if user.is_staff or user.username.lower() == 'company':
                         default_role = 'staff'
-                    elif user.username.lower() == 'company':
+                    elif user.username.lower() == 'magneto':
                         default_role = 'company_rep'
                     else:
                         default_role = 'candidate'
-                    UserProfile.objects.create(user=user, role=default_role)
-                    profile = user.profile
+                    profile = UserProfile.objects.create(user=user, role=default_role)
+                    
+                    # Asociar automáticamente la empresa "Magneto Empleos" solo si el usuario es "magneto"
+                    if default_role == 'company_rep' and user.username.lower() == 'magneto':
+                        try:
+                            from companies.models import Company
+                            company = Company.objects.filter(name__icontains='Magneto Empleos').first()
+                            if company:
+                                profile.company = company
+                                profile.save()
+                        except Exception:
+                            # No bloquear el login si falla la asociación de empresa
+                            pass
                 else:
                     # Sincronizar rol con el estado del usuario/datos conocidos
                     updated_role = None
-                    if user.is_staff and profile.role != 'staff':
+                    if (user.is_staff or user.username.lower() == 'company') and profile.role != 'staff':
                         updated_role = 'staff'
-                    elif user.username.lower() == 'company' and profile.role != 'company_rep':
+                        # Si cambia a staff, eliminar empresa asociada
+                        if profile.company:
+                            profile.company = None
+                    elif user.username.lower() == 'magneto' and profile.role != 'company_rep':
                         updated_role = 'company_rep'
                     if updated_role:
                         profile.role = updated_role
                         profile.save()
+                    
+                    # Asociar automáticamente la empresa "Magneto Empleos" solo si el usuario es "magneto"
+                    if profile.role == 'company_rep' and not profile.company and user.username.lower() == 'magneto':
+                        try:
+                            from companies.models import Company
+                            company = Company.objects.filter(name__icontains='Magneto Empleos').first()
+                            if company:
+                                profile.company = company
+                                profile.save()
+                        except Exception:
+                            # No bloquear el login si falla la asociación de empresa
+                            pass
             except Exception as e:
                 # No bloquear el login por fallo en creación de perfil
                 messages.warning(request, f'No se pudo verificar el perfil del usuario: {str(e)}')
@@ -179,12 +205,21 @@ def get_user_badge(user_profile):
 
 @login_required
 def my_profile_view(request):
-    """Vista para mostrar el perfil del usuario"""
+    """Vista para mostrar el perfil del usuario - Muestra la misma información para todos los roles"""
     user_profile = request.user.profile
     
     # Obtener badge del usuario
     user_badge = get_user_badge(user_profile)
     
+    # Para todos los roles, mostrar la misma información básica del perfil
+    # Las estadísticas de candidato (logros, reseñas, etc.) solo se muestran si el usuario es candidato
+    context = {
+        'user_profile': user_profile,
+        'user_badge': user_badge,
+        'show_stats': user_profile.role == 'candidate',  # Solo mostrar stats para candidatos
+    }
+    
+    # Si es candidato, agregar estadísticas adicionales
     if user_profile.role == 'candidate':
         # Importar modelos necesarios
         from reviews.models import Review, PendingReview
@@ -225,9 +260,7 @@ def my_profile_view(request):
         companies_reviewed = Review.objects.filter(user_profile=user_profile).values('company').distinct().count()
         work_experiences = WorkHistory.objects.filter(user_profile=user_profile).count()
         
-        context = {
-            'user_profile': user_profile,
-            'user_badge': user_badge,
+        context.update({
             'total_reviews': total_reviews,
             'approved_reviews': approved_reviews,
             'pending_approval': pending_approval,
@@ -238,14 +271,25 @@ def my_profile_view(request):
             'user_achievements': user_achievements,
             'companies_reviewed': companies_reviewed,
             'work_experiences': work_experiences,
-            'show_stats': True,
-        }
+        })
     else:
-        context = {
-            'user_profile': user_profile,
-            'user_badge': user_badge,
-            'show_stats': False,
-        }
+        # Para company_rep y staff, no mostrar estadísticas de candidato
+        context.update({
+            'total_reviews': 0,
+            'approved_reviews': 0,
+            'pending_approval': 0,
+            'pending_reviews': [],
+            'work_history': [],
+            'latest_reviews': [],
+            'achievement_count': 0,
+            'user_achievements': [],
+            'companies_reviewed': 0,
+            'work_experiences': 0,
+        })
+        
+        # Si es company_rep, agregar información de la empresa asociada
+        if user_profile.role == 'company_rep' and user_profile.company:
+            context['company'] = user_profile.company
     
     return render(request, 'core/profile.html', context)
 
@@ -332,22 +376,9 @@ def view_user_profile_view(request, user_id):
 
 @login_required
 def update_profile_view(request):
-    """Permite al usuario actualizar su nombre visible y foto."""
+    """Permite al usuario actualizar su perfil completo."""
     user = request.user
-    initial = {
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'phone': getattr(user.profile, 'phone', ''),
-        'city': getattr(user.profile, 'city', ''),
-        'country': getattr(user.profile, 'country', ''),
-        'linkedin_url': getattr(user.profile, 'linkedin_url', ''),
-        'portfolio_url': getattr(user.profile, 'portfolio_url', ''),
-        'years_of_experience': getattr(user.profile, 'years_of_experience', None),
-        'specialization': getattr(user.profile, 'specialization', ''),
-        'languages': getattr(user.profile, 'languages', ''),
-        'availability_status': getattr(user.profile, 'availability_status', ''),
-        'bio': getattr(user.profile, 'bio', ''),
-    }
+    profile = user.profile
 
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, user=user)
@@ -378,9 +409,10 @@ def update_profile_view(request):
                 for error in errors:
                     messages.error(request, f'❌ {field_name}: {error}')
     else:
-        form = ProfileUpdateForm(initial=initial, user=user)
+        # El formulario precargará automáticamente los datos del usuario
+        form = ProfileUpdateForm(user=user)
 
-    return render(request, 'core/profile_update.html', {'form': form})
+    return render(request, 'core/profile_update.html', {'form': form, 'user': user})
 
 
 def password_reset_request_view(request):

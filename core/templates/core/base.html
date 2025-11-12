@@ -1651,15 +1651,27 @@
                             </a>
                         </div>
                         <div class="nav-item">
+                            <a href="{% url 'company_reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'company_reviews' %}active{% endif %}" data-tooltip="Reseñas de la Empresa">
+                                <i class="fas fa-comments"></i>
+                                <span>Reseñas de la Empresa</span>
+                            </a>
+                        </div>
+                        <div class="nav-item">
                             <a href="{% url 'my_profile' %}" class="nav-link profile-btn {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
                                 <i class="fas fa-user"></i>
                                 <span>Mi Perfil</span>
                             </a>
                         </div>
                     {% elif user.profile.role == 'staff' %}
-                        <!-- Navegación para Staff del Sistema (simplificada) -->
+                        <!-- Navegación para Staff del Sistema -->
                         <div class="nav-item">
-                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
+                            <a href="{% url 'staff_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}" data-tooltip="Dashboard Admin">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Dashboard Admin</span>
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="{% url 'my_profile' %}" class="nav-link profile-btn {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
                                 <i class="fas fa-user"></i>
                                 <span>Mi Perfil</span>
                             </a>
@@ -1684,14 +1696,6 @@
                                 <span>Mi Historial Laboral</span>
                             </a>
                         </div>
-                        <div class="nav-item">
-                            <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
-                                <i class="fas fa-user"></i>
-                                <span>Mi Perfil</span>
-                            </a>
-                        </div>
-                    {% elif user.is_staff %}
-                        <!-- Navegación para el Staff (simplificada) -->
                         <div class="nav-item">
                             <a href="{% url 'my_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'my_profile' %}active{% endif %}" data-tooltip="Mi Perfil">
                                 <i class="fas fa-user"></i>
@@ -1744,61 +1748,140 @@
             <div class="help-guide-body">
                 {% if user.is_authenticated %}
                     {% if user.profile.role == 'company_rep' %}
-                        <!-- Guía para Empresas -->
+                        <!-- Guía para Representantes de Empresa -->
                         <div class="help-section">
                             <h4><i class="fas fa-building"></i> Guía para Representantes de Empresa</h4>
                             <div class="help-steps">
                                 <div class="help-step">
                                     <div class="step-number">1</div>
                                     <div class="step-content">
-                                        <h5>📊 Panel de Empresa</h5>
-                                        <p><strong>Vista general:</strong> Accede a estadísticas clave: Total de Empresas, Total de Reseñas y Total de Candidatos. Navega por todas las empresas registradas en la plataforma.</p>
-                                        <p><em>💡 Tip:</em> Usa la búsqueda para encontrar empresas específicas rápidamente.</p>
+                                        <h5>📊 Panel de Control de tu Empresa</h5>
+                                        <p><strong>Estadísticas clave:</strong> Accede a métricas principales de tu empresa: Calificación General, Total de Reseñas, Tasa de Aprobación y Respuestas Rápidas. También verás métricas de calidad: Comunicación, Dificultad y Velocidad del proceso de selección.</p>
+                                        <p><em>💡 Tip:</em> Revisa las recomendaciones inteligentes que te ayudan a identificar áreas de mejora específicas.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">2</div>
                                     <div class="step-content">
-                                        <h5>🏢 Detalles de tu Empresa</h5>
-                                        <p><strong>Análisis completo:</strong> En la página de tu empresa encontrarás métricas exclusivas: Calificación General, Total de Reseñas, Tasa de Aprobación, Respuestas Rápidas, y métricas de calidad (Comunicación, Dificultad, Velocidad).</p>
-                                        <p><em>💡 Tip:</em> Revisa las recomendaciones inteligentes que te ayudan a mejorar áreas específicas.</p>
+                                        <h5>📈 Gráficas y Análisis Visual</h5>
+                                        <p><strong>Visualiza datos:</strong> Accede a 4 gráficas interactivas en tu panel: Distribución de Calificaciones, Distribución por Modalidad, Fortalezas y Debilidades (gráfico de barras), y Distribución de Tiempo de Respuesta. También verás la Comparación Mes a Mes con evolución de calificaciones y total de reseñas.</p>
+                                        <p><em>💡 Tip:</em> Analiza las tendencias mensuales para identificar patrones y mejoras en tu proceso de selección.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">3</div>
                                     <div class="step-content">
-                                        <h5>📈 Gráficas y Análisis Visual</h5>
-                                        <p><strong>Visualiza datos:</strong> Accede a 5 gráficas interactivas: Distribución de Calificaciones, Distribución por Modalidad, Fortalezas y Debilidades (Radar), Distribución de Tiempo de Respuesta, y Comparación Mes a Mes con evolución de calificaciones, totales y aprobadas.</p>
-                                        <p><em>💡 Tip:</em> Analiza las tendencias mensuales para identificar patrones y mejoras.</p>
+                                        <h5>💬 Reseñas de la Empresa</h5>
+                                        <p><strong>Gestiona reseñas:</strong> Ve todas las reseñas aprobadas de tu empresa. Filtra por calificación (1-5 estrellas), modalidad (presencial, remoto, híbrido) y ordena por fecha o calificación. Puedes ver el perfil de cada candidato que comentó.</p>
+                                        <p><em>💡 Tip:</em> Responde a comentarios constructivos y usa el feedback para mejorar tu proceso de selección.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">4</div>
                                     <div class="step-content">
-                                        <h5>📥 Exportar Reportes a Excel</h5>
-                                        <p><strong>Análisis detallado:</strong> Descarga reportes profesionales con filtros avanzados: selecciona período (mes específico o todos), calificación (1-5 estrellas), y columnas personalizadas. El reporte incluye estadísticas generales, gráficas de distribución y reseñas detalladas.</p>
-                                        <p><em>💡 Tip:</em> Exporta mensualmente para hacer seguimiento de tendencias a largo plazo.</p>
+                                        <h5>🚫 Reseñas Rechazadas</h5>
+                                        <p><strong>Transparencia total:</strong> Revisa todas las reseñas rechazadas por el sistema de verificación automática (Hugging Face). Ve la razón del rechazo, categoría (lenguaje ofensivo, spam, contenido discriminatorio, temas fuera de lugar) y nivel de confianza del sistema. Puedes ver el perfil de cada candidato.</p>
+                                        <p><em>💡 Tip:</em> Usa esta información para entender qué tipo de contenido no es apropiado y mejorar tus procesos.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">5</div>
                                     <div class="step-content">
-                                        <h5>🚫 Reseñas Rechazadas</h5>
-                                        <p><strong>Transparencia total:</strong> Revisa todas las reseñas rechazadas por el sistema de verificación automática (Hugging Face). Ve la razón del rechazo, categoría (tóxico, spam, discurso de odio) y nivel de confianza del sistema.</p>
-                                        <p><em>💡 Tip:</em> Usa esta información para entender qué tipo de contenido no es apropiado.</p>
+                                        <h5>📥 Exportar Reportes a Excel</h5>
+                                        <p><strong>Análisis detallado:</strong> Descarga reportes profesionales con filtros avanzados desde el Panel de Control: selecciona período (mes específico o todos), calificación (1-5 estrellas), y columnas personalizadas. El reporte incluye estadísticas generales, gráficas de distribución (barras, pastel, línea) y reseñas detalladas con todos los datos.</p>
+                                        <p><em>💡 Tip:</em> Exporta mensualmente para hacer seguimiento de tendencias a largo plazo y compartir con tu equipo.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">6</div>
                                     <div class="step-content">
                                         <h5>👤 Mi Perfil</h5>
-                                        <p><strong>Gestiona tu cuenta:</strong> Actualiza tu información personal, foto de perfil y datos de contacto. Mantén tu perfil actualizado para una mejor comunicación.</p>
-                                        <p><em>💡 Tip:</em> Una foto profesional mejora la confianza con los candidatos.</p>
+                                        <p><strong>Gestiona tu cuenta:</strong> Actualiza tu información personal, foto de perfil, teléfono, ciudad, país, LinkedIn, portfolio, años de experiencia, especialización, idiomas, disponibilidad y biografía. Desde aquí puedes acceder a editar la información de tu empresa.</p>
+                                        <p><em>💡 Tip:</em> Mantén tu perfil actualizado y completa toda la información profesional para una mejor comunicación con candidatos.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <h5>✏️ Editar Empresa</h5>
+                                        <p><strong>Actualiza información:</strong> Desde tu perfil puedes editar la información de tu empresa: nombre, logo, descripción, sector, ubicación, región, país y sitio web. No puedes cambiar el estado activo/inactivo (solo el administrador puede hacerlo).</p>
+                                        <p><em>💡 Tip:</em> Mantén la información de tu empresa actualizada para atraer a los mejores candidatos.</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    {% else %}
+                    {% elif user.profile.role == 'staff' %}
+                        <!-- Guía para Staff del Sistema -->
+                        <div class="help-section">
+                            <h4><i class="fas fa-shield-alt"></i> Guía para Staff del Sistema</h4>
+                            <div class="help-steps">
+                                <div class="help-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h5>📊 Dashboard de Administración</h5>
+                                        <p><strong>Gestión central:</strong> Accede al panel de administración donde verás estadísticas generales: Total de Empresas, Empresas Activas, Empresas Inactivas y Total de Reseñas. Busca empresas por nombre, sector o ciudad para gestionarlas rápidamente.</p>
+                                        <p><em>💡 Tip:</em> Usa la búsqueda para encontrar empresas específicas y gestionar grandes volúmenes de datos eficientemente.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h5>➕ Crear Nuevas Empresas</h5>
+                                        <p><strong>Registra empresas:</strong> Desde el Dashboard Admin, puedes crear nuevas empresas en el sistema. Completa la información: nombre, logo, descripción, sector, ubicación, región, país, sitio web y estado (activa/inactiva).</p>
+                                        <p><em>💡 Tip:</em> Verifica que la información sea correcta antes de crear la empresa, especialmente el nombre y el sector.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h5>✏️ Editar Empresas</h5>
+                                        <p><strong>Actualiza información:</strong> Puedes editar toda la información de cualquier empresa: nombre, logo, descripción, sector, ubicación, región, país, sitio web y estado (activa/inactiva). Los cambios se reflejan inmediatamente en la plataforma.</p>
+                                        <p><em>💡 Tip:</em> Revisa periódicamente la información de las empresas para asegurar que esté actualizada.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h5>🔄 Activar/Desactivar Empresas</h5>
+                                        <p><strong>Control de visibilidad:</strong> Puedes activar o desactivar empresas desde el Dashboard Admin. Las empresas inactivas no son visibles para los candidatos, pero sus datos se conservan. Útil para empresas que temporalmente no están recibiendo aplicaciones.</p>
+                                        <p><em>💡 Tip:</em> Desactiva empresas que ya no están operativas o que tienen problemas, pero no las elimines si tienen reseñas históricas valiosas.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <h5>🗑️ Eliminar Empresas</h5>
+                                        <p><strong>Eliminación permanente:</strong> Puedes eliminar empresas del sistema completamente. Esta acción es permanente y eliminará todas las reseñas asociadas. Úsala con precaución y solo para empresas que no deberían estar en la plataforma.</p>
+                                        <p><em>💡 Tip:</em> Antes de eliminar, considera desactivar la empresa primero. Solo elimina si es absolutamente necesario.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">6</div>
+                                    <div class="step-content">
+                                        <h5>👁️ Ver Detalles de Empresas</h5>
+                                        <p><strong>Información completa:</strong> Desde el Dashboard Admin, puedes ver los detalles completos de cualquier empresa: estadísticas, reseñas aprobadas y rechazadas, gráficas de análisis, y toda la información de la empresa. También puedes ver los perfiles de los candidatos que comentaron.</p>
+                                        <p><em>💡 Tip:</em> Revisa las reseñas rechazadas para entender qué tipo de contenido está siendo filtrado por el sistema.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <h5>🗑️ Eliminar Reseñas</h5>
+                                        <p><strong>Moderación de contenido:</strong> Puedes eliminar reseñas específicas desde la vista de detalles de la empresa o desde la página de reseñas rechazadas. Esta acción es permanente y útil para moderar contenido inapropiado que pasó el filtro automático.</p>
+                                        <p><em>💡 Tip:</em> Usa esta función con criterio. El sistema de verificación automática (Hugging Face) ya filtra la mayoría del contenido inapropiado.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">8</div>
+                                    <div class="step-content">
+                                        <h5>👤 Mi Perfil</h5>
+                                        <p><strong>Gestiona tu cuenta:</strong> Actualiza tu información personal, foto de perfil, teléfono, ciudad, país, LinkedIn, portfolio, años de experiencia, especialización, idiomas, disponibilidad y biografía. Tu perfil es independiente de las empresas que gestionas.</p>
+                                        <p><em>💡 Tip:</em> Mantén tu perfil profesional actualizado, ya que los candidatos pueden ver tu perfil si interactúas con ellos.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif user.profile.role == 'candidate' %}
                         <!-- Guía para Candidatos -->
                         <div class="help-section">
                             <h4><i class="fas fa-user"></i> Guía para Candidatos</h4>
@@ -1807,56 +1890,64 @@
                                     <div class="step-number">1</div>
                                     <div class="step-content">
                                         <h5>🔍 Explorar Empresas</h5>
-                                        <p><strong>Descubre oportunidades:</strong> Navega por empresas activas, filtra por nombre, ciudad, sector y modalidad. Cada empresa muestra calificación promedio, total de reseñas y estadísticas clave para ayudarte a decidir.</p>
-                                        <p><em>💡 Tip:</em> Revisa las reseñas pendientes en tu dashboard para empresas donde has trabajado.</p>
+                                        <p><strong>Descubre oportunidades:</strong> Navega por empresas activas en el dashboard principal. Filtra por nombre de empresa, ciudad, sector y modalidad de trabajo (presencial, remoto, híbrido). Cada empresa muestra calificación promedio, total de reseñas y estadísticas clave para ayudarte a decidir.</p>
+                                        <p><em>💡 Tip:</em> Revisa las reseñas pendientes que aparecen en tu dashboard para empresas donde has trabajado o participado en procesos de selección.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">2</div>
                                     <div class="step-content">
                                         <h5>🏢 Detalles de Empresa</h5>
-                                        <p><strong>Información completa:</strong> En cada empresa verás estadísticas detalladas: Calificación General, Respuesta Rápida, Reseñas Recientes, Modalidad más común, Dificultad del Proceso y Calificación de Comunicación. Además, 5 gráficas interactivas muestran distribuciones y tendencias.</p>
-                                        <p><em>💡 Tip:</em> Filtra reseñas por calificación, modalidad y orden (recientes, antiguas, mejor/peor calificadas).</p>
+                                        <p><strong>Información completa:</strong> En cada empresa verás estadísticas detalladas: Calificación General, Total de Reseñas, Respuesta Rápida, Reseñas Recientes, Modalidad más común, Dificultad del Proceso y Calificación de Comunicación. Además, 4 gráficas interactivas muestran distribuciones y tendencias. Puedes filtrar reseñas por calificación, modalidad y orden (recientes, antiguas, mejor/peor calificadas).</p>
+                                        <p><em>💡 Tip:</em> Lee varias reseñas antes de tomar una decisión. Las reseñas equilibradas te dan una visión más completa.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">3</div>
                                     <div class="step-content">
                                         <h5>⭐ Crear Reseñas</h5>
-                                        <p><strong>Comparte tu experiencia:</strong> Escribe reseñas detalladas sobre procesos de selección o experiencias laborales. Incluye calificación general (1-5 estrellas), comunicación, dificultad, tiempo de respuesta, modalidad, pros, contras y preguntas de entrevista.</p>
-                                        <p><em>💡 Tip:</em> Sé honesto y específico. Las reseñas pasan por verificación automática para mantener calidad.</p>
+                                        <p><strong>Comparte tu experiencia:</strong> Escribe reseñas detalladas sobre procesos de selección. Incluye calificación general (1-5 estrellas), comunicación, dificultad, tiempo de respuesta, modalidad (presencial, remoto, híbrido), pros, contras y preguntas de entrevista (obligatorio). Puedes adjuntar una imagen opcional. Las reseñas pasan por verificación automática (Hugging Face) para detectar contenido inapropiado.</p>
+                                        <p><em>💡 Tip:</em> Sé honesto, específico y profesional. Las reseñas equilibradas y constructivas tienen más probabilidad de ser aprobadas.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">4</div>
                                     <div class="step-content">
-                                        <h5>👤 Mi Perfil</h5>
-                                        <p><strong>Tu identidad profesional:</strong> Gestiona tu información personal, foto y datos de contacto. Ve tu badge de logros (Principiante, Novato, Experto, Maestro, Leyenda) basado en logros obtenidos y reseñas publicadas. Revisa tus últimas 3 reseñas y estadísticas de actividad.</p>
-                                        <p><em>💡 Tip:</em> Completa tu perfil para aumentar tu credibilidad y obtener más logros.</p>
+                                        <h5>📋 Mi Historial Laboral</h5>
+                                        <p><strong>Construye credibilidad:</strong> Registra todas tus experiencias laborales: empresa, cargo, fechas de inicio/fin, y descripción de responsabilidades. Las empresas donde has trabajado aparecerán como reseñas pendientes en tu dashboard. Puedes ver y gestionar tu historial completo desde esta sección.</p>
+                                        <p><em>💡 Tip:</em> Añade todas tus experiencias laborales relevantes. Cuando crees una reseña desde el historial, el cargo se preseleccionará automáticamente.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">5</div>
                                     <div class="step-content">
-                                        <h5>📋 Mi Historial Laboral</h5>
-                                        <p><strong>Construye credibilidad:</strong> Registra todas tus experiencias laborales: empresa, cargo, fechas de inicio/fin, descripción de responsabilidades y logros. Las empresas donde has trabajado aparecerán como reseñas pendientes.</p>
-                                        <p><em>💡 Tip:</em> Añade métricas y resultados concretos para destacar tu impacto en cada posición.</p>
+                                        <h5>⭐ Mis Reseñas</h5>
+                                        <p><strong>Gestiona tu contribución:</strong> Revisa todas tus reseñas: aprobadas, pendientes y rechazadas. Ve el estado de cada una, fecha de publicación, calificación, y detalles completos. Las reseñas aprobadas son visibles públicamente en la página de la empresa. Puedes eliminar tus propias reseñas si es necesario.</p>
+                                        <p><em>💡 Tip:</em> Revisa tus reseñas rechazadas para entender qué contenido no es apropiado y mejorar futuras contribuciones.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">6</div>
                                     <div class="step-content">
-                                        <h5>⭐ Mis Reseñas</h5>
-                                        <p><strong>Gestiona tu contribución:</strong> Revisa todas tus reseñas: aprobadas, pendientes y rechazadas. Ve el estado de cada una, fecha de publicación y detalles completos. Las reseñas aprobadas son visibles públicamente.</p>
-                                        <p><em>💡 Tip:</em> Las reseñas equilibradas y profesionales tienen más probabilidad de ser aprobadas.</p>
+                                        <h5>👤 Mi Perfil</h5>
+                                        <p><strong>Tu identidad profesional:</strong> Gestiona tu información personal: nombre, foto de perfil, teléfono, ciudad, país, LinkedIn, portfolio, años de experiencia, especialización, idiomas, disponibilidad y biografía. Ve tu badge de logros (Principiante, Novato, Experto, Maestro, Leyenda) basado en reseñas publicadas. Revisa tus últimas 3 reseñas, logros obtenidos y estadísticas de actividad.</p>
+                                        <p><em>💡 Tip:</em> Completa tu perfil completamente para aumentar tu credibilidad. Una foto profesional y información detallada mejoran tu perfil.</p>
                                     </div>
                                 </div>
                                 <div class="help-step">
                                     <div class="step-number">7</div>
                                     <div class="step-content">
-                                        <h5>🏆 Mis Logros</h5>
-                                        <p><strong>Sistema de reconocimiento:</strong> Gana logros al completar acciones: Primera Reseña, Reseñador Activo, Explorador de Empresas, Colaborador, y más. Cada logro te acerca a un badge superior (Novato, Experto, Maestro, Leyenda).</p>
-                                        <p><em>💡 Tip:</em> Completa tu perfil, añade historial laboral y escribe reseñas para desbloquear logros.</p>
+                                        <h5>🏆 Sistema de Logros</h5>
+                                        <p><strong>Reconocimiento y progresión:</strong> Gana logros al completar acciones: crear reseñas, explorar empresas, y contribuir a la comunidad. Cada logro te acerca a un nivel superior: Principiante (0 reseñas), Novato (1+ reseñas), Experto (5+ reseñas), Maestro (10+ reseñas), Leyenda (20+ reseñas).</p>
+                                        <p><em>💡 Tip:</em> Completa tu perfil, añade historial laboral y escribe reseñas honestas para desbloquear logros y avanzar de nivel.</p>
+                                    </div>
+                                </div>
+                                <div class="help-step">
+                                    <div class="step-number">8</div>
+                                    <div class="step-content">
+                                        <h5>👥 Ver Perfiles de Otros Candidatos</h5>
+                                        <p><strong>Conecta con la comunidad:</strong> Desde las reseñas de empresas, puedes ver el perfil de otros candidatos que comentaron. Verás su información profesional, pero datos sensibles como teléfono y ciudad no son visibles para proteger la privacidad.</p>
+                                        <p><em>💡 Tip:</em> Conecta con otros candidatos a través de LinkedIn si está disponible en su perfil.</p>
                                     </div>
                                 </div>
                             </div>

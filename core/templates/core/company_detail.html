@@ -112,13 +112,26 @@
                             <i class="fas fa-building me-2"></i>
                             {{ company.name }}
                         </h4>
-                        {% if user.profile.role == 'company_rep' %}
-                            <a href="{% url 'edit_company' company.id %}" class="btn btn-sm" style="background: var(--secondary-blue); color: white; border: 1px solid var(--secondary-blue);" onmouseover="this.style.background='var(--primary-blue)'" onmouseout="this.style.background='var(--secondary-blue)'">
-                                <i class="fas fa-edit me-1"></i>Editar Datos
-                            </a>
-                        {% else %}
-                            <span class="text-muted small">Rol: {{ user.profile.role }}</span>
-                        {% endif %}
+                        <div class="d-flex gap-2">
+                            {% if user.profile.role == 'company_rep' and user.profile.company and user.profile.company.id == company.id %}
+                                <a href="{% url 'edit_company' company.id %}" class="btn btn-sm" style="background: var(--secondary-blue); color: white; border: 1px solid var(--secondary-blue);" onmouseover="this.style.background='var(--primary-blue)'" onmouseout="this.style.background='var(--secondary-blue)'">
+                                    <i class="fas fa-edit me-1"></i>Editar Datos
+                                </a>
+                            {% elif user.is_staff or user.profile.role == 'staff' %}
+                                <a href="{% url 'edit_company' company.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </a>
+                                <a href="{% url 'toggle_company_status' company.id %}" class="btn btn-sm {% if company.is_active %}btn-secondary{% else %}btn-success{% endif %}" onclick="return confirm('¿Estás seguro de {% if company.is_active %}desactivar{% else %}activar{% endif %} esta empresa?');">
+                                    <i class="fas fa-{% if company.is_active %}pause{% else %}play{% endif %} me-1"></i>
+                                    {% if company.is_active %}Desactivar{% else %}Activar{% endif %}
+                                </a>
+                                <a href="{% url 'delete_company' company.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de borrar esta empresa? Esta acción no se puede deshacer.');">
+                                    <i class="fas fa-trash me-1"></i>Borrar
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">Rol: {{ user.profile.role }}</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -367,7 +380,6 @@
                                     <div class="progress" style="height: 8px;">
                                         <div class="progress-bar bg-warning" role="progressbar" style="width: {{ role_kpis.fast_response_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.fast_response_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
-                                    <small class="text-muted">SLA cumplido</small>
                                 </div>
                             </div>
                         </div>
@@ -492,294 +504,22 @@
                     {% endif %}
     
                     {% elif user.profile.role == 'company_rep' %}
-                    <!-- Panel de Control Unificado -->
+                    <!-- Para company_rep, mostrar mensaje para ir al dashboard -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-header bg-primary text-white" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);">
-                                    <h3 class="h5 mb-0">
-                                        <i class="fas fa-chart-line me-2"></i>
-                                        Panel de Control de tu Empresa
-                                    </h3>
-                                </div>
-                                <div class="card-body">
-                                    <!-- Métricas Principales en Grid -->
-                                    <div class="row g-3 mb-4">
-                                        <!-- Calificación General -->
-                                        <div class="col-md-3 col-sm-6">
-                                            <div class="card h-100 border-primary border-2">
-                                                <div class="card-body text-center p-3">
-                                                    <div class="display-3 mb-2 text-primary fw-bold">{{ role_kpis.avg_overall|floatformat:1 }}</div>
-                                                    <div class="small text-muted mb-1">Calificación General</div>
-                                                    <div class="progress" style="height: 8px;">
-                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_overall 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_overall 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                    <small class="text-muted">de 5.0</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Total Reseñas -->
-                                        <div class="col-md-3 col-sm-6">
-                                            <div class="card h-100 border-info border-2">
-                                                <div class="card-body text-center p-3">
-                                                    <div class="display-3 mb-2 text-info fw-bold">{{ role_kpis.total_reviews }}</div>
-                                                    <div class="small text-muted mb-1">Total Reseñas</div>
-                                                    <div class="d-flex justify-content-center gap-2 small">
-                                                        <span class="badge bg-success">{{ role_kpis.approved_count }} aprobadas</span>
-                                                        {% if role_kpis.rejected_count > 0 %}
-                                                        <span class="badge bg-danger">{{ role_kpis.rejected_count }} rechazadas</span>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Tasa de Aprobación -->
-                                        <div class="col-md-3 col-sm-6">
-                                            <div class="card h-100 border-success border-2">
-                                                <div class="card-body text-center p-3">
-                                                    <div class="display-3 mb-2 text-success fw-bold">{{ role_kpis.approval_rate|floatformat:0 }}%</div>
-                                                    <div class="small text-muted mb-1">Tasa de Aprobación</div>
-                                                    <div class="progress" style="height: 8px;">
-                                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ role_kpis.approval_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.approval_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                    <small class="text-muted">{{ role_kpis.approved_count }} de {{ role_kpis.total_reviews }}</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Respuestas Rápidas -->
-                                        <div class="col-md-3 col-sm-6">
-                                            <div class="card h-100 border-warning border-2">
-                                                <div class="card-body text-center p-3">
-                                                    <div class="display-3 mb-2 text-warning fw-bold">{{ role_kpis.compromiso_rate|floatformat:0 }}%</div>
-                                                    <div class="small text-muted mb-1">Respuestas Rápidas</div>
-                                                    <div class="progress" style="height: 8px;">
-                                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ role_kpis.compromiso_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.compromiso_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                    <small class="text-muted">SLA cumplido</small>
-                                                </div>
-                                            </div>
-                                        </div>
+                            <div class="alert alert-info">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Para ver el Panel de Control completo de tu empresa, ve al Dashboard.</strong>
                                     </div>
-                                    
-                                    <!-- Métricas de Calidad del Proceso -->
-                                    <div class="row g-3 mb-4">
-                                        <div class="col-12">
-                                            <h6 class="text-muted mb-3">
-                                                <i class="fas fa-star me-2"></i>
-                                                Calidad del Proceso de Selección
-                                            </h6>
-                                        </div>
-                                        
-                                        <!-- Comunicación -->
-                                        <div class="col-md-4">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <div>
-                                                            <i class="fas fa-comments text-primary me-2"></i>
-                                                            <strong>Comunicación</strong>
-                                                        </div>
-                                                        <div class="h4 mb-0 text-primary">{{ role_kpis.avg_communication|floatformat:1 }}/5</div>
-                                                    </div>
-                                                    <div class="progress" style="height: 10px;">
-                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_communication 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_communication 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                    <small class="text-muted">Claridad en respuestas a candidatos</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Dificultad -->
-                                        <div class="col-md-4">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <div>
-                                                            <i class="fas fa-tasks text-warning me-2"></i>
-                                                            <strong>Dificultad</strong>
-                                                        </div>
-                                                        <div class="h4 mb-0 text-warning">{{ role_kpis.avg_difficulty|floatformat:1 }}/5</div>
-                                                    </div>
-                                                    <div class="progress" style="height: 10px;">
-                                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio role_kpis.avg_difficulty 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_difficulty 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                    <small class="text-muted">Complejidad del proceso</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Velocidad -->
-                                        <div class="col-md-4">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <div>
-                                                            <i class="fas fa-clock text-info me-2"></i>
-                                                            <strong>Velocidad</strong>
-                                                        </div>
-                                                        <div class="h4 mb-0 text-info">{{ role_kpis.avg_response_time|floatformat:1 }}/5</div>
-                                                    </div>
-                                                    <div class="progress" style="height: 10px;">
-                                                        <div class="progress-bar bg-info" role="progressbar" style="width: {% widthratio role_kpis.avg_response_time 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_response_time 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                    <small class="text-muted">Tiempo de respuesta</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <a href="{% url 'company_dashboard' %}" class="btn btn-primary">
+                                        <i class="fas fa-chart-line me-2"></i>Ir al Panel de Control
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Recomendaciones Inteligentes -->
-                    {% if role_kpis.recommendations %}
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h6 class="text-muted mb-3">
-                                <i class="fas fa-lightbulb me-2"></i>
-                                Recomendaciones Inteligentes
-                            </h6>
-                            <div class="row g-3">
-                                {% for rec in role_kpis.recommendations %}
-                                <div class="col-md-6">
-                                    <div class="card border-{{ rec.type }} h-100">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-start">
-                                                <div class="flex-shrink-0">
-                                                    <i class="{{ rec.icon }} fa-2x text-{{ rec.type }}"></i>
-                                                </div>
-                                                <div class="flex-grow-1 ms-3">
-                                                    <h6 class="card-title text-{{ rec.type }}">{{ rec.title }}</h6>
-                                                    <p class="card-text small mb-0">{{ rec.description }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Comparación Mes a Mes -->
-                    {% if role_kpis.monthly_comparison %}
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h6 class="text-muted mb-3">
-                                <i class="fas fa-chart-line me-2"></i>
-                                Comparación Mes a Mes
-                            </h6>
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-sm">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th style="min-width: 120px;">Mes</th>
-                                                    <th class="text-center" style="min-width: 100px;">Calificación</th>
-                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
-                                                    <th class="text-center" style="min-width: 100px;">Total Reseñas</th>
-                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
-                                                    <th class="text-center" style="min-width: 100px;">Aprobadas</th>
-                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
-                                                    <th class="text-center" style="min-width: 100px;">Rechazadas</th>
-                                                    <th class="text-center" style="min-width: 80px;">Cambio</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for comp in role_kpis.monthly_comparison %}
-                                                <tr>
-                                                    <td>
-                                                        <div class="fw-bold">{{ comp.month|fecha_espanol }}</div>
-                                                        <small class="text-muted">vs {{ comp.prev_month|fecha_espanol }}</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="fw-bold">{{ comp.curr_rating|floatformat:1 }}/5.0</div>
-                                                        <small class="text-muted">({{ comp.prev_rating|floatformat:1 }} antes)</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        {% if comp.rating_change > 0 %}
-                                                            <span class="badge bg-success">+{{ comp.rating_change|floatformat:1 }}</span>
-                                                        {% elif comp.rating_change < 0 %}
-                                                            <span class="badge bg-danger">{{ comp.rating_change|floatformat:1 }}</span>
-                                                        {% else %}
-                                                            <span class="badge bg-secondary">0.0</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="fw-bold">{{ comp.curr_count }}</div>
-                                                        <small class="text-muted">({{ comp.prev_count }} antes)</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        {% if comp.count_change > 0 %}
-                                                            <span class="badge bg-success">+{{ comp.count_change }}</span>
-                                                        {% elif comp.count_change < 0 %}
-                                                            <span class="badge bg-danger">{{ comp.count_change }}</span>
-                                                        {% else %}
-                                                            <span class="badge bg-secondary">0</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="fw-bold text-success">{{ comp.curr_approved }}</div>
-                                                        <small class="text-muted">({{ comp.prev_approved }} antes)</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        {% if comp.approval_change > 0 %}
-                                                            <span class="badge bg-success">+{{ comp.approval_change }}</span>
-                                                        {% elif comp.approval_change < 0 %}
-                                                            <span class="badge bg-danger">{{ comp.approval_change }}</span>
-                                                        {% else %}
-                                                            <span class="badge bg-secondary">0</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="fw-bold text-danger">{{ comp.curr_rejected }}</div>
-                                                        <small class="text-muted">({{ comp.prev_rejected }} antes)</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        {% if comp.rejection_change > 0 %}
-                                                            <span class="badge bg-danger">+{{ comp.rejection_change }}</span>
-                                                        {% elif comp.rejection_change < 0 %}
-                                                            <span class="badge bg-success">{{ comp.rejection_change }}</span>
-                                                        {% else %}
-                                                            <span class="badge bg-secondary">0</span>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Botones de Acción -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                <a href="{% url 'rejected_reviews' company.id %}" class="btn btn-outline-danger">
-                                    <i class="fas fa-ban me-2"></i>Ver Reseñas Rechazadas
-                                    {% if role_kpis.rejected_count > 0 %}
-                                    <span class="badge bg-danger ms-2">{{ role_kpis.rejected_count }}</span>
-                                    {% else %}
-                                    <span class="badge bg-secondary ms-2">0</span>
-                                    {% endif %}
-                                </a>
-                                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exportExcelModal">
-                                    <i class="fas fa-file-excel me-2"></i>Descargar Excel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
                     {% endif %}
                 </div>
             </div>
@@ -844,16 +584,16 @@
                             <div class="card chart-card shadow-sm h-100">
                                 <div class="card-body">
                                     <h6 class="card-title mb-3">
-                                        <i class="fas fa-radar text-info me-2"></i>
+                                        <i class="fas fa-radar text-success me-2"></i>
                                         Fortalezas y Debilidades
                                     </h6>
                                     {% if chart_data.strengths_weaknesses %}
                                     <div class="chart-container">
-                                        <canvas id="strengthsChart"></canvas>
+                                        <canvas id="strengthsWeaknessesChart"></canvas>
                                     </div>
                                     {% else %}
                                     <div class="text-center py-5">
-                                        <i class="fas fa-chart-area fa-3x text-muted mb-3"></i>
+                                        <i class="fas fa-radar fa-3x text-muted mb-3"></i>
                                         <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     </div>
                                     {% endif %}
@@ -864,7 +604,7 @@
                             <div class="card chart-card shadow-sm h-100">
                                 <div class="card-body">
                                     <h6 class="card-title mb-3">
-                                        <i class="fas fa-clock text-success me-2"></i>
+                                        <i class="fas fa-clock text-info me-2"></i>
                                         Distribución de Tiempo de Respuesta
                                     </h6>
                                     {% if chart_data.response_time_distribution %}
@@ -903,8 +643,8 @@
     {% endif %}
 
     <!-- Contenido condicional según acceso -->
-    {% if user_can_access %}
-        <!-- Usuario puede acceder - mostrar reseñas -->
+    {% if user.is_staff or user.profile.role == 'staff' or user_can_access and user.profile.role != 'company_rep' %}
+        <!-- Usuario puede acceder - mostrar reseñas (candidatos y staff, no para company_rep) -->
         <div id="reviews-section" class="row mb-4">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -994,52 +734,59 @@
                             <div class="card h-100 shadow-sm">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0;">
-                                        <h6 class="mb-0 text-truncate" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}">
+                                        <h6 class="mb-0 text-truncate text-white" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}">
+                                            <i class="fas fa-user me-1"></i>
                                             {{ review.user_profile.user.get_full_name|default:review.user_profile.user.username }}
                                         </h6>
                                         {% if user.is_authenticated %}
                                         <a href="{% url 'view_user_profile' review.user_profile.user.id %}" 
-                                           class="btn btn-sm btn-secondary flex-shrink-0" 
+                                           class="btn btn-xs flex-shrink-0" 
                                            title="Ver perfil del usuario"
-                                           style="background-color: #6c757d; border-color: #6c757d; color: #ffffff;">
+                                           style="background-color: #6c757d; border-color: #6c757d; color: #ffffff; font-size: 0.7rem; padding: 0.2em 0.7em;">
                                             <i class="fas fa-user me-1"></i>Ver Perfil
                                         </a>
                                         {% endif %}
                                     </div>
-                                    <span class="badge bg-success flex-shrink-0">
-                                        <i class="fas fa-check me-1"></i>Aprobada
-                                    </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-success flex-shrink-0">
+                                            <i class="fas fa-check me-1"></i>Aprobada
+                                        </span>
+                                        {% if user.is_staff or user.profile.role == 'staff' %}
+                                        <a href="{% url 'delete_review' review.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de borrar esta reseña? Esta acción no se puede deshacer.');" title="Borrar reseña">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <div class="card-body">
-                                    <p class="card-text">
+                                    <p class="card-text small text-muted mb-1">
+                                        <i class="fas fa-briefcase me-1"></i>
                                         <strong>Cargo:</strong> {{ review.job_title }}
                                     </p>
-                                    <p class="card-text">
+                                    <p class="card-text small text-muted mb-1">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
                                         <strong>Modalidad:</strong> {{ review.get_modality_display }}
                                     </p>
                                     {% if review.image %}
                                     <div class="mb-3">
-                                        <strong>Imagen:</strong>
-                                        <div>
-                                            <img src="{{ review.image.url }}" alt="Imagen reseña" class="img-fluid rounded" style="max-height: 160px; object-fit: cover;">
-                                        </div>
+                                        <img src="{{ review.image.url }}" alt="Imagen reseña" class="img-fluid rounded" style="max-height: 160px; object-fit: cover;">
                                     </div>
                                     {% endif %}
                                     
                                     <div class="mb-3">
-                                        <strong class="text-success">Pros:</strong>
-                                        <p class="mb-2">{{ review.pros }}</p>
+                                        <strong class="text-success small">Pros:</strong>
+                                        <p class="mb-2 small">{{ review.pros }}</p>
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <strong class="text-danger">Contras:</strong>
-                                        <p class="mb-2">{{ review.cons }}</p>
+                                        <strong class="text-danger small">Contras:</strong>
+                                        <p class="mb-2 small">{{ review.cons }}</p>
                                     </div>
 
                                     {% if review.interview_questions %}
                                     <div class="mb-3">
-                                        <strong>Preguntas de la Entrevista:</strong>
-                                        <p class="mb-2">{{ review.interview_questions }}</p>
+                                        <strong class="small">Preguntas de la Entrevista:</strong>
+                                        <p class="mb-2 small">{{ review.interview_questions }}</p>
                                     </div>
                                     {% endif %}
 
@@ -1080,8 +827,25 @@
                 {% endif %}
             </div>
         </div>
-    {% else %}
-        <!-- Usuario no puede acceder - mostrar mensaje apropiado -->
+    {% elif user.profile.role == 'company_rep' %}
+        <!-- Para company_rep, redirigir a la vista de reseñas -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Las reseñas de tu empresa están disponibles en una sección dedicada.</strong>
+                        </div>
+                        <a href="{% url 'company_reviews' %}" class="btn btn-primary">
+                            <i class="fas fa-comments me-2"></i>Ver Reseñas de la Empresa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif not user.is_staff and user.profile.role != 'staff' %}
+        <!-- Usuario no puede acceder - mostrar mensaje apropiado (solo para candidatos, no para staff) -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card shadow border-warning">
@@ -1181,225 +945,97 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('================================');
     }
     
-    // Colores para los gráficos
     const colors = {
         primary: '#1E3A8A',
+        secondary: '#3B82F6',
         success: '#10B981',
         warning: '#F59E0B',
         danger: '#EF4444',
         info: '#3B82F6',
-        secondary: '#6B7280'
     };
     
-    // Gráfico de distribución de calificaciones - Diagrama de barras mejorado
+    // Gráfico de distribución de calificaciones
     if (chartData.ratings && Object.keys(chartData.ratings).length > 0) {
         const ratingsCtx = document.getElementById('ratingsChart');
         if (ratingsCtx) {
-            const ratingValues = Object.values(chartData.ratings);
-            const ratingLabels = Object.keys(chartData.ratings);
-            const ratingColors = [
-                '#DC2626',   // Rojo intenso para 1 estrella
-                '#F59E0B',   // Naranja para 2 estrellas
-                '#6B7280',   // Gris medio para 3 estrellas
-                '#2563EB',   // Azul para 4 estrellas
-                '#059669'    // Verde para 5 estrellas
-            ];
-            
-            // Encontrar el valor máximo para destacarlo
-            const maxValue = Math.max(...ratingValues);
-            const maxIndex = ratingValues.indexOf(maxValue);
-            
-            // Crear colores con la barra más alta destacada
-            const barColors = ratingValues.map((value, index) => {
-                if (index === maxIndex) {
-                    // Barra más alta con color más intenso y borde más grueso
-                    return ratingColors[index];
-                }
-                return ratingColors[index] + 'CC'; // Más transparente para las demás
-            });
-            
-            const borderColors = ratingValues.map((value, index) => {
-                if (index === maxIndex) {
-                    // Borde más oscuro para la barra más alta
-                    if (ratingColors[index] === '#DC2626') return '#991B1B';
-                    if (ratingColors[index] === '#F59E0B') return '#D97706';
-                    if (ratingColors[index] === '#6B7280') return '#4B5563';
-                    if (ratingColors[index] === '#2563EB') return '#1E40AF';
-                    if (ratingColors[index] === '#059669') return '#047857';
-                }
-                return ratingColors[index];
-            });
+            const labels = Object.keys(chartData.ratings);
+            const data = Object.values(chartData.ratings);
+            const maxValue = Math.max(...data);
+            const maxIndex = data.indexOf(maxValue);
             
             new Chart(ratingsCtx, {
                 type: 'bar',
                 data: {
-                    labels: ratingLabels,
+                    labels: labels,
                     datasets: [{
                         label: 'Número de Reseñas',
-                        data: ratingValues,
-                        backgroundColor: barColors,
-                        borderColor: borderColors,
-                        borderWidth: ratingValues.map((value, index) => index === maxIndex ? 5 : 3),
-                        borderRadius: 8,
-                        borderSkipped: false
+                        data: data,
+                        backgroundColor: data.map((val, idx) => idx === maxIndex ? colors.warning : colors.primary),
+                        borderColor: data.map((val, idx) => idx === maxIndex ? colors.danger : colors.primary),
+                        borderWidth: 3,
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 1200,
-                        easing: 'easeOutQuart'
-                    },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                            padding: 16,
-                            titleFont: { size: 15, weight: 'bold', family: "'Segoe UI', sans-serif" },
-                            bodyFont: { size: 14, family: "'Segoe UI', sans-serif", weight: '500' },
-                            cornerRadius: 12,
-                            displayColors: true,
-                            borderColor: 'rgba(255, 255, 255, 0.1)',
-                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
-                                    const total = ratingValues.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? ((context.parsed.y / total) * 100).toFixed(1) : 0;
-                                    const isMax = context.dataIndex === maxIndex;
-                                    let label = context.label + ': ' + context.parsed.y + ' reseña' + (context.parsed.y !== 1 ? 's' : '') + ' (' + percentage + '%)';
-                                    if (isMax) {
-                                        label += ' ⭐ (Más común)';
-                                    }
-                                    return label;
+                                    const total = data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                                    return `${context.parsed.y} reseñas (${percentage}%)`;
                                 }
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
-                                color: '#1F2937',
-                                precision: 0,
-                                padding: 10
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.08)',
-                                drawBorder: true,
-                                borderColor: '#E5E7EB',
-                                borderWidth: 2,
-                                lineWidth: 1
-                            },
-                            border: {
-                                display: true,
-                                color: '#E5E7EB',
-                                width: 2
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
-                                color: '#1F2937',
-                                padding: 12
-                            },
-                            grid: {
-                                display: false
-                            },
-                            border: {
-                                display: true,
-                                color: '#E5E7EB',
-                                width: 2
-                            }
-                        }
+                        y: { beginAtZero: true }
                     }
                 }
             });
         }
     }
     
-    // Gráfico de modalidad de trabajo mejorado
+    // Gráfico de modalidad
     if (chartData.modality && Object.keys(chartData.modality).length > 0) {
         const modalityCtx = document.getElementById('modalityChart');
         if (modalityCtx) {
-            const modalityValues = Object.values(chartData.modality);
-            const modalityLabels = Object.keys(chartData.modality);
-            const modalityColors = [
-                '#1E3A8A',   // Azul oscuro
-                '#10B981',   // Verde
-                '#3B82F6',   // Azul claro
-                '#F59E0B',   // Naranja
-                '#8B5CF6'    // Púrpura
-            ];
-            
             new Chart(modalityCtx, {
-                type: 'doughnut',
+                type: 'pie',
                 data: {
-                    labels: modalityLabels,
+                    labels: Object.keys(chartData.modality),
                     datasets: [{
-                        data: modalityValues,
-                        backgroundColor: modalityColors.slice(0, modalityValues.length),
-                        borderColor: '#ffffff',
-                        borderWidth: 4,
-                        hoverBorderWidth: 5
+                        data: Object.values(chartData.modality),
+                        backgroundColor: [colors.primary, colors.success, colors.warning, colors.info, colors.danger],
+                        borderWidth: 2,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        animateRotate: true,
-                        animateScale: true,
-                        duration: 1200,
-                        easing: 'easeOutQuart'
-                    },
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 18,
-                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '500' },
-                                color: '#374151',
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                            padding: 14,
-                            titleFont: { size: 14, weight: 'bold', family: "'Segoe UI', sans-serif" },
-                            bodyFont: { size: 13, family: "'Segoe UI', sans-serif" },
-                            cornerRadius: 10,
-                            displayColors: true,
-                            callbacks: {
-                                label: function(context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return context.label + ': ' + context.parsed + ' reseña' + (context.parsed !== 1 ? 's' : '') + ' (' + percentage + '%)';
-                                }
-                            }
-                        }
+                        legend: { position: 'bottom' }
                     }
                 }
             });
         }
     }
     
-    // Gráfico de fortalezas y debilidades mejorado (Radar Chart)
+    // Gráfico de Fortalezas y Debilidades (Radar Chart)
     if (chartData.strengths_weaknesses && Object.keys(chartData.strengths_weaknesses).length > 0) {
-        const strengthsCtx = document.getElementById('strengthsChart');
-        if (strengthsCtx) {
-            new Chart(strengthsCtx, {
+        const swCtx = document.getElementById('strengthsWeaknessesChart');
+        if (swCtx) {
+            const labels = Object.keys(chartData.strengths_weaknesses);
+            const data = Object.values(chartData.strengths_weaknesses);
+            
+            new Chart(swCtx, {
                 type: 'radar',
                 data: {
-                    labels: Object.keys(chartData.strengths_weaknesses),
+                    labels: labels,
                     datasets: [{
                         label: 'Calificación Promedio',
-                        data: Object.values(chartData.strengths_weaknesses),
+                        data: data,
                         backgroundColor: 'rgba(30, 58, 138, 0.3)',
                         borderColor: colors.primary,
                         borderWidth: 3,
@@ -1460,116 +1096,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Gráfico de distribución de tiempo de respuesta
+    // Gráfico de tiempo de respuesta
     if (chartData.response_time_distribution && Object.keys(chartData.response_time_distribution).length > 0) {
         const responseTimeCtx = document.getElementById('responseTimeChart');
         if (responseTimeCtx) {
-            const responseTimeValues = Object.values(chartData.response_time_distribution);
-            const responseTimeLabels = Object.keys(chartData.response_time_distribution);
-            
-            // Colores según el tipo de respuesta (verde para rápido, rojo para lento)
-            const responseTimeColors = responseTimeLabels.map(label => {
-                if (label.includes('Inmediata')) return '#10B981'; // Verde
-                if (label.includes('Mismo día')) return '#34D399'; // Verde claro
-                if (label.includes('siguiente')) return '#FBBF24'; // Amarillo
-                if (label.includes('pocos días')) return '#F59E0B'; // Naranja
-                if (label.includes('Lenta')) return '#EF4444'; // Rojo
-                return '#6B7280'; // Gris por defecto
-            });
-            
-            // Encontrar el valor más común
-            const maxValue = Math.max(...responseTimeValues);
-            const maxIndex = responseTimeValues.indexOf(maxValue);
+            const labels = Object.keys(chartData.response_time_distribution);
+            const data = Object.values(chartData.response_time_distribution);
+            const maxValue = Math.max(...data);
+            const maxIndex = data.indexOf(maxValue);
             
             new Chart(responseTimeCtx, {
                 type: 'bar',
                 data: {
-                    labels: responseTimeLabels,
+                    labels: labels,
                     datasets: [{
                         label: 'Número de Reseñas',
-                        data: responseTimeValues,
-                        backgroundColor: responseTimeColors.map((color, index) => 
-                            index === maxIndex ? color : color + 'CC'
-                        ),
-                        borderColor: responseTimeColors,
-                        borderWidth: responseTimeValues.map((value, index) => index === maxIndex ? 4 : 2),
-                        borderRadius: 8,
-                        borderSkipped: false
+                        data: data,
+                        backgroundColor: data.map((val, idx) => idx === maxIndex ? colors.success : colors.info),
+                        borderColor: data.map((val, idx) => idx === maxIndex ? colors.warning : colors.info),
+                        borderWidth: 2,
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // Barras horizontales
+                    indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 1500,
-                        easing: 'easeOutQuart'
-                    },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                            padding: 16,
-                            titleFont: { size: 15, weight: 'bold', family: "'Segoe UI', sans-serif" },
-                            bodyFont: { size: 14, family: "'Segoe UI', sans-serif", weight: '500' },
-                            cornerRadius: 12,
-                            displayColors: true,
-                            borderColor: 'rgba(255, 255, 255, 0.1)',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    const total = responseTimeValues.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? ((context.parsed.x / total) * 100).toFixed(1) : 0;
-                                    const isMax = context.dataIndex === maxIndex;
-                                    let label = context.label + ': ' + context.parsed.x + ' reseña' + (context.parsed.x !== 1 ? 's' : '') + ' (' + percentage + '%)';
-                                    if (isMax) {
-                                        label += ' ⚡ (Más común)';
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
+                        legend: { display: false }
                     },
                     scales: {
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
-                                color: '#1F2937',
-                                precision: 0,
-                                padding: 10
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.08)',
-                                drawBorder: true,
-                                borderColor: '#E5E7EB',
-                                borderWidth: 2,
-                                lineWidth: 1
-                            },
-                            border: {
-                                display: true,
-                                color: '#E5E7EB',
-                                width: 2
-                            }
-                        },
-                        y: {
-                            ticks: {
-                                font: { size: 13, family: "'Segoe UI', sans-serif", weight: '600' },
-                                color: '#1F2937',
-                                padding: 12
-                            },
-                            grid: {
-                                display: false
-                            },
-                            border: {
-                                display: true,
-                                color: '#E5E7EB',
-                                width: 2
-                            }
-                        }
+                        x: { beginAtZero: true }
                     }
                 }
             });

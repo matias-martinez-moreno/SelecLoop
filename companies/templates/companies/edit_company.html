@@ -6,14 +6,14 @@
 {% block title %}Editar {{ company.name }} - SelecLoop{% endblock %}
 
 {% block content %}
-<div class="container mt-3">
+<div class="container mt-2">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header py-2" style="background: var(--primary-blue);">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);">
                     <h4 class="mb-0 text-white text-center">
-                        <i class="fas fa-edit me-2"></i>
-                        Editar {{ company.name }}
+                        <i class="fas fa-{% if is_new %}plus{% else %}edit{% endif %} me-2"></i>
+                        {% if is_new %}Crear Nueva Empresa{% else %}Editar {{ company.name }}{% endif %}
                     </h4>
                 </div>
                 <div class="card-body">
@@ -31,7 +31,7 @@
                                     {% if form.logo.errors %}
                                         <div class="text-danger small">{{ form.logo.errors.0 }}</div>
                                     {% endif %}
-                                    {% if company.logo %}
+                                    {% if company and company.logo %}
                                         <div class="mt-2">
                                             <small class="text-muted">Logo actual:</small><br>
                                             <img src="{{ company.logo.url }}" alt="Logo actual" class="img-thumbnail" style="max-height: 80px;">
@@ -143,12 +143,21 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <a href="{% url 'company_detail' company.id %}" class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-times me-1"></i>Cancelar
-                                    </a>
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-save me-1"></i>Guardar Cambios
-                                    </button>
+                                    {% if is_new %}
+                                        <a href="{% url 'staff_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-times me-1"></i>Cancelar
+                                        </a>
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-plus me-1"></i>Crear Empresa
+                                        </button>
+                                    {% else %}
+                                        <a href="{% if is_staff %}{% url 'staff_dashboard' %}{% elif user.profile.role == 'company_rep' %}{% url 'company_dashboard' %}{% else %}{% url 'company_detail' company.id %}{% endif %}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-times me-1"></i>Cancelar
+                                        </a>
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-save me-1"></i>Guardar Cambios
+                                        </button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
