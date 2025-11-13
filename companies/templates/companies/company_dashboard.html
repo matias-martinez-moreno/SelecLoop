@@ -676,6 +676,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxValue = Math.max(...data);
             const maxIndex = data.indexOf(maxValue);
             
+            // Colores distintos para cada categoría de tiempo de respuesta
+            const getResponseTimeColor = (label) => {
+                const labelLower = label.toLowerCase();
+                if (labelLower.includes('inmediata')) return '#10B981'; // Verde intenso
+                if (labelLower.includes('mismo día')) return '#34D399'; // Verde claro
+                if (labelLower.includes('siguiente') || labelLower.includes('día siguiente')) return '#FBBF24'; // Amarillo
+                if (labelLower.includes('pocos días') || labelLower.includes('pocos')) return '#F59E0B'; // Naranja
+                if (labelLower.includes('lenta')) return '#EF4444'; // Rojo
+                return '#6B7280'; // Gris por defecto
+            };
+            
+            const backgroundColor = labels.map((label, idx) => {
+                const color = getResponseTimeColor(label);
+                return idx === maxIndex ? color : color + 'CC'; // Más transparente si no es el máximo
+            });
+            
+            const borderColor = labels.map((label) => getResponseTimeColor(label));
+            
             new Chart(responseTimeCtx, {
                 type: 'bar',
                 data: {
@@ -683,9 +701,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     datasets: [{
                         label: 'Número de Reseñas',
                         data: data,
-                        backgroundColor: data.map((val, idx) => idx === maxIndex ? colors.success : colors.info),
-                        borderColor: data.map((val, idx) => idx === maxIndex ? colors.warning : colors.info),
-                        borderWidth: 2,
+                        backgroundColor: backgroundColor,
+                        borderColor: borderColor,
+                        borderWidth: data.map((val, idx) => idx === maxIndex ? 3 : 2),
                     }]
                 },
                 options: {

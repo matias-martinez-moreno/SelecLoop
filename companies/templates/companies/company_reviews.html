@@ -51,7 +51,7 @@
             {% if total_approved_reviews_count > 0 %}
             <div class="card mb-4 shadow-sm border-0">
                 <div class="card-body">
-                    <form method="get" action="{% url 'company_reviews' %}#reviews-section" class="row g-3 align-items-end">
+                    <form method="get" action="{% url 'company_reviews' %}#reviews-section" class="row g-2 align-items-end">
                         <div class="col-md-3">
                             <label for="rating" class="form-label small fw-bold">
                                 <i class="fas fa-star text-warning me-1"></i>Calificación
@@ -87,12 +87,12 @@
                                 <option value="lowest" {% if current_filters.sort == 'lowest' %}selected{% endif %}>Peor calificadas</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <div class="col-md-3 d-flex gap-2 align-items-end">
+                            <button type="submit" class="btn btn-primary btn-sm flex-fill">
                                 <i class="fas fa-filter me-1"></i>Filtrar
                             </button>
                             {% if current_filters.rating or current_filters.modality or current_filters.sort %}
-                            <a href="{% url 'company_reviews' %}#reviews-section" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                            <a href="{% url 'company_reviews' %}#reviews-section" class="btn btn-sm flex-fill" style="background-color: #6c757d; border-color: #6c757d; color: #ffffff;" onmouseover="this.style.backgroundColor='#6c757d'; this.style.borderColor='#6c757d'; this.style.color='#ffffff';" onmouseout="this.style.backgroundColor='#6c757d'; this.style.borderColor='#6c757d'; this.style.color='#ffffff';">
                                 <i class="fas fa-times me-1"></i>Limpiar
                             </a>
                             {% endif %}

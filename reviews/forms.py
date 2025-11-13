@@ -137,6 +137,7 @@ class ReviewForm(forms.ModelForm):
     pros = forms.CharField(
         label="Aspectos positivos",
         help_text="¿Qué te gustó del proceso? ¿Qué hicieron bien?",
+        required=True,  # Campo obligatorio
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 4,
@@ -147,6 +148,7 @@ class ReviewForm(forms.ModelForm):
     cons = forms.CharField(
         label="Aspectos a mejorar",
         help_text="¿Qué podrían mejorar? ¿Qué no te gustó?",
+        required=True,  # Campo obligatorio
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 4,
@@ -222,6 +224,15 @@ class ReviewForm(forms.ModelForm):
             value = cleaned_data.get(field)
             if not value or value == '':
                 self.add_error(field, 'Debes seleccionar una opción para este campo.')
+        
+        # Validación de campos obligatorios de contenido
+        pros = cleaned_data.get('pros')
+        if not pros or pros.strip() == '':
+            self.add_error('pros', 'Debes proporcionar los aspectos positivos del proceso.')
+        
+        cons = cleaned_data.get('cons')
+        if not cons or cons.strip() == '':
+            self.add_error('cons', 'Debes proporcionar los aspectos a mejorar del proceso.')
         
         # Validación de interview_questions (ahora es obligatorio)
         interview_questions = cleaned_data.get('interview_questions')

@@ -2,7 +2,10 @@
 # Este archivo define la configuración específica de la aplicación 'core'
 # Django lo usa para identificar y configurar la aplicación
 
+import logging
 from django.apps import AppConfig
+
+logger = logging.getLogger(__name__)
 
 class CoreConfig(AppConfig):
     """
@@ -31,6 +34,7 @@ class CoreConfig(AppConfig):
         - Importar señales (signals)
         - Configuraciones de inicialización
         - Importaciones que requieren que Django esté completamente cargado
+        - Precargar servicios pesados como modelos de ML
         """
         # Importar señales cuando la aplicación esté lista
         # Esto evita problemas de importación circular
@@ -39,3 +43,27 @@ class CoreConfig(AppConfig):
         except ImportError:
             # Las señales no están implementadas aún
             pass
+        
+        # Precargar el servicio de verificación al iniciar Django
+        # Esto carga los modelos de Hugging Face una sola vez al inicio
+        # en lugar de cargarlos cada vez que se crea una reseña
+        try:
+            from core.services.review_verification import ReviewVerificationService, ML_AVAILABLE
+            service = ReviewVerificationService()  # Se carga una sola vez aquí (Singleton)
+            
+            if ML_AVAILABLE:
+                if service.models_loaded:
+                    logger.info("=" * 60)
+                    logger.info("✅ ReviewVerificationService PRECARGADO EXITOSAMENTE")
+                    logger.info("✅ Modelos de Hugging Face ACTIVOS y LISTOS")
+                    logger.info(f"   - Toxicity model: {'✅ Cargado' if service.toxicity_pipeline else '❌ No disponible'}")
+                    logger.info(f"   - Sentiment model: {'✅ Cargado' if service.sentiment_pipeline else '❌ No disponible'}")
+                    logger.info("=" * 60)
+                else:
+                    logger.warning("⚠️ ReviewVerificationService precargado pero los modelos NO se cargaron.")
+                    logger.warning("⚠️ Se usarán verificaciones básicas solamente.")
+            else:
+                logger.warning("⚠️ Librerías ML (torch/transformers) no disponibles.")
+                logger.warning("⚠️ Se usarán verificaciones básicas solamente.")
+        except Exception as e:
+            logger.error(f"❌ Error al precargar ReviewVerificationService: {e}", exc_info=True)

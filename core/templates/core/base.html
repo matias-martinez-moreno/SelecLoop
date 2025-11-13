@@ -798,21 +798,27 @@
         }
 
         .alert-info {
-            background: var(--blue-100);
-            color: var(--blue-900);
-            border-left: 4px solid var(--info);
+            background: #6c757d;
+            color: white;
+            border-left: 4px solid #495057;
         }
 
         .alert-warning {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-            border-left: 4px solid var(--warning);
+            background: #6c757d;
+            color: white;
+            border-left: 4px solid #495057;
         }
 
         .alert-danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border-left: 4px solid var(--danger);
+            background: #6c757d;
+            color: white;
+            border-left: 4px solid #495057;
+        }
+        
+        .alert-error {
+            background: #6c757d;
+            color: white;
+            border-left: 4px solid #495057;
         }
 
         /* ===== SISTEMA DE MENSAJES MEJORADO ===== */
@@ -865,15 +871,15 @@
 
         .alert-danger .message-icon i,
         .alert-error .message-icon i {
-            color: var(--danger);
+            color: white;
         }
 
         .alert-warning .message-icon i {
-            color: var(--warning);
+            color: white;
         }
 
         .alert-info .message-icon i {
-            color: var(--info);
+            color: white;
         }
 
         /* Animaciones */
@@ -1790,8 +1796,8 @@
                                         <h5>📥 Exportar Reportes a Excel</h5>
                                         <p><strong>Análisis detallado:</strong> Descarga reportes profesionales con filtros avanzados desde el Panel de Control: selecciona período (mes específico o todos), calificación (1-5 estrellas), y columnas personalizadas. El reporte incluye estadísticas generales, gráficas de distribución (barras, pastel, línea) y reseñas detalladas con todos los datos.</p>
                                         <p><em>💡 Tip:</em> Exporta mensualmente para hacer seguimiento de tendencias a largo plazo y compartir con tu equipo.</p>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
                                 <div class="help-step">
                                     <div class="step-number">6</div>
                                     <div class="step-content">
@@ -2092,17 +2098,28 @@
             const mainContent = document.querySelector('.main-content');
             const toggleBtn = document.getElementById('sidebarToggle');
             const navMain = document.querySelector('.nav-main');
+            const icon = toggleBtn.querySelector('i');
             
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
             
-            // Mover el botón dentro de nav-main cuando está colapsado
+            // Cambiar el icono según el estado
             if (sidebar.classList.contains('collapsed')) {
+                // Cambiar a X cuando está colapsado
+                if (icon) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
                 // Mover el botón al inicio de nav-main
                 if (navMain && !navMain.contains(toggleBtn)) {
                     navMain.insertBefore(toggleBtn, navMain.firstChild);
                 }
             } else {
+                // Cambiar a tres rayas cuando está desplegado
+                if (icon) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
                 // Mover el botón fuera de nav-main cuando está desplegado
                 if (navMain && navMain.contains(toggleBtn)) {
                     const sidebarNav = document.querySelector('.sidebar-nav');
@@ -2124,15 +2141,24 @@
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebarToggle');
             const navMain = document.querySelector('.nav-main');
+            const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
             
             if (sidebar && toggleBtn && navMain) {
                 if (sidebar.classList.contains('collapsed')) {
-                    // Si está colapsado, mover el botón dentro de nav-main
+                    // Si está colapsado, cambiar icono a X y mover el botón dentro de nav-main
+                    if (icon) {
+                        icon.classList.remove('fa-bars');
+                        icon.classList.add('fa-times');
+                    }
                     if (!navMain.contains(toggleBtn)) {
                         navMain.insertBefore(toggleBtn, navMain.firstChild);
                     }
                 } else {
-                    // Si está desplegado, asegurar que el botón esté fuera de nav-main
+                    // Si está desplegado, cambiar icono a tres rayas y asegurar que el botón esté fuera de nav-main
+                    if (icon) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
                     if (navMain.contains(toggleBtn)) {
                         const sidebarNav = document.querySelector('.sidebar-nav');
                         if (sidebarNav) {

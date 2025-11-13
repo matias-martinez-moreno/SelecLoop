@@ -114,9 +114,9 @@
                         </h4>
                         <div class="d-flex gap-2">
                             {% if user.profile.role == 'company_rep' and user.profile.company and user.profile.company.id == company.id %}
-                                <a href="{% url 'edit_company' company.id %}" class="btn btn-sm" style="background: var(--secondary-blue); color: white; border: 1px solid var(--secondary-blue);" onmouseover="this.style.background='var(--primary-blue)'" onmouseout="this.style.background='var(--secondary-blue)'">
-                                    <i class="fas fa-edit me-1"></i>Editar Datos
-                                </a>
+                            <a href="{% url 'edit_company' company.id %}" class="btn btn-sm" style="background: var(--secondary-blue); color: white; border: 1px solid var(--secondary-blue);" onmouseover="this.style.background='var(--primary-blue)'" onmouseout="this.style.background='var(--secondary-blue)'">
+                                <i class="fas fa-edit me-1"></i>Editar Datos
+                            </a>
                             {% elif user.is_staff or user.profile.role == 'staff' %}
                                 <a href="{% url 'edit_company' company.id %}" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit me-1"></i>Editar
@@ -128,9 +128,9 @@
                                 <a href="{% url 'delete_company' company.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de borrar esta empresa? Esta acción no se puede deshacer.');">
                                     <i class="fas fa-trash me-1"></i>Borrar
                                 </a>
-                            {% else %}
-                                <span class="text-muted small">Rol: {{ user.profile.role }}</span>
-                            {% endif %}
+                        {% else %}
+                            <span class="text-muted small">Rol: {{ user.profile.role }}</span>
+                        {% endif %}
                         </div>
                     </div>
                 </div>
@@ -338,12 +338,12 @@
                                     <div class="small text-muted mb-1">Calificación General</div>
                                     <div class="progress" style="height: 8px;">
                                         <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_overall 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_overall 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
+                                </div>
                                     <small class="text-muted">de 5.0</small>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Total Reseñas -->
                         <div class="col-md-3 col-sm-6">
                             <div class="card h-100 border-info border-2">
@@ -352,11 +352,11 @@
                                     <div class="small text-muted mb-1">Total Reseñas</div>
                                     <div class="d-flex justify-content-center gap-2 small">
                                         <span class="badge bg-success">{{ role_kpis.total_reviews }} aprobadas</span>
-                                    </div>
+                                </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Tasa de Aprobación (siempre 100% para candidatos ya que solo ven aprobadas) -->
                         <div class="col-md-3 col-sm-6">
                             <div class="card h-100 border-success border-2">
@@ -370,7 +370,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Respuestas Rápidas -->
                         <div class="col-md-3 col-sm-6">
                             <div class="card h-100 border-warning border-2">
@@ -379,12 +379,12 @@
                                     <div class="small text-muted mb-1">Respuestas Rápidas</div>
                                     <div class="progress" style="height: 8px;">
                                         <div class="progress-bar bg-warning" role="progressbar" style="width: {{ role_kpis.fast_response_rate|floatformat:0 }}%" aria-valuenow="{{ role_kpis.fast_response_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
+                                </div>
+                            </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
+
                     <!-- Métricas de Calidad del Proceso -->
                     <div class="row g-3 mb-4">
                         <div class="col-12">
@@ -395,9 +395,9 @@
                         </div>
                         
                         <!-- Comunicación -->
-                        <div class="col-md-4">
+                                <div class="col-md-4">
                             <div class="card h-100">
-                                <div class="card-body">
+                                        <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div>
                                             <i class="fas fa-comments text-primary me-2"></i>
@@ -407,16 +407,16 @@
                                     </div>
                                     <div class="progress" style="height: 10px;">
                                         <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio role_kpis.avg_communication 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_communication 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <small class="text-muted">Claridad en respuestas a candidatos</small>
                                 </div>
-                            </div>
-                        </div>
+                                    <small class="text-muted">Claridad en respuestas a candidatos</small>
+                                        </div>
+                                    </div>
+                                </div>
                         
                         <!-- Dificultad -->
-                        <div class="col-md-4">
+                                <div class="col-md-4">
                             <div class="card h-100">
-                                <div class="card-body">
+                                        <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div>
                                             <i class="fas fa-tasks text-warning me-2"></i>
@@ -426,16 +426,16 @@
                                     </div>
                                     <div class="progress" style="height: 10px;">
                                         <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio role_kpis.avg_difficulty 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_difficulty 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <small class="text-muted">Complejidad del proceso</small>
                                 </div>
+                                    <small class="text-muted">Complejidad del proceso</small>
                             </div>
                         </div>
-                        
+                    </div>
+
                         <!-- Velocidad -->
-                        <div class="col-md-4">
+                                <div class="col-md-4">
                             <div class="card h-100">
-                                <div class="card-body">
+                                        <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div>
                                             <i class="fas fa-clock text-info me-2"></i>
@@ -445,12 +445,12 @@
                                     </div>
                                     <div class="progress" style="height: 10px;">
                                         <div class="progress-bar bg-info" role="progressbar" style="width: {% widthratio role_kpis.avg_response_time 5 100 %}%" aria-valuenow="{% widthratio role_kpis.avg_response_time 5 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <small class="text-muted">Tiempo de respuesta</small>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+                                    <small class="text-muted">Tiempo de respuesta</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                        </div>
 
                     <!-- Información adicional -->
                     <div class="alert alert-info" id="useful-info-alert">
@@ -460,10 +460,10 @@
                             Basado en {{ role_kpis.total_reviews }} reseñas de candidatos.
                             {% if role_kpis.top_modality_rating %}
                             El trabajo {{ role_kpis.top_modality|lower }} tiene {{ role_kpis.top_modality_rating }}/5 estrellas de promedio.
-                            {% endif %}
+                                {% endif %}
                         </span>
                     </div>
-                    
+
                     {% if role_kpis.modalities_data %}
                     {{ role_kpis.modalities_data|json_script:"modalities-data" }}
                     <script>
@@ -554,7 +554,7 @@
                                     {% else %}
                                     <div class="text-center py-5">
                                         <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -574,7 +574,7 @@
                                     {% else %}
                                     <div class="text-center py-5">
                                         <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -594,7 +594,7 @@
                                     {% else %}
                                     <div class="text-center py-5">
                                         <i class="fas fa-radar fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -614,7 +614,7 @@
                                     {% else %}
                                     <div class="text-center py-5">
                                         <i class="fas fa-clock fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
+                                    <p class="text-muted small">No hay suficientes datos para mostrar el gráfico</p>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -664,7 +664,7 @@
                 {% if user_can_create_review and user.profile.role == 'candidate' %}
                 <div class="row mb-4">
                     <div class="col-12">
-                        <a href="{% url 'create_review' %}?company={{ company.id }}" class="btn btn-lg w-100" style="background: var(--secondary-blue); color: white; border: 1px solid var(--secondary-blue);" onmouseover="this.style.background='var(--primary-blue)'" onmouseout="this.style.background='var(--secondary-blue)'">
+                        <a href="{% url 'create_review' %}?company={{ company.id }}" class="btn btn-lg w-100" style="background: #2563EB; color: white; border: 1px solid #2563EB;" onmouseover="this.style.background='#1D4ED8'; this.style.borderColor='#1D4ED8';" onmouseout="this.style.background='#2563EB'; this.style.borderColor='#2563EB';">
                             <i class="fas fa-plus me-2"></i>Crear Reseña
                         </a>
                     </div>
@@ -675,7 +675,7 @@
                 {% if total_approved_reviews_count > 0 %}
                 <div class="card mb-4 shadow-sm">
                     <div class="card-body">
-                        <form method="get" action="{% url 'company_detail' company.id %}#reviews-section" class="row g-3 align-items-end">
+                        <form method="get" action="{% url 'company_detail' company.id %}#reviews-section" class="row g-2 align-items-end">
                             <div class="col-md-3">
                                 <label for="rating" class="form-label small fw-bold">
                                     <i class="fas fa-star text-warning me-1"></i>Calificación
@@ -711,12 +711,12 @@
                                     <option value="lowest" {% if current_filters.sort == 'lowest' %}selected{% endif %}>Peor calificadas</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <div class="col-md-3 d-flex gap-2 align-items-end">
+                                <button type="submit" class="btn btn-primary btn-sm flex-fill">
                                     <i class="fas fa-filter me-1"></i>Filtrar
                                 </button>
                                 {% if current_filters.rating or current_filters.modality or current_filters.sort %}
-                                <a href="{% url 'company_detail' company.id %}#reviews-section" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                                <a href="{% url 'company_detail' company.id %}#reviews-section" class="btn btn-sm flex-fill" style="background-color: #6c757d; border-color: #6c757d; color: #ffffff;" onmouseover="this.style.backgroundColor='#6c757d'; this.style.borderColor='#6c757d'; this.style.color='#ffffff';" onmouseout="this.style.backgroundColor='#6c757d'; this.style.borderColor='#6c757d'; this.style.color='#ffffff';">
                                     <i class="fas fa-times me-1"></i>Limpiar
                                 </a>
                                 {% endif %}
@@ -749,8 +749,8 @@
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="badge bg-success flex-shrink-0">
-                                            <i class="fas fa-check me-1"></i>Aprobada
-                                        </span>
+                                        <i class="fas fa-check me-1"></i>Aprobada
+                                    </span>
                                         {% if user.is_staff or user.profile.role == 'staff' %}
                                         <a href="{% url 'delete_review' review.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de borrar esta reseña? Esta acción no se puede deshacer.');" title="Borrar reseña">
                                             <i class="fas fa-trash"></i>
@@ -769,7 +769,7 @@
                                     </p>
                                     {% if review.image %}
                                     <div class="mb-3">
-                                        <img src="{{ review.image.url }}" alt="Imagen reseña" class="img-fluid rounded" style="max-height: 160px; object-fit: cover;">
+                                            <img src="{{ review.image.url }}" alt="Imagen reseña" class="img-fluid rounded" style="max-height: 160px; object-fit: cover;">
                                     </div>
                                     {% endif %}
                                     
@@ -819,7 +819,7 @@
                         <h4 class="text-muted">No hay reseñas aún</h4>
                         <p class="text-muted">Sé el primero en compartir tu experiencia con esta empresa.</p>
                         {% if user_can_create_review and user.profile.role == 'candidate' %}
-                            <a href="{% url 'create_review' %}?company={{ company.id }}" class="btn btn-primary">
+                            <a href="{% url 'create_review' %}?company={{ company.id }}" class="btn" style="background: #2563EB; color: white; border: 1px solid #2563EB;" onmouseover="this.style.background='#1D4ED8'; this.style.borderColor='#1D4ED8';" onmouseout="this.style.background='#2563EB'; this.style.borderColor='#2563EB';">
                                 <i class="fas fa-plus me-2"></i>Crear Primera Reseña
                             </a>
                         {% endif %}
@@ -1105,6 +1105,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxValue = Math.max(...data);
             const maxIndex = data.indexOf(maxValue);
             
+            // Colores distintos para cada categoría de tiempo de respuesta
+            const getResponseTimeColor = (label) => {
+                const labelLower = label.toLowerCase();
+                if (labelLower.includes('inmediata')) return '#10B981'; // Verde intenso
+                if (labelLower.includes('mismo día')) return '#34D399'; // Verde claro
+                if (labelLower.includes('siguiente') || labelLower.includes('día siguiente')) return '#FBBF24'; // Amarillo
+                if (labelLower.includes('pocos días') || labelLower.includes('pocos')) return '#F59E0B'; // Naranja
+                if (labelLower.includes('lenta')) return '#EF4444'; // Rojo
+                return '#6B7280'; // Gris por defecto
+            };
+            
+            const backgroundColor = labels.map((label, idx) => {
+                const color = getResponseTimeColor(label);
+                return idx === maxIndex ? color : color + 'CC'; // Más transparente si no es el máximo
+            });
+            
+            const borderColor = labels.map((label) => getResponseTimeColor(label));
+            
             new Chart(responseTimeCtx, {
                 type: 'bar',
                 data: {
@@ -1112,9 +1130,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     datasets: [{
                         label: 'Número de Reseñas',
                         data: data,
-                        backgroundColor: data.map((val, idx) => idx === maxIndex ? colors.success : colors.info),
-                        borderColor: data.map((val, idx) => idx === maxIndex ? colors.warning : colors.info),
-                        borderWidth: 2,
+                        backgroundColor: backgroundColor,
+                        borderColor: borderColor,
+                        borderWidth: data.map((val, idx) => idx === maxIndex ? 3 : 2),
                     }]
                 },
                 options: {
@@ -1161,11 +1179,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         {
                             label: 'Calificación Promedio',
                             data: ratings,
-                            borderColor: colors.primary,
+                        borderColor: colors.primary,
                             backgroundColor: 'rgba(30, 58, 138, 0.1)',
                             borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
+                        fill: true,
+                        tension: 0.4,
                             yAxisID: 'y',
                             pointRadius: 6,
                             pointHoverRadius: 8
@@ -1260,7 +1278,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 color: '#6b7280'
                             },
                             grid: {
-                                display: false
+                            display: false
                             }
                         }
                     }

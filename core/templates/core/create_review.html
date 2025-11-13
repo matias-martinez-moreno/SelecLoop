@@ -185,10 +185,10 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-thumbs-up me-2 text-success"></i>
-                                Aspectos Positivos
+                                Aspectos Positivos <span class="text-danger">*</span>
                             </label>
                             {{ form.pros }}
-                            <small class="text-muted">¿Qué te gustó del proceso? ¿Qué hicieron bien?</small>
+                            <small class="text-muted">¿Qué te gustó del proceso? ¿Qué hicieron bien? <strong class="text-danger">(Campo obligatorio)</strong></small>
                             {% if form.pros.errors %}
                                 <div class="text-danger small mt-1">{{ form.pros.errors.0 }}</div>
                             {% endif %}
@@ -196,10 +196,10 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-thumbs-down me-2 text-danger"></i>
-                                Aspectos a Mejorar
+                                Aspectos a Mejorar <span class="text-danger">*</span>
                             </label>
                             {{ form.cons }}
-                            <small class="text-muted">¿Qué podrían mejorar? ¿Qué no te gustó?</small>
+                            <small class="text-muted">¿Qué podrían mejorar? ¿Qué no te gustó? <strong class="text-danger">(Campo obligatorio)</strong></small>
                             {% if form.cons.errors %}
                                 <div class="text-danger small mt-1">{{ form.cons.errors.0 }}</div>
                             {% endif %}

@@ -110,6 +110,12 @@
                         </span>
                     </div>
                     <div class="card-body">
+                        {% if review.status == 'rejected' %}
+                        <div class="alert alert-secondary py-2 px-3 mb-3" style="font-size: 0.75rem; line-height: 1.4;">
+                            <i class="fas fa-robot me-1"></i>
+                            <strong>¿Por qué fue rechazada?</strong> Esta reseña fue rechazada automáticamente por nuestro sistema de verificación con inteligencia artificial (Hugging Face). El sistema analiza el contenido para detectar lenguaje ofensivo, discurso de odio, toxicidad o sentimiento extremadamente negativo. La razón específica: <em>{{ review.verification_reason|default:"Contenido inapropiado detectado" }}</em>
+                        </div>
+                        {% endif %}
                         <h6 class="card-subtitle mb-2 text-muted">{{ review.job_title }}</h6>
                         <p class="card-text">
                             <strong>Modalidad:</strong> 
