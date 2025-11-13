@@ -8,6 +8,10 @@ SelecLoop es una plataforma web colaborativa que recopila y organiza reseñas so
 - Tomás Giraldo
 - Luis Alfonso Agudelo
 
+## Asistencia con IA
+
+Este proyecto contó con la asistencia de Gemini 2.5 Pro para el desarrollo de diversas funcionalidades y la resolución de consultas técnicas. Las consultas y conversaciones relacionadas con el desarrollo del proyecto se encuentran documentadas en los entregables de la materia.
+
 ## Setup
 
 1. **Clonar el repositorio**

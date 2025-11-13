@@ -88,18 +88,18 @@ class ReviewVerificationService:
         """
         Verifica si una reseña es apropiada - Anti-odio y anti-contenido fuera de lugar
         """
-        # Log inicial muy visible - USAR WARNING para que se vea en consola
+        # Log inicial de verificación
         logger.warning("=" * 80)
-        logger.warning("🔍 INICIANDO VERIFICACIÓN DE RESEÑA")
-        logger.warning(f"📝 Texto a verificar (primeros 100 chars): {text[:100]}...")
-        logger.warning(f"🤖 Modelos ML cargados: {self.models_loaded}")
-        logger.warning(f"🤖 Toxicity pipeline disponible: {self.toxicity_pipeline is not None}")
-        logger.warning(f"🤖 Sentiment pipeline disponible: {self.sentiment_pipeline is not None}")
+        logger.warning("INICIANDO VERIFICACION DE RESENA")
+        logger.warning(f"Texto (primeros 100 chars): {text[:100]}...")
+        logger.warning(f"Modelos ML cargados: {self.models_loaded}")
+        logger.warning(f"Toxicity pipeline: {self.toxicity_pipeline is not None}")
+        logger.warning(f"Sentiment pipeline: {self.sentiment_pipeline is not None}")
         logger.warning("=" * 80)
         
         # Solo rechazar si es completamente vacío
         if not text or len(text.strip()) < 1:
-            logger.warning("❌ Texto vacío - RECHAZADO")
+            logger.warning("RECHAZADO: Texto vacio")
             return {
                 'is_appropriate': False,
                 'reason': 'Texto vacío',
@@ -109,22 +109,22 @@ class ReviewVerificationService:
         
         try:
             # Verificaciones básicas primero
-            logger.warning("🔎 Ejecutando verificaciones básicas...")
+            logger.warning("Ejecutando verificaciones basicas...")
             basic_check = self._comprehensive_content_check(text)
             if not basic_check['is_appropriate']:
                 logger.warning("=" * 80)
-                logger.warning(f"❌❌❌ RECHAZADO por verificaciones básicas ❌❌❌")
-                logger.warning(f"   Razón: {basic_check['reason']}")
-                logger.warning(f"   Confianza: {basic_check['confidence']}")
-                logger.warning(f"   Categoría: {basic_check['category']}")
+                logger.warning("RECHAZADO por verificaciones basicas")
+                logger.warning(f"Razon: {basic_check['reason']}")
+                logger.warning(f"Confianza: {basic_check['confidence']}")
+                logger.warning(f"Categoria: {basic_check['category']}")
                 logger.warning("=" * 80)
                 return basic_check
-            logger.warning("✅✅✅ Verificaciones básicas PASADAS - Continuando con ML...")
+            logger.warning("Verificaciones basicas PASADAS - Continuando con ML...")
             
             # Si los modelos no se cargaron, usar solo verificaciones básicas
             if not self.models_loaded:
                 logger.warning("=" * 80)
-                logger.warning("⚠️⚠️⚠️ MODELOS ML NO CARGADOS - USANDO SOLO VERIFICACIONES BÁSICAS ⚠️⚠️⚠️")
+                logger.warning("MODELOS ML NO CARGADOS - USANDO SOLO VERIFICACIONES BASICAS")
                 logger.warning("=" * 80)
                 return {
                     'is_appropriate': basic_check['is_appropriate'],
@@ -133,11 +133,11 @@ class ReviewVerificationService:
                     'category': basic_check['category']
                 }
             
-            # Log muy visible para confirmar que se está usando ML - USAR WARNING
+            # Confirmar que se está usando ML
             logger.warning("=" * 80)
-            logger.warning("🤖🤖🤖 USANDO MODELOS ML PARA VERIFICACIÓN 🤖🤖🤖")
-            logger.warning(f"✅ Toxicity pipeline: {self.toxicity_pipeline is not None}")
-            logger.warning(f"✅ Sentiment pipeline: {self.sentiment_pipeline is not None}")
+            logger.warning("USANDO MODELOS ML PARA VERIFICACION")
+            logger.warning(f"Toxicity pipeline: {self.toxicity_pipeline is not None}")
+            logger.warning(f"Sentiment pipeline: {self.sentiment_pipeline is not None}")
             logger.warning("=" * 80)
             
             # Verificar toxicidad y odio con el modelo
@@ -217,14 +217,14 @@ class ReviewVerificationService:
                                 sentiment_score = float(sentiment_result.get('score', 0))
                                 sentiment_label = str(sentiment_result.get('label', 'NEUTRAL'))
                         
-                        # Log para debugging - USAR WARNING
-                        logger.warning(f"📊 ML Sentiment analysis - Score: {sentiment_score}, Label: {sentiment_label}")
+                        # Log para debugging
+                        logger.warning(f"ML Sentiment - Score: {sentiment_score}, Label: {sentiment_label}")
                     except Exception as sent_error:
                         logger.warning(f"Error in sentiment analysis: {sent_error}")
                         # Continuar con otros checks
                 
-                # Log para debugging - USAR WARNING
-                logger.warning(f"📊 ML Toxicity analysis - Score: {toxicity_score}, Categories: {toxic_categories}")
+                # Log para debugging
+                logger.warning(f"ML Toxicity - Score: {toxicity_score}, Categories: {toxic_categories}")
                 
                 # Lógica de decisión más estricta
                 is_appropriate = True
@@ -292,46 +292,44 @@ class ReviewVerificationService:
                     'ml_models_used': self.models_loaded
                 }
                 
-                # Log final del resultado - MUY VISIBLE - USAR WARNING
+                # Log final del resultado
                 logger.warning("=" * 80)
                 if is_appropriate:
-                    logger.warning("✅✅✅ ML VERIFICACIÓN: APROBADA ✅✅✅")
-                    logger.warning(f"   Razón: {reason}")
-                    logger.warning(f"   Confianza: {confidence}")
-                    logger.warning(f"   Toxicity Score: {toxicity_score}")
-                    logger.warning(f"   Sentiment Score: {sentiment_score} ({sentiment_label})")
+                    logger.warning("ML VERIFICACION: APROBADA")
+                    logger.warning(f"Razon: {reason}")
+                    logger.warning(f"Confianza: {confidence}")
+                    logger.warning(f"Toxicity Score: {toxicity_score}")
+                    logger.warning(f"Sentiment Score: {sentiment_score} ({sentiment_label})")
                 else:
-                    logger.warning("❌❌❌ ML VERIFICACIÓN: RECHAZADA ❌❌❌")
-                    logger.warning(f"   Razón: {reason}")
-                    logger.warning(f"   Confianza: {confidence}")
-                    logger.warning(f"   Categoría: {category}")
-                    logger.warning(f"   Toxicity Score: {toxicity_score}")
-                    logger.warning(f"   Sentiment Score: {sentiment_score} ({sentiment_label})")
-                    logger.warning(f"   Toxic Categories: {toxic_categories}")
+                    logger.warning("ML VERIFICACION: RECHAZADA")
+                    logger.warning(f"Razon: {reason}")
+                    logger.warning(f"Confianza: {confidence}")
+                    logger.warning(f"Categoria: {category}")
+                    logger.warning(f"Toxicity Score: {toxicity_score}")
+                    logger.warning(f"Sentiment Score: {sentiment_score} ({sentiment_label})")
+                    logger.warning(f"Toxic Categories: {toxic_categories}")
                 logger.warning("=" * 80)
                 
                 return result
                 
             except Exception as model_error:
                 logger.error("=" * 80)
-                logger.error("❌❌❌ ERROR AL USAR MODELOS ML ❌❌❌")
-                logger.error(f"   Error: {str(model_error)}")
-                logger.error(f"   Traceback completo:")
+                logger.error("ERROR AL USAR MODELOS ML")
+                logger.error(f"Error: {str(model_error)}")
                 import traceback
                 logger.error(traceback.format_exc())
-                logger.error("   ⚠️ Usando fallback a verificaciones básicas")
+                logger.error("Usando fallback a verificaciones basicas")
                 logger.error("=" * 80)
                 # Fallback a verificaciones básicas
                 return basic_check
             
         except Exception as e:
             logger.error("=" * 80)
-            logger.error("❌❌❌ ERROR GENERAL EN VERIFICACIÓN ❌❌❌")
-            logger.error(f"   Error: {str(e)}")
-            logger.error(f"   Traceback completo:")
+            logger.error("ERROR GENERAL EN VERIFICACION")
+            logger.error(f"Error: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
-            logger.error("   ⚠️ Aprobando reseña por defecto para no bloquear contenido legítimo")
+            logger.error("Aprobando resena por defecto para no bloquear contenido legitimo")
             logger.error("=" * 80)
             # En caso de error, aprobar la reseña para no rechazar contenido legítimo
             return {

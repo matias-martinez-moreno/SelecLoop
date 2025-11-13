@@ -33,11 +33,11 @@ def check_and_award_achievements(user_profile):
         # Obtener logros ya obtenidos por el usuario
         user_achievements = UserAchievement.objects.filter(user_profile=user_profile).values_list('achievement_id', flat=True)
         
-        # Contar reseñas del usuario
-        review_count = Review.objects.filter(user_profile=user_profile).count()
+        # Contar solo reseñas APROBADAS del usuario (las rechazadas no cuentan para logros)
+        review_count = Review.objects.filter(user_profile=user_profile, status='approved').count()
         
-        # Contar empresas únicas en reseñas
-        company_count = Review.objects.filter(user_profile=user_profile).values('company').distinct().count()
+        # Contar empresas únicas en reseñas APROBADAS
+        company_count = Review.objects.filter(user_profile=user_profile, status='approved').values('company').distinct().count()
         
         # Contar experiencias laborales
         work_history_count = WorkHistory.objects.filter(user_profile=user_profile).count()
@@ -159,21 +159,20 @@ def create_review_view(request):
                     )
                     onboarding_status.detect_participation_status()
                 
-                # Verificar y otorgar logros
-                new_achievements = check_and_award_achievements(request.user.profile)
-                
                 # Mensaje según el estado de la reseña
                 if review.status == 'approved':
                     messages.success(request, f'✅ ¡Reseña aprobada exitosamente! Tu reseña para {company.name} ha sido publicada.')
+                    # Solo otorgar logros si la reseña fue APROBADA
+                    new_achievements = check_and_award_achievements(request.user.profile)
+                    # Mostrar logros obtenidos
+                    if new_achievements:
+                        for achievement in new_achievements:
+                            messages.success(request, f'🏆 ¡Nuevo logro desbloqueado! {achievement.name} - {achievement.description}')
                 elif review.status == 'rejected':
                     messages.warning(request, f'⚠️ Tu reseña para {company.name} fue rechazada. Razón: {review.verification_reason}')
+                    # NO otorgar logros si la reseña fue rechazada
                 else:
                     messages.info(request, f'ℹ️ Tu reseña para {company.name} ha sido enviada.')
-                
-                # Mostrar logros obtenidos
-                if new_achievements:
-                    for achievement in new_achievements:
-                        messages.success(request, f'🏆 ¡Nuevo logro desbloqueado! {achievement.name} - {achievement.description}')
                 
                 return redirect('my_reviews')
                 

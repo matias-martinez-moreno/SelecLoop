@@ -231,7 +231,7 @@ class Review(models.Model):
             # Log para confirmar que se va a verificar
             import logging
             logger = logging.getLogger(__name__)
-            logger.warning("🔍 CONDICIÓN DE VERIFICACIÓN CUMPLIDA - Iniciando verificación...")
+            logger.warning("Condicion de verificacion cumplida - Iniciando verificacion...")
             try:
                 
                 from core.services.review_verification import ReviewVerificationService
@@ -245,29 +245,25 @@ class Review(models.Model):
                 content_to_verify = f"{pros_text} {cons_text} {interview_text}".strip()
                 
                 logger.warning("=" * 80)
-                logger.warning("📝 ENVIANDO RESEÑA A VERIFICACIÓN")
-                logger.warning(f"   Empresa: {self.company.name if self.company else 'N/A'}")
-                logger.warning(f"   Usuario: {self.user_profile.user.username if self.user_profile else 'N/A'}")
-                logger.warning(f"   Pros: {pros_text[:50]}..." if pros_text else "   Pros: (vacío)")
-                logger.warning(f"   Contras: {cons_text[:50]}..." if cons_text else "   Contras: (vacío)")
-                logger.warning(f"   Preguntas: {interview_text[:50]}..." if interview_text else "   Preguntas: (vacío)")
-                logger.warning(f"   Longitud total del texto: {len(content_to_verify)} caracteres")
-                logger.warning(f"   is_verified antes: {self.is_verified}")
+                logger.warning("ENVIANDO RESENA A VERIFICACION")
+                logger.warning(f"Empresa: {self.company.name if self.company else 'N/A'}")
+                logger.warning(f"Usuario: {self.user_profile.user.username if self.user_profile else 'N/A'}")
+                logger.warning(f"Longitud texto: {len(content_to_verify)} caracteres")
                 logger.warning("=" * 80)
                 
                 result = verification_service.verify_review(content_to_verify)
                 
                 logger.warning("=" * 80)
-                logger.warning("📊 RESULTADO DE VERIFICACIÓN")
-                logger.warning(f"   ¿Apropiada?: {result['is_appropriate']}")
-                logger.warning(f"   Razón: {result['reason']}")
-                logger.warning(f"   Confianza: {result['confidence']}")
-                logger.warning(f"   Categoría: {result['category']}")
-                logger.warning(f"   ¿ML usado?: {result.get('ml_models_used', False)}")
+                logger.warning("RESULTADO DE VERIFICACION")
+                logger.warning(f"Apropiada: {result['is_appropriate']}")
+                logger.warning(f"Razon: {result['reason']}")
+                logger.warning(f"Confianza: {result['confidence']}")
+                logger.warning(f"Categoria: {result['category']}")
+                logger.warning(f"ML usado: {result.get('ml_models_used', False)}")
                 if 'toxicity_score' in result:
-                    logger.warning(f"   Toxicity Score: {result.get('toxicity_score', 0)}")
+                    logger.warning(f"Toxicity Score: {result.get('toxicity_score', 0)}")
                 if 'sentiment_score' in result:
-                    logger.warning(f"   Sentiment Score: {result.get('sentiment_score', 0)} ({result.get('sentiment_label', 'N/A')})")
+                    logger.warning(f"Sentiment Score: {result.get('sentiment_score', 0)} ({result.get('sentiment_label', 'N/A')})")
                 logger.warning("=" * 80)
                 
                 self.is_verified = True
@@ -279,39 +275,38 @@ class Review(models.Model):
                 if result['is_appropriate']:
                     self.status = 'approved'
                     self.is_approved = True
-                    logger.warning(f"✅✅✅ RESEÑA APROBADA: {result['reason']}")
+                    logger.warning(f"RESENA APROBADA: {result['reason']}")
                 else:
                     self.status = 'rejected'  # Rechazar automáticamente contenido inapropiado
                     self.is_approved = False
-                    logger.warning(f"❌❌❌ RESEÑA RECHAZADA: {result['reason']} (categoría: {result['category']})")
+                    logger.warning(f"RESENA RECHAZADA: {result['reason']} (categoria: {result['category']})")
                     
             except Exception as e:
                 # Si hay error, aprobar la reseña por defecto para no bloquear contenido legítimo
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.error("=" * 80)
-                logger.error("❌❌❌ ERROR EN VERIFICACIÓN DE RESEÑA ❌❌❌")
-                logger.error(f"   Error: {str(e)}")
-                logger.error(f"   Traceback completo:")
+                logger.error("ERROR EN VERIFICACION DE RESENA")
+                logger.error(f"Error: {str(e)}")
                 import traceback
                 logger.error(traceback.format_exc())
                 logger.error("=" * 80)
                 
                 self.is_verified = True
-                self.verification_reason = f'Error en verificación automática: {str(e)}'
+                self.verification_reason = f'Error en verificacion automatica: {str(e)}'
                 self.verification_confidence = 0.0
                 self.verification_category = 'error'
                 self.status = 'approved'  # Aprobar en caso de error para no bloquear contenido legítimo
                 self.is_approved = True
-                logger.warning("⚠️ Reseña aprobada por defecto debido a error en verificación")
+                logger.warning("Resena aprobada por defecto debido a error en verificacion")
         else:
             # Log cuando NO se ejecuta la verificación
             import logging
             logger = logging.getLogger(__name__)
             if self.is_verified:
-                logger.warning(f"⏭️ VERIFICACIÓN OMITIDA: Reseña ya verificada (is_verified={self.is_verified})")
+                logger.warning(f"VERIFICACION OMITIDA: Resena ya verificada (is_verified={self.is_verified})")
             if not has_content:
-                logger.warning(f"⏭️ VERIFICACIÓN OMITIDA: No hay contenido para verificar (pros={bool(self.pros)}, cons={bool(self.cons)}, interview={bool(self.interview_questions)})")
+                logger.warning(f"VERIFICACION OMITIDA: No hay contenido para verificar")
         
         super().save(*args, **kwargs)
     
